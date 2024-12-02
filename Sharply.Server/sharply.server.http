@@ -1,0 +1,6 @@
+@sharply.server_HostAddress = http://localhost:5128
+
+GET {{sharply.server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

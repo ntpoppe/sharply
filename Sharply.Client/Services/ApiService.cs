@@ -10,7 +10,14 @@ public class ApiService
 
     public ApiService()
     {
-        _client = new HttpClient
+
+		// TODO: This needs to be disabled upon "production".
+		var handler = new HttpClientHandler
+		{
+			ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
+		};
+
+        _client = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://localhost:8001/")
         };

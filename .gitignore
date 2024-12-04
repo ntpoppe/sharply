@@ -6,6 +6,7 @@
 # Custom
 secrets.json
 *.db
+Sharply.Server/Migrations/
 
 # User-specific files
 *.rsuser

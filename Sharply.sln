@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Client", "sharply.client\Sharply.Client.csproj", "{F4EE358E-B90F-4B63-B119-1FC2FE2B9256}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Client", "Sharply.Client\Sharply.Client.csproj", "{F4EE358E-B90F-4B63-B119-1FC2FE2B9256}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Server", "sharply.server\Sharply.Server.csproj", "{87AC04BE-3AAE-4D06-82F6-4E3DCCA3F900}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Server", "Sharply.Server\Sharply.Server.csproj", "{87AC04BE-3AAE-4D06-82F6-4E3DCCA3F900}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject

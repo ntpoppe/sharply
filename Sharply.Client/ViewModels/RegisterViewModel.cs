@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
-public partial class LoginViewModel : ViewModelBase
+public partial class RegisterViewModel : ViewModelBase
 {
     #region Constructors
 
-    public LoginViewModel(INavigationService navigationService)
+    public RegisterViewModel(INavigationService navigationService)
     {
         _navigationService = navigationService;
     }
@@ -30,11 +30,14 @@ public partial class LoginViewModel : ViewModelBase
     [ObservableProperty]
     private string? _password;
 
+	[ObservableProperty]
+	private string? _confirmPassword;
+
     [ObservableProperty]
     private string? _errorMessage;
 
     [RelayCommand]
-    private async Task LoginAsync()
+    private async Task RegisterAsync()
     {
         // Call API service to authenticate
         var apiService = new ApiService();
@@ -42,48 +45,50 @@ public partial class LoginViewModel : ViewModelBase
         try
         {
             // Validate input
-            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
                 throw new Exception("Username or password cannot be empty.");
 
-            // Attempt to log in
-            var user = await apiService.LoginAsync(Username, Password);
+			if (Password != ConfirmPassword)
+				throw new Exception("Passwords must match.");
+
+            // Attempt to register 
+            var user = await apiService.RegisterAsync(Username, Password);
 
             if (user != null)
-                OnLoginSuccess(user);
+                OnRegisterSuccess(user);
             else
-                OnLoginFailed("Login failed. Please check your credentials.");
+                OnRegisterFailed("Login failed. Please check your credentials.");
         }
         catch (HttpRequestException ex)
         {
             // Handle network or server-related errors
-            OnLoginFailed($"Unable to connect to the server. {ex}");
+            OnRegisterFailed($"Unable to connect to the server. {ex}");
         }
         catch (Exception ex)
         {
             // Handle other errors (e.g., validation or unexpected exceptions)
-            OnLoginFailed(ex.Message);
+            OnRegisterFailed(ex.Message);
         }
 
     }
 
 	[RelayCommand]
-	private void GoToRegister()
+	private void GoToLogin()
 	{
-		_navigationService.NavigateTo<RegisterViewModel>();
+		_navigationService.NavigateTo<LoginViewModel>();
 	}
 
-
-    private void OnLoginSuccess(User user)
+    private void OnRegisterSuccess(User user)
     {
         // Example: Navigate to the main view
-        Debug.WriteLine($"Login successful. Welcome, {user.Username}!");
+        Debug.WriteLine($"Registration successful. Welcome, {user.Username}!");
         _navigationService.NavigateTo<MainViewModel>();
     }
 
-    private void OnLoginFailed(string errorMessage)
+    private void OnRegisterFailed(string errorMessage)
     {
         ErrorMessage = errorMessage;
-        Debug.WriteLine($"Login failed: {errorMessage}");
+        Debug.WriteLine($"Registration failed: {errorMessage}");
     }
 
     #endregion

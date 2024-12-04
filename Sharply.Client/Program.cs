@@ -34,6 +34,7 @@ sealed class Program
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<LoginViewModel>();
+		services.AddSingleton<RegisterViewModel>();
 
         return services.BuildServiceProvider();
     }

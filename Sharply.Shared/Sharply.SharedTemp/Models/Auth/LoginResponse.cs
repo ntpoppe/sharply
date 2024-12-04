@@ -1,4 +1,4 @@
-﻿namespace Sharply.Client.Models;
+namespace Sharply.Shared.Models;
 
 /// <summary>
 /// Represents the response returned after a successful login.
@@ -6,7 +6,7 @@
 public class LoginResponse
 {
     /// <summary>
-    /// The usernae of the authenticated user.
+    /// The username of the authenticated user.
     /// </summary>
     public required string Username { get; set; }
 

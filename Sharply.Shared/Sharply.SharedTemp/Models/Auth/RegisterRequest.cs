@@ -1,4 +1,4 @@
-namespace Sharply.Server.Models;
+namespace Sharply.Shared.Models;
 
 /// <summary>
 /// Represents the data required for user registration.

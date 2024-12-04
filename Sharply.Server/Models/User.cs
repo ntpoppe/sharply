@@ -29,4 +29,10 @@ public class User
     /// It is nullable to allow for scenarios where a password might not initially be set.
     /// </remarks>
     public string? PasswordHash { get; set; }
+
+
+	/// <summary>
+	/// A collection of messages sent by the user. Navigation property.
+	/// </summary>
+	public ICollection<Message>? Messages { get; set; }
 }

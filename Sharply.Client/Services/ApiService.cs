@@ -1,8 +1,12 @@
 ﻿using Sharply.Client.Models;
+using Sharply.Shared.Models;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+
+
+namespace Sharply.Client.Services;
 
 public class ApiService
 {

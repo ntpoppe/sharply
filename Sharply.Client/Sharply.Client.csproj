@@ -36,4 +36,8 @@
       <DependentUpon>MainView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sharply.Shared\Sharply.Shared.csproj" />
+  </ItemGroup>
 </Project>

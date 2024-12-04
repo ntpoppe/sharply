@@ -1,4 +1,4 @@
-namespace Sharply.Server.Models;
+namespace Sharply.Shared.Models;
 
 /// <summary>
 /// Represents the response returned after a successful registration.

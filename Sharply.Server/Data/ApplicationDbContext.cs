@@ -11,7 +11,7 @@ public class SharplyDbContext : DbContext
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for users.
     /// </summary>
-    public DbSet<User> Users { get; set; }
+    public required DbSet<User> Users { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SharplyDbContext"/> class.
@@ -24,4 +24,17 @@ public class SharplyDbContext : DbContext
         : base(options)
     {
     }
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		// Relationship between Message and User
+		modelBuilder.Entity<Message>()
+			.HasOne(m => m.User) // A message has one user
+			.WithMany(u => u.Messages) // A user has many messages
+			.HasForeignKey(m => m.Username) // Foreign key property in Message
+			.HasPrincipalKey(u => u.Username); // Principal key in User
+
+		base.OnModelCreating(modelBuilder);
+	}
+
 }

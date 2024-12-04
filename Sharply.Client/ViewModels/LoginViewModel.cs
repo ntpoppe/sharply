@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
+using Sharply.Client.Services;
 using System;
 using System.Diagnostics;
 using System.Net.Http;

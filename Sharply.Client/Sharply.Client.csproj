@@ -13,6 +13,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaXaml Remove="Themes\DarkTheme.axaml" />
+    <AvaloniaXaml Remove="Themes\LightTheme.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Themes\DarkTheme.axaml" />
+    <AvaloniaResource Include="Themes\LightTheme.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.2.2" />
     <PackageReference Include="Avalonia.Desktop" Version="11.2.2" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.2" />

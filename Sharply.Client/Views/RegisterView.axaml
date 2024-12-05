@@ -2,30 +2,104 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
+             xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Sharply.Client.Views.RegisterView"
-			 x:DataType="vm:RegisterViewModel">
+             x:DataType="vm:RegisterViewModel">
 
-	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
-		<TextBlock Text="Register" FontSize="24" HorizontalAlignment="Center"/>
+	<UserControl.Styles>
+		<Style Selector="TextBox:focus-within /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
 
-		<TextBox Watermark="Username" Text="{Binding Username}" Margin="0,10,0,0"/>
-		<TextBox Watermark="Password" PasswordChar="*" Text="{Binding Password}" Margin="0,10,0,0"/>
-		<TextBox Watermark="Confirm password" PasswordChar="*" Text="{Binding ConfirmPassword}" Margin="0,10,0,0"/>
-		
-		<Grid Margin="0,20,0,0">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"/>
-				<ColumnDefinition Width="*"/>
-				<ColumnDefinition Width="Auto"/> 
-			</Grid.ColumnDefinitions>
+		<Style Selector="TextBox:pointerover /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+	</UserControl.Styles>
+	
+	<Grid Background="{DynamicResource BackgroundBrush}">
+		<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="400">
+			<!-- App Title -->
+			<TextBlock Text="Sharply"
+                       FontSize="48"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource AccentBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,20"/>
 
-			<Button Grid.Column="0" Content="Login" Command="{Binding GoToLoginCommand}" HorizontalAlignment="Right"/>
-			<Button Grid.Column="2" Content="Register" Command="{Binding RegisterCommand}" HorizontalAlignment="Left"/>
-		</Grid>
+			<!-- Subtitle -->
+			<TextBlock Text="Create your account"
+                       FontSize="16"
+                       Foreground="{DynamicResource SubtitleBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,0,0,30"/>
 
-		<TextBlock Text="{Binding ErrorMessage}" Foreground="Red"/>
-	</StackPanel>
+			<!-- Username Field -->
+			<TextBox Watermark="Username"
+                     Text="{Binding Username}"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"
+                     BorderBrush="{DynamicResource AccentBrush}"
+                     Margin="0,10,0,0"/>
 
+			<!-- Password Field -->
+			<TextBox Watermark="Password"
+                     Text="{Binding Password}"
+                     PasswordChar="*"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"
+                     BorderBrush="{DynamicResource AccentBrush}"
+                     Margin="0,10,0,0"/>
+
+			<!-- Confirm Password Field -->
+			<TextBox Watermark="Confirm Password"
+                     Text="{Binding ConfirmPassword}"
+                     PasswordChar="*"
+                     Background="{DynamicResource InputBackgroundBrush}"
+                     Foreground="{DynamicResource PrimaryTextBrush}"
+                     BorderBrush="{DynamicResource AccentBrush}"
+                     Margin="0,10,0,0"/>
+
+			<!-- Error Message -->
+			<TextBlock Text="{Binding ErrorMessage}"
+                       Foreground="{DynamicResource ErrorBrush}"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,10"/>
+
+			<!-- Buttons -->
+			<Grid Margin="0,20,0,0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="1*" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="10" />
+					<ColumnDefinition Width="Auto" />
+					<ColumnDefinition Width="1*" />
+				</Grid.ColumnDefinitions>
+
+				<!-- Go to Login Button -->
+				<Button Grid.Column="1"
+                        Content="Back to Login"
+                        Command="{Binding GoToLoginCommand}"
+                        Background="{DynamicResource SecondaryAccentBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Padding="10,5"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Right"/>
+
+				<!-- Register Button -->
+				<Button Grid.Column="3"
+                        Content="Register"
+                        Command="{Binding RegisterCommand}"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Padding="10,5"
+                        FontWeight="Bold"
+                        HorizontalAlignment="Left"/>
+			</Grid>
+		</StackPanel>
+	</Grid>
 </UserControl>
+

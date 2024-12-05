@@ -67,11 +67,11 @@ public partial class LoginViewModel : ViewModelBase
 
     }
 
-	[RelayCommand]
-	private void GoToRegister()
-	{
-		_navigationService.NavigateTo<RegisterViewModel>();
-	}
+    [RelayCommand]
+    private void GoToRegister()
+    {
+        _navigationService.NavigateTo<RegisterViewModel>();
+    }
 
 
     private void OnLoginSuccess(User user)

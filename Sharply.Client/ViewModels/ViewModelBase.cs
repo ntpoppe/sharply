@@ -4,4 +4,5 @@ namespace Sharply.Client.ViewModels;
 
 public class ViewModelBase : ObservableObject
 {
+    public ViewModelBase() { }
 }

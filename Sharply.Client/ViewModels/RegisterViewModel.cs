@@ -31,8 +31,8 @@ public partial class RegisterViewModel : ViewModelBase
     [ObservableProperty]
     private string? _password;
 
-	[ObservableProperty]
-	private string? _confirmPassword;
+    [ObservableProperty]
+    private string? _confirmPassword;
 
     [ObservableProperty]
     private string? _errorMessage;
@@ -49,8 +49,8 @@ public partial class RegisterViewModel : ViewModelBase
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password) || string.IsNullOrWhiteSpace(ConfirmPassword))
                 throw new Exception("Username or password cannot be empty.");
 
-			if (Password != ConfirmPassword)
-				throw new Exception("Passwords must match.");
+            if (Password != ConfirmPassword)
+                throw new Exception("Passwords must match.");
 
             // Attempt to register 
             var user = await apiService.RegisterAsync(Username, Password);
@@ -73,11 +73,11 @@ public partial class RegisterViewModel : ViewModelBase
 
     }
 
-	[RelayCommand]
-	private void GoToLogin()
-	{
-		_navigationService.NavigateTo<LoginViewModel>();
-	}
+    [RelayCommand]
+    private void GoToLogin()
+    {
+        _navigationService.NavigateTo<LoginViewModel>();
+    }
 
     private void OnRegisterSuccess(User user)
     {

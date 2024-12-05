@@ -27,14 +27,21 @@ sealed class Program
             .UsePlatformDetect()
             .LogToTrace();
 
+    // Parameterless BuildAvaloniaApp for the previewer
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .LogToTrace();
+
     private static IServiceProvider ConfigureServices()
     {
         var services = new ServiceCollection();
 
         services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<MainViewModel>();
-        services.AddSingleton<LoginViewModel>();
-		services.AddSingleton<RegisterViewModel>();
+        services.AddTransient<ViewModelBase>();
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<LoginViewModel>();
+        services.AddTransient<RegisterViewModel>();
 
         return services.BuildServiceProvider();
     }

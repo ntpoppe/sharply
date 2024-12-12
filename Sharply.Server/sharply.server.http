@@ -1,6 +1,19 @@
-@sharply.server_HostAddress = http://localhost:5128
+@sharply.server_HostAddress = http://localhost:8000
 
-GET {{sharply.server_HostAddress}}/weatherforecast/
-Accept: application/json
+### Register a new user
+POST {{sharply.server_HostAddress}}/auth/register
+Content-Type: application/json
 
-###
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+### Login an existing user
+POST {{sharply.server_HostAddress}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}

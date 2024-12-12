@@ -21,10 +21,23 @@ public class Message
 	public required DateTime Timestamp { get; set; }
 
 	/// <summary>
+	/// Gets or sets the channel id the message is contained in.
+	/// </summary>
+	/// <remarks>
+	/// This is a foreign key linking to the "Channels" table.
+	/// </remarks>
+	public required int ChannelId { get; set; }
+
+	/// <summary>
+	/// Navigation property for the channel that contains this message.
+	/// </summary>
+	public required Channel Channel { get; set; }
+
+	/// <summary>
 	/// Gets or sets the username of the sender.
 	/// </summary>
 	/// <remarks>
-	/// This is a foreign key linking to the User table.
+	/// This is a foreign key linking to the "Users" table.
 	/// </remarks>
 	public required string Username { get; set; }
 

@@ -30,7 +30,6 @@ public class User
     /// </remarks>
     public string? PasswordHash { get; set; }
 
-
 	/// <summary>
 	/// A collection of messages sent by the user. Navigation property.
 	/// </summary>

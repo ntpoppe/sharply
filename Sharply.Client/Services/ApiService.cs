@@ -12,20 +12,16 @@ public class ApiService
 {
     private readonly HttpClient _client;
 
-    public ApiService()
+    public ApiService(HttpClientHandler handler)
     {
-
-		// TODO: This needs to be disabled upon "production".
-		var handler = new HttpClientHandler
-		{
-			ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
-		};
-
         _client = new HttpClient(handler)
         {
             BaseAddress = new Uri("https://localhost:8001/")
         };
     }
+
+	public ApiService(HttpClient client)
+		=> _client = client;
 
     public async Task<User?> RegisterAsync(string username, string password)
     {
@@ -78,6 +74,6 @@ public class ApiService
             }
         }
 
-        throw new Exception("Login failed. Please check your credientials.");
+        throw new Exception("Login failed. Please check your credentials.");
     }
 }

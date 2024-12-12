@@ -40,8 +40,14 @@ public partial class RegisterViewModel : ViewModelBase
     [RelayCommand]
     private async Task RegisterAsync()
     {
+		var handler = new HttpClientHandler
+		{
+			// TODO: This needs to be disabled upon "production".
+			ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
+		};
+
         // Call API service to authenticate
-        var apiService = new ApiService();
+        var apiService = new ApiService(handler);
 
         try
         {

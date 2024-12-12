@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Shared", "Sharply.Shared\Sharply.Shared.csproj", "{BBF2D7F5-14ED-CEA2-9D32-337E9BEFEBE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Client.Tests", "Sharply.Client.Tests\Sharply.Client.Tests.csproj", "{94CC178A-AB25-4842-9960-4C063083E8BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sharply.Server.Tests", "Sharply.Server.Tests\Sharply.Server.Tests.csproj", "{F4C49DAD-673B-4986-93B6-34C2260B9D6A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{BBF2D7F5-14ED-CEA2-9D32-337E9BEFEBE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBF2D7F5-14ED-CEA2-9D32-337E9BEFEBE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBF2D7F5-14ED-CEA2-9D32-337E9BEFEBE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94CC178A-AB25-4842-9960-4C063083E8BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94CC178A-AB25-4842-9960-4C063083E8BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94CC178A-AB25-4842-9960-4C063083E8BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94CC178A-AB25-4842-9960-4C063083E8BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4C49DAD-673B-4986-93B6-34C2260B9D6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4C49DAD-673B-4986-93B6-34C2260B9D6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4C49DAD-673B-4986-93B6-34C2260B9D6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4C49DAD-673B-4986-93B6-34C2260B9D6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

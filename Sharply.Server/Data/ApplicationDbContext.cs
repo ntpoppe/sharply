@@ -14,6 +14,16 @@ public class SharplyDbContext : DbContext
     public required DbSet<User> Users { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="DbSet{TEntity}"/> for servers.
+    /// </summary>
+    public required DbSet<Models.Server> Servers { get; set; }
+
+    /// <summary>
+    /// Gets or sets the <see cref="DbSet{TEntity}"> for channels.
+    /// </summary>
+    public required DbSet<Channel> Channels { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="SharplyDbContext"/> class.
     /// </summary>
     /// <param name="options">
@@ -34,7 +44,9 @@ public class SharplyDbContext : DbContext
 			.HasForeignKey(m => m.Username) // Foreign key property in Message
 			.HasPrincipalKey(u => u.Username); // Principal key in User
 
-		base.OnModelCreating(modelBuilder);
-	}
+        modelBuilder.Entity<Models.Server>().HasData(new Models.Server { Id = 1, Name = "Global" });
+        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });
 
+        base.OnModelCreating(modelBuilder);
+	}
 }

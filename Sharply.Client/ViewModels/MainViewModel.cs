@@ -1,7 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Sharply.Client.Interfaces;
+﻿using System;
 using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Microsoft.AspNetCore.SignalR.Client;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.ViewModels;
 
@@ -48,25 +50,29 @@ public partial class MainViewModel : ViewModelBase
 
     // Collections
     [ObservableProperty]
-    private ObservableCollection<ServerViewModel> _servers = new ObservableCollection<ServerViewModel>();
+    private ObservableCollection<ServerViewModel> _servers =  new();
 
     [ObservableProperty]
     private ServerViewModel? _selectedServer;
 
     [ObservableProperty]
-    private ObservableCollection<ChannelViewModel> _channels = new ObservableCollection<ChannelViewModel>();
+    private ObservableCollection<ChannelViewModel> _channels = new();
 
     [ObservableProperty]
     private ChannelViewModel? _selectedChannel;
 
     [ObservableProperty]
-    private ObservableCollection<MessageViewModel> _messages = new ObservableCollection<MessageViewModel>();
+    private ObservableCollection<MessageViewModel> _messages = new();
 
     [ObservableProperty]
-    private ObservableCollection<UserViewModel> _onlineUsers = new ObservableCollection<UserViewModel>();
+    private ObservableCollection<UserViewModel> _onlineUsers = new();
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
+
+	private HubConnection _hubConnection;
+
+    public object? CurrentView => NavigationService.CurrentView;
 
     #endregion
 
@@ -74,104 +80,48 @@ public partial class MainViewModel : ViewModelBase
 
     private void LoadInitialData()
     {
-        // Add a default global server
-        var globalServer = new ServerViewModel { Name = "Global" };
-        Servers.Add(globalServer);
-        SelectedServer = globalServer;
-
-        // Add a default global channel
-        var globalChannel = new ChannelViewModel { Name = "General" };
-        Channels.Add(globalChannel);
-        SelectedChannel = globalChannel;
-
-        // Add some default online users
-        OnlineUsers.Add(new UserViewModel { Username = "Alice" });
-        OnlineUsers.Add(new UserViewModel { Username = "Bob" });
-
-        // Add some default messages
-        Messages.Add(new MessageViewModel { Username = "Alice", Content = "Welcome to Sharply!" });
-        Messages.Add(new MessageViewModel { Username = "Bob", Content = "Hello everyone!" });
     }
+
+	private async void InitializeHubConnection()
+	{
+		_hubConnection = new HubConnectionBuilder()
+			.WithUrl("https://localhost:8001/hubs/messages")
+			.Build();
+
+		// Listen for incoming messages
+		_hubConnection.On<string, string, DateTime>("ReceiveMessage", (username, content, timestamp) =>
+		{
+			Messages.Add(new MessageViewModel
+			{
+				Username = username,
+				Content = content,	
+				Timestamp = timestamp
+			});
+		});
+
+		await _hubConnection.StartAsync();
+	}
 
     private void SelectServer(ServerViewModel server)
     {
-        SelectedServer = server;
-        // Load channels for the selected server
-        Channels.Clear();
-        Channels.Add(new ChannelViewModel { Name = "General" });
-        SelectedChannel = Channels[0];
     }
 
     private void AddServer()
     {
-        // Logic to add a new server
-        var newServer = new ServerViewModel { Name = "New Server" };
-        Servers.Add(newServer);
-        SelectedServer = newServer;
     }
 
     private void SelectChannel(ChannelViewModel channel)
     {
-        SelectedChannel = channel;
-        // Load messages and online users for the selected channel
-        Messages.Clear();
-        OnlineUsers.Clear();
-
-        // Simulate loading messages and users
-        Messages.Add(new MessageViewModel { Username = "Alice", Content = "Welcome to the new channel!" });
-        OnlineUsers.Add(new UserViewModel { Username = "Alice" });
     }
 
     private void AddChannel()
     {
-        // Logic to add a new channel
-        var newChannel = new ChannelViewModel { Name = "New Channel" };
-        Channels.Add(newChannel);
-        SelectedChannel = newChannel;
     }
 
     private void SendMessage()
     {
-        if (!string.IsNullOrWhiteSpace(NewMessage))
-        {
-            Messages.Add(new MessageViewModel { Username = "You", Content = NewMessage });
-            NewMessage = string.Empty;
-
-            // Scroll to the latest message if using ScrollViewer
-        }
     }
 
     #endregion
 
-    #region View Models, Move to own file eventually
-
-    public partial class ServerViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _name = string.Empty;
-    }
-
-    public partial class ChannelViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _name = string.Empty;
-    }
-
-    public partial class MessageViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _username = string.Empty;
-
-        [ObservableProperty]
-        private string _content = string.Empty;
-    }
-
-    public partial class UserViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _username = string.Empty;
-    }
-
-    public object? CurrentView => NavigationService.CurrentView;
-    #endregion
 }

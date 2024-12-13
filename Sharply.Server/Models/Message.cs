@@ -8,7 +8,7 @@ public class Message
 	/// <summary>
 	/// Gets or sets the ID for the message.
 	/// </summary>
-	public required int Id { get; set; }
+	public int? Id { get; set; }
 
 	/// <summary>
 	/// Gets or sets the content of the message.
@@ -31,7 +31,7 @@ public class Message
 	/// <summary>
 	/// Navigation property for the channel that contains this message.
 	/// </summary>
-	public required Channel Channel { get; set; }
+	public Channel? Channel { get; set; }
 
 	/// <summary>
 	/// Gets or sets the username of the sender.
@@ -44,5 +44,5 @@ public class Message
 	/// <summary>
 	/// Navigation property for the user who sent the message
 	/// </summary>
-	public required User User { get; set; }
+	public User? User { get; set; }
 }

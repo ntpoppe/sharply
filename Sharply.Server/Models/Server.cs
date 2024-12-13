@@ -18,6 +18,6 @@ public class Server
     /// <summary>
     /// Gets or sets a collection of channels contained by the server.
     /// </summary>
-    public ICollection<string>? Channels { get; set; }
+    public ICollection<Channel>? Channels { get; set; }
 }
 

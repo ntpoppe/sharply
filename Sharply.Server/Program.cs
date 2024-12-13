@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sharply.Server.Data;
+using Sharply.Server.SignalR;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -69,6 +70,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // Controllers
     services.AddControllers();
+
+	// SignalR
+	services.AddSignalR();
 }
 
 void ConfigureMiddleware(WebApplication app)
@@ -87,6 +91,9 @@ void ConfigureMiddleware(WebApplication app)
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+
+	// Map SignalR hubs
+	app.MapHub<MessageHub>("/hubs/Messages");
 }
 
 #endregion

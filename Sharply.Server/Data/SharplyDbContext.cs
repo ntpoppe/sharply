@@ -13,6 +13,11 @@ public class SharplyDbContext : DbContext
     /// </summary>
     public required DbSet<User> Users { get; set; }
 
+	/// <summary>
+	/// Gets or sets the <see cref"DbSet{TEntity}"/> for messages.
+	/// </summary>
+	public required DbSet<Message> Messages { get; set; }
+
     /// <summary>
     /// Gets or sets the <see cref="DbSet{TEntity}"/> for servers.
     /// </summary>
@@ -43,6 +48,11 @@ public class SharplyDbContext : DbContext
 			.WithMany(u => u.Messages) // A user has many messages
 			.HasForeignKey(m => m.Username) // Foreign key property in Message
 			.HasPrincipalKey(u => u.Username); // Principal key in User
+
+		modelBuilder.Entity<Models.Server>()
+			.HasMany(s => s.Channels)
+			.WithOne(c => c.Server)
+			.HasForeignKey(c => c.ServerId);
 
         modelBuilder.Entity<Models.Server>().HasData(new Models.Server { Id = 1, Name = "Global" });
         modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });

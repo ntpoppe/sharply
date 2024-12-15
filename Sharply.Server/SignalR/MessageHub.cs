@@ -26,8 +26,8 @@ public class MessageHub : Hub
     /// <remarks>
     /// Id must be converted to a string.
     /// </remarks>
-    public async Task JoinChannel(string channelId)
-        => await Groups.AddToGroupAsync(Context.ConnectionId, channelId);
+    public async Task JoinChannel(int channelId)
+        => await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
 
     /// <summary>
     /// Joins the default channel for the default global server.
@@ -50,15 +50,15 @@ public class MessageHub : Hub
             await _context.SaveChangesAsync();
         }
 
-        await JoinChannel(generalChannel.Id.ToString());
+        await JoinChannel(generalChannel.Id);
     }
 
     /// <summary>
     /// Removes the current connection from a SignalR group representing a specific channel.
     /// </summary>
     /// <param name="channelId">The ID of the channel to leave.</param>
-    public async Task LeaveChannel(string channelId)
-        => await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelId);
+    public async Task LeaveChannel(int channelId)
+        => await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelId.ToString());
 
     /// <summary>
     /// Sends a message to all users in a specific channel group and saves it to the database.
@@ -66,15 +66,15 @@ public class MessageHub : Hub
     /// <param name="channelId">The ID of the channel to send the message to.</param>
     /// <param name="userId">The username of the sender.</param>
     /// <param name="content">The content of the message.</param>
-    public async Task SendMessageToChannel(string channelId, string userId, string content)
+    public async Task SendMessageToChannel(int channelId, int userId, string content)
     {
-        var channel = await _context.Channels.FindAsync(int.Parse(channelId));
+        var channel = await _context.Channels.FindAsync(channelId);
         if (channel == null) return;
 
         var message = new Message
         {
             Content = content,
-            UserId = int.Parse(userId),
+            UserId = userId,
             ChannelId = channel.Id,
             Timestamp = DateTime.UtcNow
         };
@@ -82,17 +82,6 @@ public class MessageHub : Hub
         _context.Messages.Add(message);
         await _context.SaveChangesAsync();
 
-        await Clients.Group(channelId).SendAsync("ReceiveMessage", userId, content, message.Timestamp);
+        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", userId, content, message.Timestamp);
     }
-
-    /// <summary>
-    /// Gets all of the channels for a server.
-    /// </summary>
-    /// <param name="serverId"></param>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    public async Task<List<Channel>> GetChannelsForServer(string serverId, string userId)
-        => await _context.Channels
-            .Where(c => c.ServerId == int.Parse(serverId))
-            .ToListAsync();
 }

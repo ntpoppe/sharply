@@ -81,7 +81,7 @@ public class AuthController : ControllerBase
         var tokenString = tokenHandler.WriteToken(token);
 
         // Join default server/channel(s)
-
+        await EnsureDefaultServerAssignmentAsync(user.Id);
 
         // Send response
         return Ok(new RegisterResponse
@@ -133,8 +133,6 @@ public class AuthController : ControllerBase
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
-
-        await EnsureDefaultServerAssignmentAsync(user.Id);
 
         // Send response
         return Ok(new LoginResponse

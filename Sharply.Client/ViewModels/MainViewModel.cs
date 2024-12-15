@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.AspNetCore.SignalR.Client;
 using Sharply.Client.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
@@ -15,7 +17,7 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(INavigationService navigationService)
     {
-        SelectServerCommand = new RelayCommand<ServerViewModel>(SelectServer);
+        SelectServerCommand = new RelayCommand<ServerViewModel>(async (server) => await SelectServer(server));
         AddServerCommand = new RelayCommand(AddServer);
         SelectChannelCommand = new RelayCommand<ChannelViewModel>(SelectChannel);
         AddChannelCommand = new RelayCommand(AddChannel);
@@ -50,7 +52,7 @@ public partial class MainViewModel : ViewModelBase
 
     // Collections
     [ObservableProperty]
-    private ObservableCollection<ServerViewModel> _servers =  new();
+    private ObservableCollection<ServerViewModel> _servers = new();
 
     [ObservableProperty]
     private ServerViewModel? _selectedServer;
@@ -70,7 +72,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _newMessage = string.Empty;
 
-	private HubConnection _hubConnection;
+    private HubConnection _hubConnection;
 
     public object? CurrentView => NavigationService.CurrentView;
 
@@ -82,28 +84,36 @@ public partial class MainViewModel : ViewModelBase
     {
     }
 
-	private async void InitializeHubConnection()
-	{
-		_hubConnection = new HubConnectionBuilder()
-			.WithUrl("https://localhost:8001/hubs/messages")
-			.Build();
-
-		// Listen for incoming messages
-		_hubConnection.On<string, string, DateTime>("ReceiveMessage", (username, content, timestamp) =>
-		{
-			Messages.Add(new MessageViewModel
-			{
-				Username = username,
-				Content = content,	
-				Timestamp = timestamp
-			});
-		});
-
-		await _hubConnection.StartAsync();
-	}
-
-    private void SelectServer(ServerViewModel server)
+    private async void InitializeHubConnection()
     {
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:8001/hubs/messages")
+            .Build();
+
+        // Listen for incoming messages
+        _hubConnection.On<string, string, DateTime>("ReceiveMessage", (username, content, timestamp) =>
+        {
+            Messages.Add(new MessageViewModel
+            {
+                Username = username,
+                Content = content,
+                Timestamp = timestamp
+            });
+        });
+
+        await _hubConnection.StartAsync();
+    }
+
+    private async Task SelectServer(ServerViewModel server)
+    {
+        SelectedServer = server;
+        Channels.Clear();
+
+        var channels = await _hubConnection.InvokeAsync<List<ChannelDto>>("GetChannelsForServer", server.Id, "currentUserId");
+        foreach (var channel in channels)
+        {
+            Channels.Add(new ChannelViewModel { Id = channel.Id, Name = channel.Name, ServerId = server.Id });
+        }
     }
 
     private void AddServer()

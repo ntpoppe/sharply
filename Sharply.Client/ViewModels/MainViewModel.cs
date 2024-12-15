@@ -2,20 +2,24 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.AspNetCore.SignalR.Client;
 using Sharply.Client.Interfaces;
+using Sharply.Client.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly INavigationService NavigationService;
+    private readonly ApiService _apiService;
+    private readonly TokenStorageService _tokenStorageService;
+    private readonly INavigationService _navigationService;
 
     #region Constructors
 
-    public MainViewModel(INavigationService navigationService)
+    public MainViewModel(ApiService apiService, TokenStorageService tokenStorageService, INavigationService navigationService)
     {
         SelectServerCommand = new RelayCommand<ServerViewModel>(async (server) => await SelectServer(server));
         AddServerCommand = new RelayCommand(AddServer);
@@ -23,17 +27,18 @@ public partial class MainViewModel : ViewModelBase
         AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
 
-        NavigationService = navigationService;
-        NavigationService.NavigateTo<LoginViewModel>();
-        NavigationService.PropertyChanged += (s, e) =>
+        _apiService = apiService;
+        _tokenStorageService = tokenStorageService;
+
+        _navigationService = navigationService;
+        _navigationService.NavigateTo<LoginViewModel>();
+        _navigationService.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(NavigationService.CurrentView))
+            if (e.PropertyName == nameof(_navigationService.CurrentView))
             {
                 OnPropertyChanged(nameof(CurrentView));
             }
         };
-
-        LoadInitialData();
     }
 
     #endregion
@@ -72,16 +77,31 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string _newMessage = string.Empty;
 
-    private HubConnection _hubConnection;
+    private HubConnection? _hubConnection;
 
-    public object? CurrentView => NavigationService.CurrentView;
+    public object? CurrentView => _navigationService.CurrentView;
 
     #endregion
 
     #region Methods
 
-    private void LoadInitialData()
+    public async Task LoadInitialData()
     {
+        try
+        {
+            var token = _tokenStorageService.LoadToken();
+            if (token == null) throw new Exception("token was null");
+
+            var servers = await _apiService.GetServersAsync(token);
+            Servers = new ObservableCollection<ServerViewModel>(servers);
+            var channels = servers.SelectMany(s => s.Channels);
+            Channels = new ObservableCollection<ChannelViewModel>(channels);
+
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
     }
 
     private async void InitializeHubConnection()
@@ -106,6 +126,8 @@ public partial class MainViewModel : ViewModelBase
 
     private async Task SelectServer(ServerViewModel server)
     {
+        if (_hubConnection == null) return;
+
         SelectedServer = server;
         Channels.Clear();
 

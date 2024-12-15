@@ -24,29 +24,42 @@
 		<Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}" Margin="10" CornerRadius="8">
 			<StackPanel>
 				<TextBlock Text="Servers" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+
+				<!-- Underline effect... pretty weird -->
 				<ListBox Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          BorderBrush="{DynamicResource AccentBrush}"
                          BorderThickness="1"
-                         Margin="10,0,10,10"
-                         SelectionMode="Single">
+                         Margin="10,0,10,10" />
+
+				<!-- Actual list box -->
+				<ListBox Background="{DynamicResource InputBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Margin="5,0,10,10"
+                         SelectionMode="Single"
+						 ItemsSource="{Binding Servers}">
+					<ListBox.Styles>
+						<Style Selector="ListBoxItem">
+							<Setter Property="Padding" Value="5,0,0,0" />
+							<Setter Property="Margin" Value="0" />
+							<Setter Property="HorizontalContentAlignment" Value="Stretch" />
+							<Setter Property="VerticalContentAlignment" Value="Center" />
+						</Style>
+					</ListBox.Styles>
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Button Content="Server Name"
-								Background="Transparent" 
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								HorizontalAlignment="Stretch"
-								Padding="5">
-								<Button.Styles>
-									<Style Selector="Button:hover">
+							<TextBlock Text="{Binding Name}"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Left"
+									   FontSize="12"
+									   Foreground="{DynamicResource PrimaryTextBrush}">
+								<TextBlock.Styles>
+									<Style Selector="TextBlock:hover">
 										<Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}" />
-									</Style>
-									<Style Selector="Button:pressed">
-										<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
 									</Style>
-								</Button.Styles>
-							</Button>
+								</TextBlock.Styles>
+							</TextBlock>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>

@@ -1,10 +1,13 @@
 ﻿using Sharply.Client.ViewModels;
+using Sharply.Shared;
 using Sharply.Shared.Requests;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-
 
 namespace Sharply.Client.Services;
 
@@ -27,7 +30,7 @@ public class ApiService
             Password = password
         };
 
-        var response = await _client.PostAsJsonAsync("auth/register", registerRequest);
+        var response = await _client.PostAsJsonAsync("api/auth/register", registerRequest);
 
         if (response.IsSuccessStatusCode)
         {
@@ -39,6 +42,7 @@ public class ApiService
 
                 return new UserViewModel
                 {
+                    Id = registerResponse.Id,
                     Username = registerResponse.Username,
                 };
             }
@@ -56,7 +60,7 @@ public class ApiService
             Password = password
         };
 
-        var response = await _client.PostAsJsonAsync("auth/login", loginRequest);
+        var response = await _client.PostAsJsonAsync("api/auth/login", loginRequest);
 
         if (response.IsSuccessStatusCode)
         {
@@ -67,11 +71,46 @@ public class ApiService
 
                 return new UserViewModel
                 {
+                    Id = loginResponse.Id,
                     Username = loginResponse.Username,
                 };
             }
         }
 
         throw new Exception("Login failed. Please check your credentials.");
+    }
+
+    public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.GetAsync("api/servers/get-user-servers");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ServerViewModel>>>();
+
+            if (result != null && result.Success)
+            {
+                var viewModels = result.Data?.Select(serverDto => new ServerViewModel
+                {
+                    Id = serverDto.Id,
+                    Name = serverDto.Name,
+                    Channels = serverDto.Channels.Select(channelDto => new ChannelViewModel
+                    {
+                        Id = channelDto.Id,
+                        Name = channelDto.Name,
+                        ServerId = channelDto.ServerId,
+                    }).ToList()
+                }).ToList();
+
+                return viewModels ?? new List<ServerViewModel>();
+            }
+            else
+            {
+                throw new Exception(result?.Error ?? "Unknown error occurred.");
+            }
+        }
+
+        throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
     }
 }

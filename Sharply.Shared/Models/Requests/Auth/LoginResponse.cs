@@ -6,6 +6,11 @@ namespace Sharply.Shared.Requests;
 public class LoginResponse
 {
     /// <summary>
+    /// The Id of the authenticated user.
+    /// </summary>
+    public required int Id { get; set; }
+
+    /// <summary>
     /// The username of the authenticated user.
     /// </summary>
     public required string Username { get; set; }

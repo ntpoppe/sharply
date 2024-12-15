@@ -14,7 +14,7 @@ using System.Text;
 /// API controller for handling user authentication and registration
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly SharplyDbContext _context;
@@ -73,7 +73,11 @@ public class AuthController : ControllerBase
         var key = Encoding.UTF8.GetBytes(_jwtKey);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, user.Username) }),
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+            }),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
@@ -86,6 +90,7 @@ public class AuthController : ControllerBase
         // Send response
         return Ok(new RegisterResponse
         {
+            Id = user.Id,
             Username = user.Username,
             Token = tokenString
         });
@@ -126,6 +131,7 @@ public class AuthController : ControllerBase
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
             }),
             Expires = DateTime.UtcNow.AddDays(7),
@@ -137,6 +143,7 @@ public class AuthController : ControllerBase
         // Send response
         return Ok(new LoginResponse
         {
+            Id = user.Id,
             Username = user.Username,
             Token = tokenString
         });
@@ -165,7 +172,7 @@ public class AuthController : ControllerBase
         var defaultChannels = await _serverService.GetChannelsForServerAsync(serverId);
         if (defaultChannels == null) return;
 
-        var userChannels = await _userService.GetChannelsForUserAsync(userId);
+        var userChannels = await _userService.GetDBChannelsForUserAsync(userId);
 
         var channelsToAdd = defaultChannels
             .Where(defaultChannel => !userChannels.Any(userChannel => userChannel.Id == defaultChannel.Id))

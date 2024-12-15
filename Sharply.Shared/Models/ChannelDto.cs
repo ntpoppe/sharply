@@ -1,7 +1,7 @@
 ﻿public class ChannelDto
 {
-    public required string Id { get; set; }
+    public required int Id { get; set; }
     public required string Name { get; set; }
-    public required string ServerId { get; set; }
+    public required int ServerId { get; set; }
 }
 

@@ -64,7 +64,7 @@ public class MessageHub : Hub
     /// Sends a message to all users in a specific channel group and saves it to the database.
     /// </summary>
     /// <param name="channelId">The ID of the channel to send the message to.</param>
-    /// <param name="username">The username of the sender.</param>
+    /// <param name="userId">The username of the sender.</param>
     /// <param name="content">The content of the message.</param>
     public async Task SendMessageToChannel(string channelId, string userId, string content)
     {

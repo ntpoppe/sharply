@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sharply.Server.Data;
 using Sharply.Server.Models;
+using Sharply.Server.Services;
 using Sharply.Shared.Requests;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,6 +18,9 @@ using System.Text;
 public class AuthController : ControllerBase
 {
     private readonly SharplyDbContext _context;
+    private readonly UserService _userService;
+    private readonly ServerService _serverService;
+    private readonly ChannelService _channelService;
     private readonly string _jwtKey;
 
     /// <summary>
@@ -24,9 +28,17 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="context">The application database context.</param>
     /// <param name="configuration">Contains the secret key for JWT signing.</param>
-    public AuthController(SharplyDbContext context, IConfiguration configuration)
+    public AuthController(
+        SharplyDbContext context,
+        UserService userService,
+        ServerService serverService,
+        ChannelService channelService,
+        IConfiguration configuration)
     {
         _context = context;
+        _userService = userService;
+        _serverService = serverService;
+        _channelService = channelService;
         _jwtKey = configuration["Jwt:Key"] ?? "DEFAULT";
     }
 
@@ -67,6 +79,9 @@ public class AuthController : ControllerBase
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
+
+        // Join default server/channel(s)
+
 
         // Send response
         return Ok(new RegisterResponse
@@ -119,6 +134,8 @@ public class AuthController : ControllerBase
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
+        await EnsureDefaultServerAssignmentAsync(user.Id);
+
         // Send response
         return Ok(new LoginResponse
         {
@@ -132,39 +149,31 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public async Task EnsureDefaultServerAssignment(int userId)
+    public async Task EnsureDefaultServerAssignmentAsync(int userId)
     {
-        var defaultServer = await _context.Servers.FirstOrDefaultAsync(s => s.Name == "Global");
+        var defaultServer = await _context.Servers.FirstOrDefaultAsync(s => s.Id == 1);
         if (defaultServer == null) return;
 
         var userServer = await _context.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
         if (userServer == null)
         {
-            _context.UserServers.Add(new UserServer
-            {
-                UserId = userId,
-                ServerId = defaultServer.Id
-            });
-            await _context.SaveChangesAsync();
+            await _userService.AddUserToServerAsync(userId, defaultServer.Id);
+            await EnsureDefaultChannelAssignmentAsync(defaultServer.Id, userId);
         }
     }
 
-    //public async Task JoinDefaultChannel(int userId)
-    //{
-    //    var generalChannel = await _context.Channels.FirstOrDefaultAsync(c => c.Name == "General");
-    //    if (generalChannel == null) return;
+    public async Task EnsureDefaultChannelAssignmentAsync(int serverId, int userId)
+    {
+        var defaultChannels = await _serverService.GetChannelsForServerAsync(serverId);
+        if (defaultChannels == null) return;
 
-    //    var userChannel = await _context.UserChannels.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ChannelId == generalChannel.Id);
-    //    if (userChannel == null)
-    //    {
-    //        _context.UserChannels.Add(new UserChannel
-    //        {
-    //            UserId = userId,
-    //            ChannelId = generalChannel.Id
-    //        });
-    //        await _context.SaveChangesAsync();
-    //    }
+        var userChannels = await _userService.GetChannelsForUserAsync(userId);
 
-    //    await Groups.AddToGroupAsync(Context.ConnectionId, generalChannel.Id.ToString());
-    //}
+        var channelsToAdd = defaultChannels
+            .Where(defaultChannel => !userChannels.Any(userChannel => userChannel.Id == defaultChannel.Id))
+            .ToList();
+
+        foreach (var channel in channelsToAdd)
+            await _channelService.AddUserToChannel(userId, channel.Id);
+    }
 }

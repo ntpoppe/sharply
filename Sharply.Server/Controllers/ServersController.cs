@@ -14,7 +14,7 @@ public class ServersController : ControllerBase
     }
 
     [HttpPost("{serverId}/users")]
-    public async Task<IActionResult> AddUserToServer(string serverId, [FromBody] AddUserRequest request)
+    public async Task<IActionResult> AddUserToServer(int serverId, [FromBody] AddUserRequest request)
     {
         try
         {

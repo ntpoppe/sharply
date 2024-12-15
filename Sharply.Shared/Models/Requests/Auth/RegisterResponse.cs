@@ -6,6 +6,11 @@ namespace Sharply.Shared.Requests;
 public class RegisterResponse
 {
     /// <summary>
+    /// The Id of the registered user.
+    /// </summary>
+    public required int Id { get; set; }
+
+    /// <summary>
     /// The username of the registered user.
     /// </summary>
     public required string Username { get; set; }

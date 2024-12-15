@@ -8,8 +8,8 @@ public partial class ChannelViewModel : ObservableObject
     private string? _name;
 
     [ObservableProperty]
-    private string? _id;
+    private int? _id;
 
     [ObservableProperty]
-    private string? _serverId;
+    private int? _serverId;
 }

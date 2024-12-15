@@ -18,7 +18,7 @@ public class Server
     /// <summary>
     /// Gets or sets a collection of channels contained by the server.
     /// </summary>
-    public ICollection<Channel>? Channels { get; set; }
+    public ICollection<Channel> Channels { get; set; } = new List<Channel>();
 
     /// <summary>
     /// A collection of users that are in this server.

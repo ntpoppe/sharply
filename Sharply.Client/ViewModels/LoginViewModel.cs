@@ -56,7 +56,7 @@ public partial class LoginViewModel : ViewModelBase
             var user = await _apiService.LoginAsync(Username, Password);
 
             if (user != null)
-                OnLoginSuccess(user);
+                await OnLoginSuccess(user);
             else
                 OnLoginFailed("Login failed. Please check your credentials.");
         }
@@ -80,11 +80,11 @@ public partial class LoginViewModel : ViewModelBase
     }
 
 
-    private void OnLoginSuccess(UserViewModel user)
+    private async Task OnLoginSuccess(UserViewModel user)
     {
-        // Example: Navigate to the main view
-        Debug.WriteLine($"Login successful. Welcome, {user.Username}!");
-        _navigationService.NavigateTo<MainViewModel>();
+        var mainViewModel = _navigationService.NavigateTo<MainViewModel>();
+        if (mainViewModel is MainViewModel vm)
+            await vm.LoadInitialData();
     }
 
     private void OnLoginFailed(string errorMessage)

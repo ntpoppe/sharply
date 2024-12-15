@@ -4,6 +4,8 @@ namespace Sharply.Client.ViewModels;
 
 public partial class UserViewModel : ObservableObject
 {
-	[ObservableProperty]
-	private string? _username;
+    public required int Id { get; set; }
+
+    [ObservableProperty]
+    private string? _username;
 }

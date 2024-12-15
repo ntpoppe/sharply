@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sharply.Server.Data;
 using Sharply.Server.Models;
-using Sharply.Shared.Models;
+using Sharply.Shared.Requests;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -125,4 +126,45 @@ public class AuthController : ControllerBase
             Token = tokenString
         });
     }
+
+    /// <summary>
+    /// Ensures a user logging in has access to the default global server.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public async Task EnsureDefaultServerAssignment(int userId)
+    {
+        var defaultServer = await _context.Servers.FirstOrDefaultAsync(s => s.Name == "Global");
+        if (defaultServer == null) return;
+
+        var userServer = await _context.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
+        if (userServer == null)
+        {
+            _context.UserServers.Add(new UserServer
+            {
+                UserId = userId,
+                ServerId = defaultServer.Id
+            });
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    //public async Task JoinDefaultChannel(int userId)
+    //{
+    //    var generalChannel = await _context.Channels.FirstOrDefaultAsync(c => c.Name == "General");
+    //    if (generalChannel == null) return;
+
+    //    var userChannel = await _context.UserChannels.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ChannelId == generalChannel.Id);
+    //    if (userChannel == null)
+    //    {
+    //        _context.UserChannels.Add(new UserChannel
+    //        {
+    //            UserId = userId,
+    //            ChannelId = generalChannel.Id
+    //        });
+    //        await _context.SaveChangesAsync();
+    //    }
+
+    //    await Groups.AddToGroupAsync(Context.ConnectionId, generalChannel.Id.ToString());
+    //}
 }

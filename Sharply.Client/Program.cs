@@ -5,6 +5,7 @@ using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
 using System;
+using System.Net.Http;
 
 
 namespace Sharply.Client;
@@ -38,7 +39,21 @@ sealed class Program
         var services = new ServiceCollection();
 
         services.AddSingleton<INavigationService, NavigationService>();
-        services.AddTransient<ViewModelBase>();
+        services.AddSingleton<TokenStorageService>();
+        services.AddSingleton<HttpClient>(provider =>
+        {
+            var handler = new HttpClientHandler
+            {
+                // TODO: Disable this in production
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+            return new HttpClient(handler)
+            {
+                BaseAddress = new Uri("https://localhost:8001/")
+            };
+        });
+        services.AddSingleton<ApiService>();
+
         services.AddTransient<MainViewModel>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegisterViewModel>();

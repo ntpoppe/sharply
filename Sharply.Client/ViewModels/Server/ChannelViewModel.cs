@@ -4,12 +4,12 @@ namespace Sharply.Client.ViewModels;
 
 public partial class ChannelViewModel : ObservableObject
 {
-	[ObservableProperty]
-	private string? _name;
+    [ObservableProperty]
+    private string? _name;
 
-	[ObservableProperty]
-	private int? _id;
+    [ObservableProperty]
+    private string? _id;
 
-	[ObservableProperty]
-	private int? _serverId;
+    [ObservableProperty]
+    private string? _serverId;
 }

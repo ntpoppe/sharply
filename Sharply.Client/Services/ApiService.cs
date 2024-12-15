@@ -1,5 +1,5 @@
-﻿using Sharply.Client.Models;
-using Sharply.Shared.Models;
+﻿using Sharply.Client.ViewModels;
+using Sharply.Shared.Requests;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -11,19 +11,15 @@ namespace Sharply.Client.Services;
 public class ApiService
 {
     private readonly HttpClient _client;
+    private readonly TokenStorageService _tokenStorageService;
 
-    public ApiService(HttpClientHandler handler)
+    public ApiService(HttpClient client, TokenStorageService tokenStorageService)
     {
-        _client = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://localhost:8001/")
-        };
+        _client = client;
+        _tokenStorageService = tokenStorageService;
     }
 
-	public ApiService(HttpClient client)
-		=> _client = client;
-
-    public async Task<User?> RegisterAsync(string username, string password)
+    public async Task<UserViewModel> RegisterAsync(string username, string password)
     {
         var registerRequest = new RegisterRequest
         {
@@ -38,10 +34,12 @@ public class ApiService
             var registerResponse = await response.Content.ReadFromJsonAsync<RegisterResponse>();
             if (registerResponse != null)
             {
-                return new User
+
+                await _tokenStorageService.SaveTokenAsync(registerResponse.Token);
+
+                return new UserViewModel
                 {
                     Username = registerResponse.Username,
-                    Token = registerResponse.Token
                 };
             }
         }
@@ -50,9 +48,8 @@ public class ApiService
         throw new Exception($"Registration failed. Please try again. {errorMessage}");
     }
 
-    public async Task<User?> LoginAsync(string username, string password)
+    public async Task<UserViewModel> LoginAsync(string username, string password)
     {
-
         var loginRequest = new LoginRequest
         {
             Username = username,
@@ -66,10 +63,11 @@ public class ApiService
             var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponse>();
             if (loginResponse != null)
             {
-                return new User
+                await _tokenStorageService.SaveTokenAsync(loginResponse.Token);
+
+                return new UserViewModel
                 {
                     Username = loginResponse.Username,
-                    Token = loginResponse.Token
                 };
             }
         }

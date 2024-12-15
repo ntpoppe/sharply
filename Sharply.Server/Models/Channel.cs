@@ -33,4 +33,9 @@ public class Channel
     /// Gets or sets a collection of messages contained by the channel.
     /// </summary>
     public ICollection<Message> Messages { get; set; } = new List<Message>();
+
+    /// <summary>
+    /// A collection of users in this channel.
+    /// </summary>
+    public ICollection<UserChannel> UserChannels { get; set; } = new List<UserChannel>();
 }

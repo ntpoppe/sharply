@@ -1,9 +1,9 @@
-namespace Sharply.Shared.Models;
+namespace Sharply.Shared.Requests;
 
 /// <summary>
-/// Represents the data required for user login.
+/// Represents the data required for user registration.
 /// </summary>
-public class LoginRequest
+public class RegisterRequest
 {
     /// <summary>
     /// The username of the user.

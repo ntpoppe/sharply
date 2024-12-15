@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Models;
 using Sharply.Client.Services;
 using System;
 using System.Diagnostics;
@@ -12,10 +11,14 @@ namespace Sharply.Client.ViewModels;
 
 public partial class LoginViewModel : ViewModelBase
 {
+    private readonly ApiService _apiService;
+    private readonly INavigationService _navigationService;
+
     #region Constructors
 
-    public LoginViewModel(INavigationService navigationService)
+    public LoginViewModel(ApiService apiService, INavigationService navigationService)
     {
+        _apiService = apiService;
         _navigationService = navigationService;
     }
 
@@ -23,7 +26,6 @@ public partial class LoginViewModel : ViewModelBase
 
     #region Properties
 
-    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private string? _username;
@@ -37,15 +39,13 @@ public partial class LoginViewModel : ViewModelBase
     [RelayCommand]
     private async Task LoginAsync()
     {
-		var handler = new HttpClientHandler
-		{
-			// TODO: This needs to be disabled upon "production".
-			ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
-		};
+        var handler = new HttpClientHandler
+        {
+            // TODO: This needs to be disabled upon "production".
+            ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
+        };
 
         // Call API service to authenticate
-        var apiService = new ApiService(handler);
-
         try
         {
             // Validate input
@@ -53,7 +53,7 @@ public partial class LoginViewModel : ViewModelBase
                 throw new Exception("Username or password cannot be empty.");
 
             // Attempt to log in
-            var user = await apiService.LoginAsync(Username, Password);
+            var user = await _apiService.LoginAsync(Username, Password);
 
             if (user != null)
                 OnLoginSuccess(user);
@@ -80,7 +80,7 @@ public partial class LoginViewModel : ViewModelBase
     }
 
 
-    private void OnLoginSuccess(User user)
+    private void OnLoginSuccess(UserViewModel user)
     {
         // Example: Navigate to the main view
         Debug.WriteLine($"Login successful. Welcome, {user.Username}!");

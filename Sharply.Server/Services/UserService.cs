@@ -1,59 +1,65 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
 using Sharply.Server.Models;
 using Sharply.Shared.Models;
 
 namespace Sharply.Server.Services;
+
+/// <summary>
+/// Handles operations related to servers, such as creating, retrieving, updating, or deleting servers and their related data (e.g., channels within servers).
+/// </summary>
 public class UserService
 {
     private readonly SharplyDbContext _context;
+    private readonly IMapper _mapper;
+    private readonly ServerService _serverService;
 
-    public UserService(SharplyDbContext context)
-        => _context = context;
-
-    public async Task AddUserToServerAsync(int userId, int serverId)
+    public UserService(SharplyDbContext context, IMapper mapper, ServerService serverService)
     {
-        var server = await _context.Servers.FindAsync(serverId);
-        if (server == null) throw new Exception("Server not found");
+        _context = context;
+        _mapper = mapper;
+        _serverService = serverService;
+    }
+
+    /// <summary>
+    /// Adds a user to a server.
+    /// </summary>
+    public async Task AddUserToServerAsync(int userId, int serverId, CancellationToken cancellationToken = default)
+    {
+        var serverExists = await _context.Servers.AnyAsync(s => s.Id == serverId, cancellationToken);
+        if (!serverExists)
+            throw new Exception("Server not found");
 
         var userServer = new UserServer
         {
             UserId = userId,
-            ServerId = server.Id
+            ServerId = serverId
         };
 
         _context.UserServers.Add(userServer);
-        await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<List<ServerDto>> GetServersForUserAsync(int userId)
+    /// <summary>
+    /// Retrieves all servers for a user.
+    /// </summary>
+    public async Task<List<ServerDto>> GetServersForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var servers = await _context.Servers
-             .Include(s => s.Channels)
-             .ThenInclude(c => c.UserChannels)
-             .Where(s => s.UserServers.Any(us => us.UserId == userId))
-             .ToListAsync();
-
-        var serverDtos = servers.Select(server => new ServerDto
-        {
-            Id = server.Id,
-            Name = server.Name,
-            Channels = server.Channels?
-                .Where(c => c.UserChannels.Any(uc => uc.UserId == userId))
-                .Select(channel => new ChannelDto
-                {
-                    Id = channel.Id,
-                    Name = channel.Name,
-                    ServerId = server.Id
-                }).ToList() ?? new List<ChannelDto>()
-        }).ToList();
-
-        return serverDtos;
+        var servers = await _serverService.GetServersWithChannelsForUserAsync(userId, cancellationToken);
+        return servers;
     }
 
-    public async Task<List<Channel>> GetDBChannelsForUserAsync(int userId)
-        => await _context.UserChannels
+    /// <summary>
+    /// Retrieves all channels a user belongs to.
+    /// </summary>
+    public async Task<List<ChannelDto>> GetChannelsForUserAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var channels = await _context.UserChannels
             .Where(uc => uc.UserId == userId)
             .Select(uc => uc.Channel)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
+
+        return _mapper.Map<List<ChannelDto>>(channels);
+    }
 }

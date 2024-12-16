@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Sharply.Server.Automapper;
 using Sharply.Server.Data;
 using Sharply.Server.Services;
 using Sharply.Server.SignalR;
@@ -70,6 +71,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // Controllers
     services.AddControllers();
+
+    // AutoMapper
+    services.AddAutoMapper(typeof(MappingProfile));
 
     // SignalR
     services.AddSignalR();

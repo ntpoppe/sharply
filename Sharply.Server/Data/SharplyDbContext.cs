@@ -35,9 +35,15 @@ public class SharplyDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Message>()
-            .HasOne(m => m.User) // A message has one user
-            .WithMany(u => u.Messages) // A user has many messages
-            .HasForeignKey(m => m.UserId); // Foreign key property in Message
+            .HasOne(m => m.User)
+            .WithMany(u => u.Messages)
+            .HasForeignKey(m => m.UserId);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Channel)
+            .WithMany(c => c.Messages)
+            .HasForeignKey(m => m.ChannelId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Models.Server>()
             .HasMany(s => s.Channels)
@@ -57,11 +63,9 @@ public class SharplyDbContext : DbContext
             .WithMany(c => c.UserChannels)
             .HasForeignKey(uc => uc.ChannelId);
 
-        // Configure composite primary key
         modelBuilder.Entity<UserServer>()
             .HasKey(us => new { us.UserId, us.ServerId });
 
-        // Configure relationships
         modelBuilder.Entity<UserServer>()
             .HasOne(us => us.User)
             .WithMany(u => u.UserServers)
@@ -71,7 +75,6 @@ public class SharplyDbContext : DbContext
             .HasOne(us => us.Server)
             .WithMany(s => s.UserServers)
             .HasForeignKey(us => us.ServerId);
-
 
         modelBuilder.Entity<Models.Server>().HasData(new Models.Server { Id = 1, Name = "Global" });
         modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });

@@ -1,43 +1,48 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.AspNetCore.SignalR.Client;
 using Sharply.Client.Interfaces;
+using Sharply.Client.Services;
+using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly INavigationService NavigationService;
+    private readonly ApiService _apiService;
+    private readonly TokenStorageService _tokenStorageService;
+    private readonly INavigationService _navigationService;
 
     #region Constructors
 
-    public MainViewModel(INavigationService navigationService)
+    public MainViewModel(ApiService apiService, TokenStorageService tokenStorageService, INavigationService navigationService)
     {
-        SelectServerCommand = new RelayCommand<ServerViewModel>(SelectServer);
-        AddServerCommand = new RelayCommand(AddServer);
-        SelectChannelCommand = new RelayCommand<ChannelViewModel>(SelectChannel);
         AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
 
-        NavigationService = navigationService;
-        NavigationService.NavigateTo<LoginViewModel>();
-        NavigationService.PropertyChanged += (s, e) =>
+        _apiService = apiService;
+        _tokenStorageService = tokenStorageService;
+
+        _navigationService = navigationService;
+        _navigationService.NavigateTo<LoginViewModel>();
+        _navigationService.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(NavigationService.CurrentView))
+            if (e.PropertyName == nameof(_navigationService.CurrentView))
             {
                 OnPropertyChanged(nameof(CurrentView));
             }
         };
 
-        LoadInitialData();
+        IsServerSelected = false;
     }
 
     #endregion
 
     #region Commands
-    public IRelayCommand SelectServerCommand { get; }
-    public IRelayCommand AddServerCommand { get; }
-    public IRelayCommand SelectChannelCommand { get; }
     public IRelayCommand AddChannelCommand { get; }
     public IRelayCommand SendMessageCommand { get; }
     #endregion
@@ -46,132 +51,128 @@ public partial class MainViewModel : ViewModelBase
 
     public string Title { get; } = "Sharply";
 
-    // Collections
     [ObservableProperty]
-    private ObservableCollection<ServerViewModel> _servers = new ObservableCollection<ServerViewModel>();
+    private ObservableCollection<ServerViewModel> _servers = new();
 
     [ObservableProperty]
     private ServerViewModel? _selectedServer;
 
     [ObservableProperty]
-    private ObservableCollection<ChannelViewModel> _channels = new ObservableCollection<ChannelViewModel>();
+    private bool _isServerSelected;
+
+    [ObservableProperty]
+    private ObservableCollection<ChannelViewModel> _channels = new();
 
     [ObservableProperty]
     private ChannelViewModel? _selectedChannel;
 
     [ObservableProperty]
-    private ObservableCollection<MessageViewModel> _messages = new ObservableCollection<MessageViewModel>();
+    private ObservableCollection<MessageViewModel> _messages = new();
 
     [ObservableProperty]
-    private ObservableCollection<UserViewModel> _onlineUsers = new ObservableCollection<UserViewModel>();
+    private ObservableCollection<UserViewModel> _onlineUsers = new();
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
+
+    [ObservableProperty]
+    private string _channelDisplayName;
+
+    private HubConnection? _hubConnection;
+
+    public object? CurrentView => _navigationService.CurrentView;
 
     #endregion
 
     #region Methods
 
-    private void LoadInitialData()
+    public async Task LoadInitialData()
     {
-        // Add a default global server
-        var globalServer = new ServerViewModel { Name = "Global" };
-        Servers.Add(globalServer);
-        SelectedServer = globalServer;
+        try
+        {
+            var token = _tokenStorageService.LoadToken();
+            if (token == null) throw new Exception("token was null");
 
-        // Add a default global channel
-        var globalChannel = new ChannelViewModel { Name = "General" };
-        Channels.Add(globalChannel);
-        SelectedChannel = globalChannel;
+            var servers = await _apiService.GetServersAsync(token);
+            Servers = new ObservableCollection<ServerViewModel>(servers);
+            var channels = servers.SelectMany(s => s.Channels);
+            Channels = new ObservableCollection<ChannelViewModel>(channels);
 
-        // Add some default online users
-        OnlineUsers.Add(new UserViewModel { Username = "Alice" });
-        OnlineUsers.Add(new UserViewModel { Username = "Bob" });
-
-        // Add some default messages
-        Messages.Add(new MessageViewModel { Username = "Alice", Content = "Welcome to Sharply!" });
-        Messages.Add(new MessageViewModel { Username = "Bob", Content = "Hello everyone!" });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
     }
 
-    private void SelectServer(ServerViewModel server)
+    private async void InitializeHubConnection()
     {
-        SelectedServer = server;
-        // Load channels for the selected server
-        Channels.Clear();
-        Channels.Add(new ChannelViewModel { Name = "General" });
-        SelectedChannel = Channels[0];
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("https://localhost:8001/hubs/messages")
+            .Build();
+
+        // Listen for incoming messages
+        _hubConnection.On<string, string, DateTime>("ReceiveMessage", (username, content, timestamp) =>
+        {
+            Messages.Add(new MessageViewModel
+            {
+                Username = username,
+                Content = content,
+                Timestamp = timestamp
+            });
+        });
+
+        await _hubConnection.StartAsync();
     }
 
     private void AddServer()
     {
-        // Logic to add a new server
-        var newServer = new ServerViewModel { Name = "New Server" };
-        Servers.Add(newServer);
-        SelectedServer = newServer;
-    }
-
-    private void SelectChannel(ChannelViewModel channel)
-    {
-        SelectedChannel = channel;
-        // Load messages and online users for the selected channel
-        Messages.Clear();
-        OnlineUsers.Clear();
-
-        // Simulate loading messages and users
-        Messages.Add(new MessageViewModel { Username = "Alice", Content = "Welcome to the new channel!" });
-        OnlineUsers.Add(new UserViewModel { Username = "Alice" });
     }
 
     private void AddChannel()
     {
-        // Logic to add a new channel
-        var newChannel = new ChannelViewModel { Name = "New Channel" };
-        Channels.Add(newChannel);
-        SelectedChannel = newChannel;
     }
 
     private void SendMessage()
     {
-        if (!string.IsNullOrWhiteSpace(NewMessage))
-        {
-            Messages.Add(new MessageViewModel { Username = "You", Content = NewMessage });
-            NewMessage = string.Empty;
+        var messageToSend = NewMessage;
+        Debug.WriteLine(messageToSend);
+    }
 
-            // Scroll to the latest message if using ScrollViewer
-        }
+    partial void OnSelectedServerChanged(ServerViewModel? value)
+    {
+        if (value == null) return;
+
+        Channels.Clear();
+        Channels = new ObservableCollection<ChannelViewModel>(value.Channels);
+        if (Channels.Any())
+            SelectedChannel = value.Channels.First();
+
+        IsServerSelected = value != null;
+    }
+
+    partial void OnSelectedChannelChanged(ChannelViewModel? value)
+    {
+        if (value == null) return;
+
+        Messages.Clear();
+        if (value.Messages.Any())
+            Messages = new ObservableCollection<MessageViewModel>(value.Messages);
+
+        SetChannelDisplay();
+    }
+
+    public void SetChannelDisplay()
+    {
+        if (SelectedServer == null)
+            ChannelDisplayName = "unknown";
+
+        if (SelectedChannel == null)
+            ChannelDisplayName = $"{SelectedServer.Name}/~unknown";
+
+        ChannelDisplayName = $"{SelectedServer.Name}/#{SelectedChannel.Name}";
     }
 
     #endregion
 
-    #region View Models, Move to own file eventually
-
-    public partial class ServerViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _name = string.Empty;
-    }
-
-    public partial class ChannelViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _name = string.Empty;
-    }
-
-    public partial class MessageViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _username = string.Empty;
-
-        [ObservableProperty]
-        private string _content = string.Empty;
-    }
-
-    public partial class UserViewModel : ObservableObject
-    {
-        [ObservableProperty]
-        private string _username = string.Empty;
-    }
-
-    public object? CurrentView => NavigationService.CurrentView;
-    #endregion
 }

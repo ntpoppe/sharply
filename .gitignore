@@ -5,7 +5,7 @@
 
 # Custom
 secrets.json
-*.db
+*.db*
 Sharply.Server/Migrations/
 
 # User-specific files

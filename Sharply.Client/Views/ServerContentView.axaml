@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:Sharply.Client.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Sharply.Client.Views.ServerContentView"
+             x:DataType="viewModels:MainViewModel">
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="140" />
+			<!-- Channels -->
+			<ColumnDefinition Width="*" />
+			<!-- Chat Window -->
+			<ColumnDefinition Width="160" />
+			<!-- Online users -->
+		</Grid.ColumnDefinitions>
+
+		<!-- Channels List -->
+		<Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
+			<StackPanel>
+				<TextBlock Text="Channels" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+
+				<!-- "Underline" with listbox-->
+				<ListBox Background="{DynamicResource InputBackgroundBrush}"
+					 Foreground="{DynamicResource PrimaryTextBrush}"
+					 BorderBrush="{DynamicResource AccentBrush}"
+					 BorderThickness="1"
+					 Margin="10,0,10,10" />
+
+				<!-- Actual listbox -->
+				<ListBox ItemsSource="{Binding Channels}"
+                         SelectedItem="{Binding SelectedChannel}"
+                         Background="{DynamicResource InputBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Margin="10,0,10,10"
+                         SelectionMode="Single">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Name}"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Left"
+									   FontSize="12"
+									   Foreground="{DynamicResource PrimaryTextBrush}">
+								<TextBlock.Styles>
+									<Style Selector="TextBlock:hover">
+										<Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}" />
+										<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+									</Style>
+								</TextBlock.Styles>
+							</TextBlock>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</StackPanel>
+		</Border>
+
+		<!-- Chat Window -->
+		<Border Grid.Column="1" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
+			<Grid>
+				<Grid.RowDefinitions>
+					<!-- Display Name -->
+					<RowDefinition Height="Auto" />
+					<!-- Chat Messages -->
+					<RowDefinition Height="*" />
+					<!-- Message Input -->
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+
+				<!-- Channel Display Name -->
+				<TextBlock Grid.Row="0"
+						   Text="{Binding ChannelDisplayName}"
+						   Foreground="{DynamicResource PrimaryTextBrush}"
+						   FontWeight="Bold"
+						   Margin="10,10,10,5"
+						   FontSize="16" />
+
+				<!-- Chat Messages -->
+				<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10">
+					<ItemsControl ItemsSource="{Binding Messages}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate>
+								<Border Background="{DynamicResource SecondaryAccentBrush}"
+										CornerRadius="4"
+										Padding="10"
+										Margin="0,0,0,5">
+									<StackPanel>
+										<TextBlock Text="{Binding Username}"
+												   FontWeight="Bold"
+												   Foreground="{DynamicResource PrimaryTextBrush}" />
+										<TextBlock Text="{Binding Content}"
+												   Foreground="{DynamicResource PrimaryTextBrush}"
+												   TextWrapping="Wrap" />
+									</StackPanel>
+								</Border>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
+
+				<!-- Message Input -->
+				<Grid Grid.Row="2" Margin="10">
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*" />
+						<ColumnDefinition Width="Auto" />
+					</Grid.ColumnDefinitions>
+					<TextBox Grid.Column="0"
+							 Text="{Binding NewMessage, UpdateSourceTrigger=PropertyChanged}"
+							 Watermark="Type your message..."
+							 Background="{DynamicResource InputBackgroundBrush}"
+							 Foreground="{DynamicResource PrimaryTextBrush}"
+							 BorderBrush="{DynamicResource AccentBrush}"
+							 BorderThickness="1"
+							 CornerRadius="4"
+							 VerticalAlignment="Center"
+							 Margin="0,0,10,0" />
+					<Button Grid.Column="1"
+							Content="Send"
+							Command="{Binding SendMessageCommand}"
+							Background="{DynamicResource AccentBrush}"
+							Foreground="{DynamicResource PrimaryTextBrush}"
+							Padding="10,5"
+							CornerRadius="4"
+							VerticalAlignment="Center"
+							HorizontalAlignment="Right"/>
+				</Grid>
+			</Grid>
+		</Border>
+
+		<!-- Online Users -->
+		<Border Grid.Column="2" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
+			<StackPanel>
+				<TextBlock Text="Online Users" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+
+				<!-- "Underline" with listbox-->
+				<ListBox Background="{DynamicResource InputBackgroundBrush}"
+					 Foreground="{DynamicResource PrimaryTextBrush}"
+					 BorderBrush="{DynamicResource AccentBrush}"
+					 BorderThickness="1"
+					 Margin="10,0,10,10" />
+
+				<!-- Actual listbox -->
+				<ListBox ItemsSource="{Binding OnlineUsers}"
+                         Background="{DynamicResource InputBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Margin="10,0,10,10"
+                         SelectionMode="Single">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding Username}" />
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</StackPanel>
+		</Border>
+	</Grid>
+</UserControl>

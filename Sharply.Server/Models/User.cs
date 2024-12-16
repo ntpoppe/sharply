@@ -13,6 +13,7 @@ public class User
     /// </remarks>
     public int Id { get; set; }
 
+
     /// <summary>
     /// Gets or sets the username of the user.
     /// </summary>
@@ -30,9 +31,18 @@ public class User
     /// </remarks>
     public string? PasswordHash { get; set; }
 
+    /// <summary>
+    /// A collection of messages sent by the user. Navigation property.
+    /// </summary>
+    public ICollection<Message>? Messages { get; set; }
 
-	/// <summary>
-	/// A collection of messages sent by the user. Navigation property.
-	/// </summary>
-	public ICollection<Message>? Messages { get; set; }
+    /// <summary>
+    /// A collection of servers the user is in.
+    /// </summary>
+    public ICollection<UserServer> UserServers { get; set; } = new List<UserServer>();
+
+    /// <summary>
+    /// A collection of channels the user is in.
+    /// </summary>
+    public ICollection<UserChannel> UserChannels { get; set; } = new List<UserChannel>();
 }

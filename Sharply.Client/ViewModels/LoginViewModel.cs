@@ -26,7 +26,6 @@ public partial class LoginViewModel : ViewModelBase
 
     #region Properties
 
-
     [ObservableProperty]
     private string? _username;
 
@@ -70,7 +69,6 @@ public partial class LoginViewModel : ViewModelBase
             // Handle other errors (e.g., validation or unexpected exceptions)
             OnLoginFailed(ex.Message);
         }
-
     }
 
     [RelayCommand]
@@ -79,12 +77,13 @@ public partial class LoginViewModel : ViewModelBase
         _navigationService.NavigateTo<RegisterViewModel>();
     }
 
-
     private async Task OnLoginSuccess(UserViewModel user)
     {
         var mainViewModel = _navigationService.NavigateTo<MainViewModel>();
         if (mainViewModel is MainViewModel vm)
+        {
             await vm.LoadInitialData();
+        }
     }
 
     private void OnLoginFailed(string errorMessage)

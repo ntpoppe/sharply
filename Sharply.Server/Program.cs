@@ -35,7 +35,8 @@ void ConfigureAppSettings(WebApplicationBuilder builder)
 void ConfigureUrls(WebApplicationBuilder builder)
 {
     // Define application URLs
-    builder.WebHost.UseUrls("http://localhost:8000", "https://localhost:8001");
+    var serverUri = "https://localhost:8000";
+    builder.WebHost.UseUrls(serverUri);
 }
 
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)

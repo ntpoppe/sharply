@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.AspNetCore.SignalR.Client;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using System;
@@ -16,16 +15,23 @@ public partial class MainViewModel : ViewModelBase
     private readonly ApiService _apiService;
     private readonly TokenStorageService _tokenStorageService;
     private readonly INavigationService _navigationService;
+    private readonly SignalRService _signalRService;
+
 
     #region Constructors
 
-    public MainViewModel(ApiService apiService, TokenStorageService tokenStorageService, INavigationService navigationService)
+    public MainViewModel(
+        ApiService apiService,
+        TokenStorageService tokenStorageService,
+        INavigationService navigationService,
+        SignalRService signalRService)
     {
         AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
 
         _apiService = apiService;
         _tokenStorageService = tokenStorageService;
+        _signalRService = signalRService;
 
         _navigationService = navigationService;
         _navigationService.NavigateTo<LoginViewModel>();
@@ -50,6 +56,12 @@ public partial class MainViewModel : ViewModelBase
     #region Properties
 
     public string Title { get; } = "Sharply";
+
+    /* TODO: Make these into it's own class, I'm sure this is going to be extended */
+    private int? CurrentUserId { get; set; }
+    private string? CurrentUserName { get; set; }
+
+    /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
 
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
@@ -76,9 +88,7 @@ public partial class MainViewModel : ViewModelBase
     private string _newMessage = string.Empty;
 
     [ObservableProperty]
-    private string _channelDisplayName;
-
-    private HubConnection? _hubConnection;
+    private string? _channelDisplayName;
 
     public object? CurrentView => _navigationService.CurrentView;
 
@@ -90,39 +100,55 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
+            // Get the token, and parse the data from it
             var token = _tokenStorageService.LoadToken();
             if (token == null) throw new Exception("token was null");
 
+            var tokenData = await _apiService.GetCurrentUserTokenData(token);
+            if (tokenData == null)
+                throw new Exception("Token data missing.");
+
+            CurrentUserId = tokenData.UserId;
+            CurrentUserName = tokenData.Username;
+
+            // Retrieve all servers and channels associated with the user
             var servers = await _apiService.GetServersAsync(token);
             Servers = new ObservableCollection<ServerViewModel>(servers);
+
             var channels = servers.SelectMany(s => s.Channels);
             Channels = new ObservableCollection<ChannelViewModel>(channels);
 
+            // Initialize SignalR hub connection
+            await InitializeHubConnection(token);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine(ex);
+            Debug.WriteLine(ex);
         }
     }
-
-    private async void InitializeHubConnection()
+    public async Task InitializeHubConnection(string token)
     {
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl("https://localhost:8001/hubs/messages")
-            .Build();
-
-        // Listen for incoming messages
-        _hubConnection.On<string, string, DateTime>("ReceiveMessage", (username, content, timestamp) =>
+        try
         {
-            Messages.Add(new MessageViewModel
-            {
-                Username = username,
-                Content = content,
-                Timestamp = timestamp
-            });
-        });
+            await _signalRService.ConnectAsync(token);
 
-        await _hubConnection.StartAsync();
+            _signalRService.OnMessageReceived((user, message, timestamp) =>
+            {
+                Console.WriteLine($"Received message from user {user}: {message}");
+                Messages.Add(new MessageViewModel
+                {
+                    Username = user,
+                    Content = message,
+                    Timestamp = timestamp
+                });
+            });
+
+            Console.WriteLine("Subscribed to ReceiveMessage event.");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error initializing SignalR HubConnection: {ex.Message}");
+        }
     }
 
     private void AddServer()
@@ -133,10 +159,20 @@ public partial class MainViewModel : ViewModelBase
     {
     }
 
-    private void SendMessage()
+    private async void SendMessage()
     {
-        var messageToSend = NewMessage;
-        Debug.WriteLine(messageToSend);
+        try
+        {
+            if (SelectedChannel?.Id == null || CurrentUserId == null || string.IsNullOrWhiteSpace(NewMessage))
+                return;
+
+            await _signalRService.SendMessageAsync(SelectedChannel.Id.Value, CurrentUserId.Value, NewMessage);
+            NewMessage = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error sending message: {ex.Message}");
+        }
     }
 
     partial void OnSelectedServerChanged(ServerViewModel? value)
@@ -146,23 +182,43 @@ public partial class MainViewModel : ViewModelBase
         Channels.Clear();
         Channels = new ObservableCollection<ChannelViewModel>(value.Channels);
         if (Channels.Any())
+        {
             SelectedChannel = value.Channels.First();
+        }
 
         IsServerSelected = value != null;
     }
 
-    partial void OnSelectedChannelChanged(ChannelViewModel? value)
+    partial void OnSelectedChannelChanged(ChannelViewModel? oldValue, ChannelViewModel? newValue)
     {
-        if (value == null) return;
-
-        Messages.Clear();
-        if (value.Messages.Any())
-            Messages = new ObservableCollection<MessageViewModel>(value.Messages);
-
-        SetChannelDisplay();
+        _ = OnSelectedChannelChangedAsync(oldValue, newValue);
     }
 
-    public void SetChannelDisplay()
+    private async Task OnSelectedChannelChangedAsync(ChannelViewModel? oldValue, ChannelViewModel? newValue)
+    {
+        try
+        {
+            if (oldValue?.Id != null)
+                await _signalRService.LeaveChannelAsync(oldValue.Id.Value);
+
+            if (newValue?.Id != null)
+            {
+                await _signalRService.JoinChannelAsync(newValue.Id.Value);
+                Messages.Clear();
+
+                if (newValue.Messages.Any())
+                    Messages = new ObservableCollection<MessageViewModel>(newValue.Messages);
+
+                SetChannelDisplay();
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error in OnSelectedChannelChangedAsync: {ex.Message}");
+        }
+    }
+
+    private void SetChannelDisplay()
     {
         if (SelectedServer == null)
             ChannelDisplayName = "unknown";
@@ -174,5 +230,4 @@ public partial class MainViewModel : ViewModelBase
     }
 
     #endregion
-
 }

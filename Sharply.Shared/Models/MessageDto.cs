@@ -8,4 +8,6 @@ public class MessageDto
     public required int ChannelId { get; set; }
     public required int UserId { get; set; }
 
+    public required string Username { get; set; }
+
 }

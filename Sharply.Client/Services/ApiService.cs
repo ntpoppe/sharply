@@ -100,6 +100,12 @@ public class ApiService
                         Id = channelDto.Id,
                         Name = channelDto.Name,
                         ServerId = channelDto.ServerId,
+                        Messages = channelDto.Messages.Select(messageDto => new MessageViewModel
+                        {
+                            Username = messageDto.Username,
+                            Content = messageDto.Content,
+                            Timestamp = messageDto.Timestamp,
+                        }).ToList()
                     }).ToList()
                 }).ToList();
 

@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,9 +21,6 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel(ApiService apiService, TokenStorageService tokenStorageService, INavigationService navigationService)
     {
-        SelectServerCommand = new RelayCommand<ServerViewModel>(async (server) => await SelectServer(server));
-        AddServerCommand = new RelayCommand(AddServer);
-        SelectChannelCommand = new RelayCommand<ChannelViewModel>(SelectChannel);
         AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
 
@@ -39,14 +36,13 @@ public partial class MainViewModel : ViewModelBase
                 OnPropertyChanged(nameof(CurrentView));
             }
         };
+
+        IsServerSelected = false;
     }
 
     #endregion
 
     #region Commands
-    public IRelayCommand SelectServerCommand { get; }
-    public IRelayCommand AddServerCommand { get; }
-    public IRelayCommand SelectChannelCommand { get; }
     public IRelayCommand AddChannelCommand { get; }
     public IRelayCommand SendMessageCommand { get; }
     #endregion
@@ -55,12 +51,14 @@ public partial class MainViewModel : ViewModelBase
 
     public string Title { get; } = "Sharply";
 
-    // Collections
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
 
     [ObservableProperty]
     private ServerViewModel? _selectedServer;
+
+    [ObservableProperty]
+    private bool _isServerSelected;
 
     [ObservableProperty]
     private ObservableCollection<ChannelViewModel> _channels = new();
@@ -76,6 +74,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
+
+    [ObservableProperty]
+    private string _channelDisplayName;
 
     private HubConnection? _hubConnection;
 
@@ -124,25 +125,7 @@ public partial class MainViewModel : ViewModelBase
         await _hubConnection.StartAsync();
     }
 
-    private async Task SelectServer(ServerViewModel server)
-    {
-        if (_hubConnection == null) return;
-
-        SelectedServer = server;
-        Channels.Clear();
-
-        var channels = await _hubConnection.InvokeAsync<List<ChannelDto>>("GetChannelsForServer", server.Id, "currentUserId");
-        foreach (var channel in channels)
-        {
-            Channels.Add(new ChannelViewModel { Id = channel.Id, Name = channel.Name, ServerId = server.Id });
-        }
-    }
-
     private void AddServer()
-    {
-    }
-
-    private void SelectChannel(ChannelViewModel channel)
     {
     }
 
@@ -152,6 +135,42 @@ public partial class MainViewModel : ViewModelBase
 
     private void SendMessage()
     {
+        var messageToSend = NewMessage;
+        Debug.WriteLine(messageToSend);
+    }
+
+    partial void OnSelectedServerChanged(ServerViewModel? value)
+    {
+        if (value == null) return;
+
+        Channels.Clear();
+        Channels = new ObservableCollection<ChannelViewModel>(value.Channels);
+        if (Channels.Any())
+            SelectedChannel = value.Channels.First();
+
+        IsServerSelected = value != null;
+    }
+
+    partial void OnSelectedChannelChanged(ChannelViewModel? value)
+    {
+        if (value == null) return;
+
+        Messages.Clear();
+        if (value.Messages.Any())
+            Messages = new ObservableCollection<MessageViewModel>(value.Messages);
+
+        SetChannelDisplay();
+    }
+
+    public void SetChannelDisplay()
+    {
+        if (SelectedServer == null)
+            ChannelDisplayName = "unknown";
+
+        if (SelectedChannel == null)
+            ChannelDisplayName = $"{SelectedServer.Name}/~unknown";
+
+        ChannelDisplayName = $"{SelectedServer.Name}/#{SelectedChannel.Name}";
     }
 
     #endregion

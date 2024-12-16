@@ -167,18 +167,27 @@ public class AuthController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Assigns default servers/channels to a newly registered user.
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// There should be no conflict here since the registered user should not have any servers or channels assigned yet.
+    /// </remarks>
     public async Task EnsureDefaultChannelAssignmentAsync(int serverId, int userId)
     {
         var defaultChannels = await _serverService.GetChannelsForServerAsync(serverId);
         if (defaultChannels == null) return;
 
-        var userChannels = await _userService.GetDBChannelsForUserAsync(userId);
+        var userChannels = await _userService.GetChannelsForUserAsync(userId);
 
         var channelsToAdd = defaultChannels
             .Where(defaultChannel => !userChannels.Any(userChannel => userChannel.Id == defaultChannel.Id))
             .ToList();
 
         foreach (var channel in channelsToAdd)
-            await _channelService.AddUserToChannel(userId, channel.Id);
+            await _channelService.AddUserToChannelAsync(userId, channel.Id);
     }
 }

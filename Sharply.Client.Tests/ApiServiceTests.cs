@@ -39,11 +39,13 @@ namespace Sharply.Client.Tests
         public async Task RegisterAsync_SuccessfulResponse_ReturnsUser()
         {
             // Arrange
+            var expectedId = 1;
             var expectedUsername = "testuser";
             var expectedToken = "fake-jwt-token";
 
             var registerResponse = new RegisterResponse
             {
+                Id = expectedId,
                 Username = expectedUsername,
                 Token = expectedToken
             };
@@ -106,11 +108,13 @@ namespace Sharply.Client.Tests
         public async Task LoginAsync_SuccessfulResponse_ReturnsUser()
         {
             // Arrange
+            var expectedId = 1;
             var expectedUsername = "testuser";
             var expectedToken = "fake-jwt-token";
 
             var loginResponse = new LoginResponse
             {
+                Id = expectedId,
                 Username = expectedUsername,
                 Token = expectedToken
             };

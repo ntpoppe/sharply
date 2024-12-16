@@ -1,10 +1,10 @@
-﻿using System.Net;
-using System.Net.Http.Json;
-using Moq;
+﻿using Moq;
 using Moq.Protected;
 using NUnit.Framework;
 using Sharply.Client.Services;
-using Sharply.Shared.Models; // Adjust namespace as per your project structure
+using Sharply.Shared.Requests;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace Sharply.Client.Tests
 {
@@ -12,6 +12,7 @@ namespace Sharply.Client.Tests
     public class ApiServiceTests
     {
         private Mock<HttpMessageHandler> _mockHttpMessageHandler;
+        private TokenStorageService _tokenStorageService;
         private HttpClient _httpClient;
         private ApiService _apiService;
 
@@ -27,20 +28,24 @@ namespace Sharply.Client.Tests
                 BaseAddress = new Uri("https://localhost:8001/")
             };
 
+            _tokenStorageService = new TokenStorageService();
+
             // Initialize ApiService with the mocked HttpClient
             // Modify ApiService to accept HttpClient instead of HttpClientHandler
-            _apiService = new ApiService(_httpClient);
+            _apiService = new ApiService(_httpClient, _tokenStorageService);
         }
 
         [Test]
         public async Task RegisterAsync_SuccessfulResponse_ReturnsUser()
         {
             // Arrange
+            var expectedId = 1;
             var expectedUsername = "testuser";
             var expectedToken = "fake-jwt-token";
 
             var registerResponse = new RegisterResponse
             {
+                Id = expectedId,
                 Username = expectedUsername,
                 Token = expectedToken
             };
@@ -62,11 +67,10 @@ namespace Sharply.Client.Tests
 
             // Act
             var result = await _apiService.RegisterAsync("testuser", "password123");
-			
+
             // Assert
-			Assert.That(result, Is.Not.Null);
+            Assert.That(result, Is.Not.Null);
             Assert.That(expectedUsername, Is.EqualTo(result.Username));
-            Assert.That(expectedToken, Is.EqualTo(result.Token));
         }
 
         [Test]
@@ -104,11 +108,13 @@ namespace Sharply.Client.Tests
         public async Task LoginAsync_SuccessfulResponse_ReturnsUser()
         {
             // Arrange
+            var expectedId = 1;
             var expectedUsername = "testuser";
             var expectedToken = "fake-jwt-token";
 
             var loginResponse = new LoginResponse
             {
+                Id = expectedId,
                 Username = expectedUsername,
                 Token = expectedToken
             };
@@ -134,11 +140,11 @@ namespace Sharply.Client.Tests
             // Assert
             Assert.That(result, Is.Not.Null);
             Assert.That(expectedUsername, Is.EqualTo(result.Username));
-            Assert.That(expectedToken, Is.EqualTo(result.Token));
         }
 
         [Test]
-        public void LoginAsync_FailedResponse_ThrowsException() {
+        public void LoginAsync_FailedResponse_ThrowsException()
+        {
             // Arrange
             var errorMessage = "Invalid credentials";
 
@@ -164,7 +170,7 @@ namespace Sharply.Client.Tests
             });
 
             Assert.That(ex.Message, Does.Contain("Login failed"));
-            Assert.That(ex.Message, Does.Contain("credentials")); 
+            Assert.That(ex.Message, Does.Contain("credentials"));
         }
     }
 }

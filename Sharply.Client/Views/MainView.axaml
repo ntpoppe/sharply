@@ -2,51 +2,77 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:views="using:Sharply.Client.Views"
              xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
+			 xmlns:converters="using:Sharply.Client.Converters"
              mc:Ignorable="d"
              d:DesignWidth="1200" d:DesignHeight="700"
              x:Class="Sharply.Client.Views.MainView"
              x:DataType="vm:MainViewModel">
 
+	<UserControl.Resources>
+		<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+		<converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+	</UserControl.Resources>
+
+	<UserControl.Styles>
+		<Style Selector="TextBox:focus-within /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+
+		<Style Selector="TextBox:pointerover /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+
+		<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+	</UserControl.Styles>
+
 	<Grid Background="{DynamicResource BackgroundBrush}">
 		<Grid.ColumnDefinitions>
 			<!-- Server List -->
-			<ColumnDefinition Width="150"/>
-			<!-- Channel List -->
-			<ColumnDefinition Width="200"/>
-			<!-- Chat Window -->
-			<ColumnDefinition Width="*"/>
-			<!-- Online Users List -->
-			<ColumnDefinition Width="200"/>
+			<ColumnDefinition Width="140" />
+			<!-- Server Content -->
+			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 
 		<!-- Server List -->
-		<Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}" Margin="10" CornerRadius="8">
+		<Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
 			<StackPanel>
 				<TextBlock Text="Servers" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+
+				<!-- Underline effect... pretty weird -->
 				<ListBox Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          BorderBrush="{DynamicResource AccentBrush}"
                          BorderThickness="1"
-                         Margin="10,0,10,10"
-                         SelectionMode="Single">
+                         Margin="10,0,10,10" />
+
+				<!-- Actual list box -->
+				<ListBox Background="{DynamicResource InputBackgroundBrush}"
+                         Foreground="{DynamicResource PrimaryTextBrush}"
+                         Margin="5,0,10,10"
+						 SelectedItem="{Binding SelectedServer}"
+                         SelectionMode="Single"
+						 ItemsSource="{Binding Servers}">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
-							<Button Content="Server Name"
-								Background="Transparent" 
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								HorizontalAlignment="Stretch"
-								Padding="5">
-								<Button.Styles>
-									<Style Selector="Button:hover">
+							<TextBlock Text="{Binding Name}"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Left"
+									   FontSize="12"
+									   Foreground="{DynamicResource PrimaryTextBrush}">
+								<TextBlock.Styles>
+									<Style Selector="TextBlock:hover">
 										<Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}" />
-									</Style>
-									<Style Selector="Button:pressed">
-										<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
 										<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
 									</Style>
-								</Button.Styles>
-							</Button>
+								</TextBlock.Styles>
+							</TextBlock>
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
@@ -59,130 +85,11 @@
 			</StackPanel>
 		</Border>
 
-		<!-- Channel List -->
-		<Border Grid.Column="1" Background="{DynamicResource InputBackgroundBrush}" Margin="10" CornerRadius="8">
-			<StackPanel>
-				<TextBlock Text="Channels" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
-				<ListBox Background="{DynamicResource InputBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"
-                         BorderBrush="{DynamicResource AccentBrush}"
-                         BorderThickness="1"
-                         Margin="10,0,10,10"
-                         SelectionMode="Single">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Button Content="Channel Name"
-								Background="Transparent"
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								HorizontalAlignment="Stretch"
-								Padding="5">
-								<Button.Styles>
-									<Style Selector="Button:hover">
-										<Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}" />
-									</Style>
-									<Style Selector="Button:pressed">
-										<Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-										<Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
-									</Style>
-								</Button.Styles>
-							</Button>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-				<!--  <Button Content="Add Channel"
-                        Background="{DynamicResource AccentBrush}"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
-                        Margin="10,0,10,10"
-                        Padding="5"
-                        CornerRadius="4"/> -->
-			</StackPanel>
-		</Border>
+		<views:ServerContentView Grid.Column="1"
+								 IsVisible="{Binding IsServerSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
+		<views:NoServerSelectedView Grid.Column="1"
+									IsVisible="{Binding IsServerSelected, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
 
-		<!-- Chat Window -->
-		<Border Grid.Column="2" Background="{DynamicResource InputBackgroundBrush}" Margin="10" CornerRadius="8">
-			<Grid>
-				<Grid.RowDefinitions>
-					<!-- Chat Messages -->
-					<RowDefinition Height="*"/>
-					<!-- Message Input -->
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
 
-				<!-- Chat Messages -->
-				<ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Margin="10" Name="ChatScrollViewer">
-					<ItemsControl>
-						<ItemsControl.ItemTemplate>
-							<DataTemplate>
-								<Border Background="{DynamicResource SecondaryAccentBrush}" CornerRadius="4" Padding="10" Margin="0,0,0,5">
-									<StackPanel>
-										<TextBlock Text="Username" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}"/>
-										<!-- Placeholder for {Binding Username} -->
-										<TextBlock Text="Message content goes here..." Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap"/>
-										<!-- Placeholder for {Binding Content} -->
-									</StackPanel>
-								</Border>
-							</DataTemplate>
-						</ItemsControl.ItemTemplate>
-					</ItemsControl>
-				</ScrollViewer>
-
-				<!-- Message Input -->
-				<Grid Grid.Row="1" Margin="10">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*" />
-						<!-- Expands to fill available space -->
-						<ColumnDefinition Width="Auto" />
-						<!-- Adapts to the size of the Button -->
-					</Grid.ColumnDefinitions>
-
-					<!-- Message Input -->
-					<TextBox Grid.Column="0"
-							 Watermark="Type your message..."
-							 Background="{DynamicResource InputBackgroundBrush}"
-							 Foreground="{DynamicResource PrimaryTextBrush}"
-							 BorderBrush="{DynamicResource AccentBrush}"
-							 BorderThickness="1"
-							 CornerRadius="4"
-							 VerticalAlignment="Center"
-							 Margin="0,0,10,0">
-						<TextBox.Styles>
-							<Style Selector="TextBox">
-								<Setter Property="MinWidth" Value="300"/>
-							</Style>
-						</TextBox.Styles>
-					</TextBox>
-
-					<!-- Send Button -->
-					<Button Grid.Column="1"
-							Content="Send"
-							Background="{DynamicResource AccentBrush}"
-							Foreground="{DynamicResource PrimaryTextBrush}"
-							Padding="10,5"
-							CornerRadius="4"
-							VerticalAlignment="Center" />
-				</Grid>
-			</Grid>
-		</Border>
-
-		<!-- Online Users List -->
-		<Border Grid.Column="3" Background="{DynamicResource InputBackgroundBrush}" Margin="10" CornerRadius="8">
-			<StackPanel>
-				<TextBlock Text="Online Users" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
-				<ListBox Background="{DynamicResource InputBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"
-                         BorderBrush="{DynamicResource AccentBrush}"
-                         BorderThickness="1"
-                         Margin="10,0,10,10"
-                         SelectionMode="Single">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="User Name"/>
-							<!-- Placeholder for {Binding Username} -->
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</StackPanel>
-		</Border>
 	</Grid>
 </UserControl>
-

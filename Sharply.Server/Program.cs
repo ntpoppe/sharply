@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Sharply.Server.Automapper;
 using Sharply.Server.Data;
+using Sharply.Server.Services;
+using Sharply.Server.SignalR;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +29,6 @@ app.Run();
 
 void ConfigureAppSettings(WebApplicationBuilder builder)
 {
-    // Load additional configuration files
     builder.Configuration.AddJsonFile("secrets.json", optional: true, reloadOnChange: true);
 }
 
@@ -69,6 +71,17 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 
     // Controllers
     services.AddControllers();
+
+    // AutoMapper
+    services.AddAutoMapper(typeof(MappingProfile));
+
+    // SignalR
+    services.AddSignalR();
+
+    // Custom services
+    services.AddScoped<UserService>();
+    services.AddScoped<ServerService>();
+    services.AddScoped<ChannelService>();
 }
 
 void ConfigureMiddleware(WebApplication app)
@@ -87,6 +100,9 @@ void ConfigureMiddleware(WebApplication app)
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();
+
+    // Map SignalR hubs
+    app.MapHub<MessageHub>("/hubs/Messages");
 }
 
 #endregion

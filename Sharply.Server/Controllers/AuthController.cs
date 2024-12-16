@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sharply.Server.Data;
 using Sharply.Server.Models;
-using Sharply.Shared.Models;
+using Sharply.Server.Services;
+using Sharply.Shared.Requests;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -12,10 +14,13 @@ using System.Text;
 /// API controller for handling user authentication and registration
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly SharplyDbContext _context;
+    private readonly UserService _userService;
+    private readonly ServerService _serverService;
+    private readonly ChannelService _channelService;
     private readonly string _jwtKey;
 
     /// <summary>
@@ -23,9 +28,17 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="context">The application database context.</param>
     /// <param name="configuration">Contains the secret key for JWT signing.</param>
-    public AuthController(SharplyDbContext context, IConfiguration configuration)
+    public AuthController(
+        SharplyDbContext context,
+        UserService userService,
+        ServerService serverService,
+        ChannelService channelService,
+        IConfiguration configuration)
     {
         _context = context;
+        _userService = userService;
+        _serverService = serverService;
+        _channelService = channelService;
         _jwtKey = configuration["Jwt:Key"] ?? "DEFAULT";
     }
 
@@ -60,16 +73,24 @@ public class AuthController : ControllerBase
         var key = Encoding.UTF8.GetBytes(_jwtKey);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new Claim[] { new Claim(ClaimTypes.Name, user.Username) }),
+            Subject = new ClaimsIdentity(new Claim[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+            }),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var tokenString = tokenHandler.WriteToken(token);
 
+        // Join default server/channel(s)
+        await EnsureDefaultServerAssignmentAsync(user.Id);
+
         // Send response
         return Ok(new RegisterResponse
         {
+            Id = user.Id,
             Username = user.Username,
             Token = tokenString
         });
@@ -110,6 +131,7 @@ public class AuthController : ControllerBase
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
             }),
             Expires = DateTime.UtcNow.AddDays(7),
@@ -121,8 +143,51 @@ public class AuthController : ControllerBase
         // Send response
         return Ok(new LoginResponse
         {
+            Id = user.Id,
             Username = user.Username,
             Token = tokenString
         });
+    }
+
+    /// <summary>
+    /// Ensures a user logging in has access to the default global server.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public async Task EnsureDefaultServerAssignmentAsync(int userId)
+    {
+        var defaultServer = await _context.Servers.FirstOrDefaultAsync(s => s.Id == 1);
+        if (defaultServer == null) return;
+
+        var userServer = await _context.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
+        if (userServer == null)
+        {
+            await _userService.AddUserToServerAsync(userId, defaultServer.Id);
+            await EnsureDefaultChannelAssignmentAsync(defaultServer.Id, userId);
+        }
+    }
+
+    /// <summary>
+    /// Assigns default servers/channels to a newly registered user.
+    /// </summary>
+    /// <param name="serverId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    /// <remarks>
+    /// There should be no conflict here since the registered user should not have any servers or channels assigned yet.
+    /// </remarks>
+    public async Task EnsureDefaultChannelAssignmentAsync(int serverId, int userId)
+    {
+        var defaultChannels = await _serverService.GetChannelsForServerAsync(serverId);
+        if (defaultChannels == null) return;
+
+        var userChannels = await _userService.GetChannelsForUserAsync(userId);
+
+        var channelsToAdd = defaultChannels
+            .Where(defaultChannel => !userChannels.Any(userChannel => userChannel.Id == defaultChannel.Id))
+            .ToList();
+
+        foreach (var channel in channelsToAdd)
+            await _channelService.AddUserToChannelAsync(userId, channel.Id);
     }
 }

@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Models;
 using Sharply.Client.Services;
 using System;
 using System.Diagnostics;
@@ -12,18 +11,20 @@ namespace Sharply.Client.ViewModels;
 
 public partial class RegisterViewModel : ViewModelBase
 {
+    private readonly ApiService _apiService;
+    private readonly INavigationService _navigationService;
+
     #region Constructors
 
-    public RegisterViewModel(INavigationService navigationService)
+    public RegisterViewModel(ApiService apiService, INavigationService navigationService)
     {
+        _apiService = apiService;
         _navigationService = navigationService;
     }
 
     #endregion
 
     #region Properties
-
-    private readonly INavigationService _navigationService;
 
     [ObservableProperty]
     private string? _username;
@@ -40,14 +41,13 @@ public partial class RegisterViewModel : ViewModelBase
     [RelayCommand]
     private async Task RegisterAsync()
     {
-		var handler = new HttpClientHandler
-		{
-			// TODO: This needs to be disabled upon "production".
-			ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
-		};
+        var handler = new HttpClientHandler
+        {
+            // TODO: This needs to be disabled upon "production".
+            ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
+        };
 
         // Call API service to authenticate
-        var apiService = new ApiService(handler);
 
         try
         {
@@ -59,7 +59,7 @@ public partial class RegisterViewModel : ViewModelBase
                 throw new Exception("Passwords must match.");
 
             // Attempt to register 
-            var user = await apiService.RegisterAsync(Username, Password);
+            var user = await _apiService.RegisterAsync(Username, Password);
 
             if (user != null)
                 OnRegisterSuccess(user);
@@ -85,7 +85,7 @@ public partial class RegisterViewModel : ViewModelBase
         _navigationService.NavigateTo<LoginViewModel>();
     }
 
-    private void OnRegisterSuccess(User user)
+    private void OnRegisterSuccess(UserViewModel user)
     {
         // Example: Navigate to the main view
         Debug.WriteLine($"Registration successful. Welcome, {user.Username}!");

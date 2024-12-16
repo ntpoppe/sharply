@@ -27,6 +27,8 @@ public class ServerService
     {
         var servers = await _context.Servers
             .Include(s => s.Channels)
+                .ThenInclude(c => c.Messages)
+                    .ThenInclude(m => m.User) // to fetch the username
             .Where(s => s.UserServers.Any(us => us.UserId == userId))
             .ToListAsync(cancellationToken);
 
@@ -40,6 +42,7 @@ public class ServerService
     {
         var channels = await _context.Channels
             .Where(c => c.ServerId == serverId)
+            .Include(c => c.Messages)
             .ToListAsync(cancellationToken);
 
         return _mapper.Map<List<ChannelDto>>(channels);

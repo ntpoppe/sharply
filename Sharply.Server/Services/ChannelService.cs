@@ -26,6 +26,7 @@ public class ChannelService
     public async Task<List<MessageDto>> GetMessagesForChannelAsync(int channelId, CancellationToken cancellationToken = default)
     {
         var messages = await _context.Messages
+            .Include(m => m.User)
             .Where(m => m.ChannelId == channelId)
             .ToListAsync(cancellationToken);
 

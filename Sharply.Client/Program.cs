@@ -47,12 +47,15 @@ sealed class Program
                 // TODO: Disable this in production
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
+
+            var serverUri = "https://localhost:8000";
             return new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://localhost:8001/")
+                BaseAddress = new Uri(serverUri)
             };
         });
         services.AddSingleton<ApiService>();
+        services.AddSingleton<SignalRService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<LoginViewModel>();

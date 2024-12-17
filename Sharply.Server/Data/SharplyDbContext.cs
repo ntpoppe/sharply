@@ -34,25 +34,53 @@ public class SharplyDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        ConfigureMessages(modelBuilder);
+        ConfigureServersAndChannels(modelBuilder);
+        ConfigureUserChannelRelationship(modelBuilder);
+        ConfigureUserServerRelationship(modelBuilder);
+        SeedData(modelBuilder);
+
+        base.OnModelCreating(modelBuilder);
+    }
+
+    private void ConfigureMessages(ModelBuilder modelBuilder)
+    {
+        // A message belongs to one user, and a user can have many messages
         modelBuilder.Entity<Message>()
             .HasOne(m => m.User)
             .WithMany(u => u.Messages)
             .HasForeignKey(m => m.UserId);
 
+        // A message belongs to one channel, and a channel can have many messages
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Channel)
             .WithMany(c => c.Messages)
             .HasForeignKey(m => m.ChannelId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Cascade); // Deleting a channel deletes its messages
+    }
 
+    private void ConfigureServersAndChannels(ModelBuilder modelBuilder)
+    {
+        // A server can have many channels, and a channel belongs to one server
         modelBuilder.Entity<Models.Server>()
             .HasMany(s => s.Channels)
             .WithOne(c => c.Server)
             .HasForeignKey(c => c.ServerId);
 
-        modelBuilder.Entity<UserChannel>()
-           .HasKey(uc => new { uc.UserId, uc.ChannelId });
+        // A channel can have many messages, and a message belongs to one channel
+        modelBuilder.Entity<Channel>()
+            .HasMany(c => c.Messages)
+            .WithOne(m => m.Channel)
+            .HasForeignKey(m => m.ChannelId);
+    }
 
+    private void ConfigureUserChannelRelationship(ModelBuilder modelBuilder)
+    {
+        // Composite key for UserChannel (UserId and ChannelId together make the primary key)
+        modelBuilder.Entity<UserChannel>()
+            .HasKey(uc => new { uc.UserId, uc.ChannelId });
+
+        // A user can join many channels, and a channel can have many users (many-to-many)
         modelBuilder.Entity<UserChannel>()
             .HasOne(uc => uc.User)
             .WithMany(u => u.UserChannels)
@@ -62,10 +90,15 @@ public class SharplyDbContext : DbContext
             .HasOne(uc => uc.Channel)
             .WithMany(c => c.UserChannels)
             .HasForeignKey(uc => uc.ChannelId);
+    }
 
+    private void ConfigureUserServerRelationship(ModelBuilder modelBuilder)
+    {
+        // Composite key for UserServer (UserId and ServerId together make the primary key)
         modelBuilder.Entity<UserServer>()
             .HasKey(us => new { us.UserId, us.ServerId });
 
+        // A user can join many servers, and a server can have many users (many-to-many)
         modelBuilder.Entity<UserServer>()
             .HasOne(us => us.User)
             .WithMany(u => u.UserServers)
@@ -75,10 +108,14 @@ public class SharplyDbContext : DbContext
             .HasOne(us => us.Server)
             .WithMany(s => s.UserServers)
             .HasForeignKey(us => us.ServerId);
+    }
 
+    private void SeedData(ModelBuilder modelBuilder)
+    {
+        // Seed a default server
         modelBuilder.Entity<Models.Server>().HasData(new Models.Server { Id = 1, Name = "Global" });
-        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });
 
-        base.OnModelCreating(modelBuilder);
+        // Seed a default channel in the default server
+        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });
     }
 }

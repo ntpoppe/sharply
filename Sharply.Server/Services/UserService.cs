@@ -62,4 +62,10 @@ public class UserService
 
         return _mapper.Map<List<ChannelDto>>(channels);
     }
+
+    public async Task<string?> GetUsernameFromId(int userId, CancellationToken cancellationToken = default)
+        => await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.Username)
+            .FirstOrDefaultAsync(cancellationToken);
 }

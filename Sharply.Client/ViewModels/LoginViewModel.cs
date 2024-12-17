@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -61,12 +60,10 @@ public partial class LoginViewModel : ViewModelBase
         }
         catch (HttpRequestException ex)
         {
-            // Handle network or server-related errors
             OnLoginFailed($"Unable to connect to the server. {ex}");
         }
         catch (Exception ex)
         {
-            // Handle other errors (e.g., validation or unexpected exceptions)
             OnLoginFailed(ex.Message);
         }
     }
@@ -89,7 +86,6 @@ public partial class LoginViewModel : ViewModelBase
     private void OnLoginFailed(string errorMessage)
     {
         ErrorMessage = errorMessage;
-        Debug.WriteLine($"Login failed: {errorMessage}");
     }
 
     #endregion

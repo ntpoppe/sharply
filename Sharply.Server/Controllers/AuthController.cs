@@ -17,7 +17,7 @@ using System.Text;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly SharplyDbContext _context;
+    private readonly SharplyDbContext _dbContext;
     private readonly UserService _userService;
     private readonly ServerService _serverService;
     private readonly ChannelService _channelService;
@@ -29,13 +29,13 @@ public class AuthController : ControllerBase
     /// <param name="context">The application database context.</param>
     /// <param name="configuration">Contains the secret key for JWT signing.</param>
     public AuthController(
-        SharplyDbContext context,
+        SharplyDbContext dbContext,
         UserService userService,
         ServerService serverService,
         ChannelService channelService,
         IConfiguration configuration)
     {
-        _context = context;
+        _dbContext = dbContext;
         _userService = userService;
         _serverService = serverService;
         _channelService = channelService;
@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         // Check if the user exists
-        if (_context.Users.Any(u => u.Username == request.Username))
+        if (_dbContext.Users.Any(u => u.Username == request.Username))
         {
             return BadRequest("User already exists");
         }
@@ -65,8 +65,8 @@ public class AuthController : ControllerBase
         var passwordHasher = new PasswordHasher<User>();
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync();
 
         // Generate a token for the new user
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -109,7 +109,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         // Find the user by username
-        var user = _context.Users.SingleOrDefault(u => u.Username == request.Username);
+        var user = _dbContext.Users.SingleOrDefault(u => u.Username == request.Username);
         if (user == null)
         {
             return Unauthorized("Invalid credentials.");
@@ -156,10 +156,10 @@ public class AuthController : ControllerBase
     /// <returns></returns>
     public async Task EnsureDefaultServerAssignmentAsync(int userId)
     {
-        var defaultServer = await _context.Servers.FirstOrDefaultAsync(s => s.Id == 1);
+        var defaultServer = await _dbContext.Servers.FirstOrDefaultAsync(s => s.Id == 1);
         if (defaultServer == null) return;
 
-        var userServer = await _context.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
+        var userServer = await _dbContext.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
         if (userServer == null)
         {
             await _userService.AddUserToServerAsync(userId, defaultServer.Id);

@@ -1,17 +1,19 @@
-using System;
 using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 
 namespace Sharply.Client.ViewModels;
 
 public partial class MessageViewModel : ObservableObject
 {
-	[ObservableProperty]
-	private string? _username;
+    public int Id { get; set; }
 
-	[ObservableProperty]
-	private string? _content;
+    [ObservableProperty]
+    private string? _username;
 
-	[ObservableProperty]
-	private DateTime? _timestamp;
+    [ObservableProperty]
+    private string? _content;
+
+    [ObservableProperty]
+    private DateTime? _timestamp;
 }
 

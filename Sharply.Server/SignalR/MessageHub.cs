@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
 using Sharply.Server.Models;
+using Sharply.Server.Services;
 
 namespace Sharply.Server.SignalR;
 
@@ -11,13 +12,13 @@ namespace Sharply.Server.SignalR;
 public class MessageHub : Hub
 {
     private readonly SharplyDbContext _context;
+    private readonly UserService _userService;
 
-    /// <summary>
-    /// Initializes the MessageHub with a database context for accessing channels and messages.
-    /// </summary>
-    /// <param name="context">The database context to interact with channels and messages.</param>
-	public MessageHub(SharplyDbContext context)
-        => _context = context;
+    public MessageHub(SharplyDbContext context, UserService userService)
+    {
+        _context = context;
+        _userService = userService;
+    }
 
     /// <summary>
     /// Adds the current connection to a SignalR group representing a specific channel.
@@ -82,6 +83,7 @@ public class MessageHub : Hub
         _context.Messages.Add(message);
         await _context.SaveChangesAsync();
 
-        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", userId, content, message.Timestamp);
+        var username = await _userService.GetUsernameFromId(userId);
+        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", username, content, message.Timestamp);
     }
 }

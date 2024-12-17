@@ -2,7 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:behaviors="clr-namespace:Sharply.Client.Behaviors"
              xmlns:viewModels="using:Sharply.Client.ViewModels"
+			 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d"
              x:Class="Sharply.Client.Views.ServerContentView"
              x:DataType="viewModels:MainViewModel">
@@ -77,23 +79,44 @@
 						   FontSize="16" />
 
 				<!-- Chat Messages -->
-				<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10">
+				<ScrollViewer Grid.Row="1"
+							  x:Name="ChatScrollViewer"
+							  VerticalScrollBarVisibility="Auto"
+							  Margin="10"
+							  Padding="0,0,10,0">
+					<Interaction.Behaviors>
+						<behaviors:ScrollToEndBehavior ItemsSource="{Binding Messages}" />
+					</Interaction.Behaviors>
 					<ItemsControl ItemsSource="{Binding Messages}">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
-								<Border Background="{DynamicResource SecondaryAccentBrush}"
-										CornerRadius="4"
-										Padding="10"
-										Margin="0,0,0,5">
-									<StackPanel>
+								<StackPanel Margin="0, 0, 0, 10">
+									<!-- Header Row: Username and Timestamp -->
+									<DockPanel LastChildFill="False" Margin="0,0,0,5" MinWidth="300">
+										<!-- Username -->
 										<TextBlock Text="{Binding Username}"
 												   FontWeight="Bold"
-												   Foreground="{DynamicResource PrimaryTextBrush}" />
-										<TextBlock Text="{Binding Content}"
-												   Foreground="{DynamicResource PrimaryTextBrush}"
-												   TextWrapping="Wrap" />
-									</StackPanel>
-								</Border>
+												   Foreground="{DynamicResource PrimaryAccentBrush}"
+												   VerticalAlignment="Center"
+												   FontSize="14"
+												   DockPanel.Dock="Left" />
+
+										<!-- Timestamp -->
+										<TextBlock Text="{Binding Timestamp, StringFormat={}{0:hh:mm tt}}"
+												   Foreground="{DynamicResource SecondaryTextBrush}"
+												   VerticalAlignment="Center"
+												   FontSize="12"
+												   Margin="10,0,0,0"
+												   DockPanel.Dock="Right" />
+									</DockPanel>
+
+									<!-- Message Content -->
+									<TextBlock Text="{Binding Content}"
+											   Foreground="{DynamicResource PrimaryTextBrush}"
+											   TextWrapping="Wrap"
+											   Margin="20,0,0,0"
+											   FontSize="14" />
+								</StackPanel>
 							</DataTemplate>
 						</ItemsControl.ItemTemplate>
 					</ItemsControl>

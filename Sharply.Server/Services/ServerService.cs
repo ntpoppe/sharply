@@ -25,12 +25,21 @@ public class ServerService
     /// </summary>
     public async Task<List<ServerDto>> GetServersWithChannelsForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
+        // Retrieve all servers and their channels/messages the user has access to
         var servers = await _context.Servers
             .Include(s => s.Channels)
                 .ThenInclude(c => c.Messages)
-                    .ThenInclude(m => m.User) // to fetch the username
+                    .ThenInclude(m => m.User) // fetch the user who sent the message
             .Where(s => s.UserServers.Any(us => us.UserId == userId))
             .ToListAsync(cancellationToken);
+
+        // Filter channels based on whether the user has access to them.
+        foreach (var server in servers)
+        {
+            server.Channels = server.Channels
+                .Where(c => _context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id))
+                .ToList();
+        }
 
         return _mapper.Map<List<ServerDto>>(servers);
     }

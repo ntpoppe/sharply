@@ -94,6 +94,8 @@ public partial class MainViewModel : ViewModelBase
 
     public object? CurrentView => _navigationService.CurrentView;
 
+    private List<UserDto> _globalOnlineUsers = new();
+
     #endregion
 
     #region Methods
@@ -136,7 +138,7 @@ public partial class MainViewModel : ViewModelBase
             await _signalRService.ConnectUserHubAsync(token);
 
             _signalRService.OnMessageReceived(OnMessageReceived);
-            _signalRService.OnOnlineUsersUpdated(OnOnlineUsersUpdated);
+            _signalRService.OnOnlineUsersUpdated(users => OnOnlineUsersUpdatedAsync(users).Wait());
 
             if (CurrentUserId.HasValue)
                 await _signalRService.GoOnline(CurrentUserId.Value);
@@ -223,6 +225,7 @@ public partial class MainViewModel : ViewModelBase
                     );
                 }
 
+                await UpdateOnlineUsersForCurrentChannel();
                 SetChannelDisplay();
             }
         }
@@ -244,10 +247,35 @@ public partial class MainViewModel : ViewModelBase
         SelectedChannel.Messages.Add(newMessage);
     }
 
-    private void OnOnlineUsersUpdated(List<UserDto> userDtos)
+    private async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos)
     {
-        var onlineUsers = userDtos.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username }).ToList();
-        OnlineUsers = new ObservableCollection<UserViewModel>(onlineUsers);
+        _globalOnlineUsers = userDtos;
+        await UpdateOnlineUsersForCurrentChannel();
+    }
+
+    private async Task UpdateOnlineUsersForCurrentChannel()
+    {
+        if (SelectedChannel == null || SelectedChannel.Id == null) return;
+
+        var token = _tokenStorageService.LoadToken();
+        if (token == null)
+            throw new Exception("Token was null");
+
+        var channelId = SelectedChannel.Id.Value;
+        var usersForChannel = new List<UserDto>();
+
+        foreach (var user in _globalOnlineUsers)
+        {
+            bool hasAccess = await _apiService.DoesUserHaveAccessToChannel(token, user.Id, channelId);
+            if (hasAccess)
+            {
+                usersForChannel.Add(user);
+            }
+        }
+
+        OnlineUsers = new ObservableCollection<UserViewModel>(
+            usersForChannel.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username })
+        );
     }
 
     private void SetChannelDisplay()

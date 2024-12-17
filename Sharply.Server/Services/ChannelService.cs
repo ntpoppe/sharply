@@ -47,5 +47,15 @@ public class ChannelService
         _context.UserChannels.Add(userChannel);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Checks if a user has access to a channel.
+    /// </summary>
+    /// <param name="channelId"></param>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public async Task<bool> DoesUserHaveChannelAccessAsync(int channelId, int userId)
+        => await _context.UserChannels
+            .AnyAsync(uc => uc.ChannelId == channelId && uc.UserId == userId);
 }
 

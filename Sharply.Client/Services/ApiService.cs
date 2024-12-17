@@ -1,5 +1,6 @@
 ﻿using Sharply.Client.ViewModels;
 using Sharply.Shared;
+using Sharply.Shared.Models;
 using Sharply.Shared.Requests;
 using System;
 using System.Collections.Generic;
@@ -87,7 +88,7 @@ public class ApiService
 
         if (response.IsSuccessStatusCode)
         {
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ServerViewModel>>>();
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ServerDto>>>();
 
             if (result != null && result.Success)
             {
@@ -119,7 +120,6 @@ public class ApiService
 
         throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
     }
-
     public async Task<UserTokenDataRequest?> GetCurrentUserTokenData(string tokenString)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
@@ -132,5 +132,37 @@ public class ApiService
         }
 
         return null;
+    }
+
+    public async Task<List<MessageViewModel>> GetMessagesForChannel(string tokenString, int channelId)
+    {
+        try
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+            var response = await _client.GetAsync($"api/channels/{channelId}/get-messages");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<MessageDto>>>();
+
+                if (result != null && result.Success)
+                {
+                    var viewModels = result.Data?.Select(messageDto => new MessageViewModel
+                    {
+                        Username = messageDto.Username,
+                        Content = messageDto.Content,
+                        Timestamp = messageDto.Timestamp
+                    }).ToList();
+
+                    return viewModels ?? new List<MessageViewModel>();
+                }
+            }
+
+            throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occured in GetMessagesForChannel(): " + ex);
+            return null;
+        }
     }
 }

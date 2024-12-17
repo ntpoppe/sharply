@@ -2,7 +2,9 @@
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
+using Sharply.Shared.Models;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -119,31 +121,25 @@ public partial class MainViewModel : ViewModelBase
             Channels = new ObservableCollection<ChannelViewModel>(channels);
 
             // Initialize SignalR hub connection
-            await InitializeHubConnection(token);
+            await InitializeHubConnections(token);
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
         }
     }
-    public async Task InitializeHubConnection(string token)
+    public async Task InitializeHubConnections(string token)
     {
         try
         {
-            await _signalRService.ConnectAsync(token);
+            await _signalRService.ConnectMessageHubAsync(token);
+            await _signalRService.ConnectUserHubAsync(token);
 
-            _signalRService.OnMessageReceived((user, message, timestamp) =>
-            {
-                Console.WriteLine($"Received message from user {user}: {message}");
-                Messages.Add(new MessageViewModel
-                {
-                    Username = user,
-                    Content = message,
-                    Timestamp = timestamp
-                });
-            });
+            _signalRService.OnMessageReceived(OnMessageReceived);
+            _signalRService.OnOnlineUsersUpdated(OnOnlineUsersUpdated);
 
-            Console.WriteLine("Subscribed to ReceiveMessage event.");
+            if (CurrentUserId.HasValue)
+                await _signalRService.GoOnline(CurrentUserId.Value);
         }
         catch (Exception ex)
         {
@@ -204,10 +200,28 @@ public partial class MainViewModel : ViewModelBase
             if (newValue?.Id != null)
             {
                 await _signalRService.JoinChannelAsync(newValue.Id.Value);
+
                 Messages.Clear();
 
-                if (newValue.Messages.Any())
-                    Messages = new ObservableCollection<MessageViewModel>(newValue.Messages);
+                var token = _tokenStorageService.LoadToken();
+                if (token == null) throw new Exception("Token was null");
+
+                var fetchedMessages = await _apiService.GetMessagesForChannel(token, newValue.Id.Value);
+
+                if (fetchedMessages != null)
+                {
+                    var combinedMessages = new HashSet<MessageViewModel>(newValue.Messages);
+
+                    foreach (var fetchedMessage in fetchedMessages)
+                    {
+                        if (!combinedMessages.Any(m => m.Id == fetchedMessage.Id))
+                            combinedMessages.Add(fetchedMessage);
+                    }
+
+                    Messages = new ObservableCollection<MessageViewModel>(
+                        combinedMessages.OrderBy(m => m.Timestamp)
+                    );
+                }
 
                 SetChannelDisplay();
             }
@@ -216,6 +230,24 @@ public partial class MainViewModel : ViewModelBase
         {
             Debug.WriteLine($"Error in OnSelectedChannelChangedAsync: {ex.Message}");
         }
+    }
+
+    private void OnMessageReceived(string user, string message, DateTime timestamp)
+    {
+        var newMessage = new MessageViewModel()
+        {
+            Username = user,
+            Content = message,
+            Timestamp = timestamp
+        };
+        Messages.Add(newMessage);
+        SelectedChannel.Messages.Add(newMessage);
+    }
+
+    private void OnOnlineUsersUpdated(List<UserDto> userDtos)
+    {
+        var onlineUsers = userDtos.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username }).ToList();
+        OnlineUsers = new ObservableCollection<UserViewModel>(onlineUsers);
     }
 
     private void SetChannelDisplay()

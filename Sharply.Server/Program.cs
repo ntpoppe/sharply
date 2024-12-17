@@ -103,7 +103,8 @@ void ConfigureMiddleware(WebApplication app)
     app.MapControllers();
 
     // Map SignalR hubs
-    app.MapHub<MessageHub>("/hubs/Messages");
+    app.MapHub<MessageHub>("/hubs/messages");
+    app.MapHub<UserHub>("/hubs/users");
 }
 
 #endregion

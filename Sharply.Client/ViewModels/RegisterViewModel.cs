@@ -62,7 +62,7 @@ public partial class RegisterViewModel : ViewModelBase
             var user = await _apiService.RegisterAsync(Username, Password);
 
             if (user != null)
-                OnRegisterSuccess(user);
+                await OnRegisterSuccess(user);
             else
                 OnRegisterFailed("Login failed. Please check your credentials.");
         }
@@ -85,11 +85,14 @@ public partial class RegisterViewModel : ViewModelBase
         _navigationService.NavigateTo<LoginViewModel>();
     }
 
-    private void OnRegisterSuccess(UserViewModel user)
+    private async Task OnRegisterSuccess(UserViewModel user)
     {
         // Example: Navigate to the main view
-        Debug.WriteLine($"Registration successful. Welcome, {user.Username}!");
-        _navigationService.NavigateTo<MainViewModel>();
+        var mainViewModel = _navigationService.NavigateTo<MainViewModel>();
+        if (mainViewModel is MainViewModel vm)
+        {
+            await vm.LoadInitialData();
+        }
     }
 
     private void OnRegisterFailed(string errorMessage)

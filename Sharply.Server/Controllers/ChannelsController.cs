@@ -42,6 +42,27 @@ public class ChannelsController : ControllerBase
         }
     }
 
+    [HttpGet("{channelId}/{userId}/is-user-accessible")]
+    public async Task<ApiResponse<bool>> DoesUserHaveChannelAccess(int channelId, int userId)
+    {
+        try
+        {
+            var result = await _channelService.DoesUserHaveChannelAccessAsync(channelId, userId);
 
+            return new ApiResponse<bool>()
+            {
+                Success = true,
+                Data = result
+            };
+        }
+        catch (Exception ex)
+        {
+            return new ApiResponse<bool>()
+            {
+                Success = false,
+                Error = ex.Message
+            };
+        }
+    }
 }
 

@@ -162,7 +162,31 @@ public class ApiService
         catch (Exception ex)
         {
             Console.WriteLine("An error occured in GetMessagesForChannel(): " + ex);
-            return null;
+            return new List<MessageViewModel>();
+        }
+    }
+
+    public async Task<bool> DoesUserHaveAccessToChannel(string tokenString, int userId, int channelId)
+    {
+        try
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+            var response = await _client.GetAsync($"api/channels/{channelId}/{userId}/is-user-accessible");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+                if (result != null && result.Success)
+                {
+                    return result.Data;
+                }
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occured in DoesUserHaveAccessToChannel()" + ex.Message);
+            return false;
         }
     }
 }

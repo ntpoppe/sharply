@@ -14,10 +14,8 @@ public class UserHub : Hub
         _userService = userService;
     }
 
-    /// <summary>
-    /// Tracks the mapping between SignalR connection IDs and user IDs.
-    /// </summary>
-    private static readonly Dictionary<string, int> ConnectionUserMap = new();
+    private static readonly Dictionary<string, int> ConnectionUserMap = new(); // Tracks the mapping between SignalR connection IDs and user IDs.
+    private static readonly Dictionary<int, List<int>> UserChannelAccess = new(); // Tracks the channels each user has access to.
 
     /// <summary>
     /// Marks a user as online, adds their user ID to the online users list, and notifies all connected clients.
@@ -25,14 +23,19 @@ public class UserHub : Hub
     /// <param name="userId">The ID of the user who is now online.</param>
     public async Task GoOnline(int userId)
     {
+        var userChannels = await _userService.GetChannelsForUserAsync(userId);
+        var userChannelIds = userChannels.Select(c => c.Id).ToList();
         lock (ConnectionUserMap)
         {
             ConnectionUserMap[Context.ConnectionId] = userId;
+            UserChannelAccess[userId] = userChannelIds;
         }
 
         Console.WriteLine($"User {userId} is online");
-        var userDtos = await GetUserDtos(ConnectionUserMap.Values.Distinct().ToList());
-        await Clients.All.SendAsync("UpdateOnlineUsers", userDtos);
+        foreach (var channelId in userChannelIds)
+        {
+            await BroadcastOnlineUsers(channelId);
+        }
     }
 
     /// <summary>
@@ -49,14 +52,18 @@ public class UserHub : Hub
             {
                 userId = id;
                 ConnectionUserMap.Remove(Context.ConnectionId);
+                UserChannelAccess.Remove(userId.Value);
             }
         }
 
         if (userId.HasValue)
         {
             Console.WriteLine($"User {userId} went offline");
-            var userDtos = await GetUserDtos(ConnectionUserMap.Values.Distinct().ToList());
-            await Clients.All.SendAsync("UpdateOnlineUsers", userDtos);
+            var channels = UserChannelAccess.ContainsKey(userId.Value) ? UserChannelAccess[userId.Value] : new List<int>();
+            foreach (var channelId in channels)
+            {
+                await BroadcastOnlineUsers(channelId);
+            }
         }
     }
 
@@ -87,6 +94,13 @@ public class UserHub : Hub
         return userDtos.Where(dto => dto.Username != null)
                        .OrderBy(dto => dto.Username)
                        .ToList();
+    }
+
+    private async Task BroadcastOnlineUsers(int channelId)
+    {
+        var onlineUsers = ConnectionUserMap.Values.ToList();
+        var userDtos = await GetUserDtos(onlineUsers);
+        await Clients.All.SendAsync("UpdateOnlineUsers", userDtos);
     }
 }
 

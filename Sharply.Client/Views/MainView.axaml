@@ -89,7 +89,6 @@
 								 IsVisible="{Binding IsServerSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
 		<views:NoServerSelectedView Grid.Column="1"
 									IsVisible="{Binding IsServerSelected, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
-
-
+		
 	</Grid>
 </UserControl>

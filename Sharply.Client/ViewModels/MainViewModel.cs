@@ -48,6 +48,8 @@ public partial class MainViewModel : ViewModelBase
         IsServerSelected = false;
     }
 
+    public MainViewModel() { }
+
     #endregion
 
     #region Commands
@@ -91,6 +93,12 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string? _channelDisplayName;
+
+    [ObservableProperty]
+    private bool _isErrorNotificationOpen;
+
+    [ObservableProperty]
+    private string? _errorMessage;
 
     public object? CurrentView => _navigationService.CurrentView;
 
@@ -142,6 +150,7 @@ public partial class MainViewModel : ViewModelBase
 
             if (CurrentUserId.HasValue)
                 await _signalRService.GoOnline(CurrentUserId.Value);
+
         }
         catch (Exception ex)
         {
@@ -224,6 +233,8 @@ public partial class MainViewModel : ViewModelBase
                         combinedMessages.OrderBy(m => m.Timestamp)
                     );
                 }
+
+                await Task.Delay(1000);
 
                 await UpdateOnlineUsersForCurrentChannel();
                 SetChannelDisplay();

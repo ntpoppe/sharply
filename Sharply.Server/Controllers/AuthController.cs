@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Sharply.Server.Data;
+using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
-using Sharply.Server.Services;
 using Sharply.Shared.Requests;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -17,10 +17,10 @@ using System.Text;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly SharplyDbContext _dbContext;
-    private readonly UserService _userService;
-    private readonly ServerService _serverService;
-    private readonly ChannelService _channelService;
+    private readonly ISharplyContextFactory<SharplyDbContext> _contextFactory;
+    private readonly IUserService _userService;
+    private readonly IServerService _serverService;
+    private readonly IChannelService _channelService;
     private readonly string _jwtKey;
 
     /// <summary>
@@ -29,13 +29,13 @@ public class AuthController : ControllerBase
     /// <param name="context">The application database context.</param>
     /// <param name="configuration">Contains the secret key for JWT signing.</param>
     public AuthController(
-        SharplyDbContext dbContext,
-        UserService userService,
-        ServerService serverService,
-        ChannelService channelService,
+        ISharplyContextFactory<SharplyDbContext> contextFactory,
+        IUserService userService,
+        IServerService serverService,
+        IChannelService channelService,
         IConfiguration configuration)
     {
-        _dbContext = dbContext;
+        _contextFactory = contextFactory;
         _userService = userService;
         _serverService = serverService;
         _channelService = channelService;
@@ -54,8 +54,10 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
+        using var context = _contextFactory.CreateSharplyContext();
+
         // Check if the user exists
-        if (_dbContext.Users.Any(u => u.Username == request.Username))
+        if (context.Users.Any(u => u.Username == request.Username))
         {
             return BadRequest("User already exists");
         }
@@ -65,8 +67,8 @@ public class AuthController : ControllerBase
         var passwordHasher = new PasswordHasher<User>();
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync();
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
 
         // Generate a token for the new user
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -108,8 +110,10 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
+        using var context = _contextFactory.CreateSharplyContext();
+
         // Find the user by username
-        var user = _dbContext.Users.SingleOrDefault(u => u.Username == request.Username);
+        var user = context.Users.SingleOrDefault(u => u.Username == request.Username);
         if (user == null)
         {
             return Unauthorized("Invalid credentials.");
@@ -156,10 +160,12 @@ public class AuthController : ControllerBase
     /// <returns></returns>
     public async Task EnsureDefaultServerAssignmentAsync(int userId)
     {
-        var defaultServer = await _dbContext.Servers.FirstOrDefaultAsync(s => s.Id == 1);
+        using var context = _contextFactory.CreateSharplyContext();
+
+        var defaultServer = await context.Servers.FirstOrDefaultAsync(s => s.Id == 1);
         if (defaultServer == null) return;
 
-        var userServer = await _dbContext.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
+        var userServer = await context.UserServers.FirstOrDefaultAsync(us => us.UserId == userId && us.ServerId == defaultServer.Id);
         if (userServer == null)
         {
             await _userService.AddUserToServerAsync(userId, defaultServer.Id);

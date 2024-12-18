@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
+using Sharply.Server.Interfaces;
 using Sharply.Shared.Models;
 
 namespace Sharply.Server.Services;
@@ -9,14 +10,14 @@ namespace Sharply.Server.Services;
 /// Focuses on user-centric operations, such as managing user-server relationships, 
 /// fetching user-specific data (e.g., their channels or servers), and updating user information.
 /// </summary>
-public class ServerService
+public class ServerService : IServerService
 {
-    private readonly SharplyDbContext _context;
+    private readonly ISharplyContextFactory<SharplyDbContext> _contextFactory;
     private readonly IMapper _mapper;
 
-    public ServerService(SharplyDbContext context, IMapper mapper)
+    public ServerService(ISharplyContextFactory<SharplyDbContext> contextFactory, IMapper mapper)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _mapper = mapper;
     }
 
@@ -25,8 +26,10 @@ public class ServerService
     /// </summary>
     public async Task<List<ServerDto>> GetServersWithChannelsForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
+        using var context = _contextFactory.CreateSharplyContext();
+
         // Retrieve all servers and their channels/messages the user has access to
-        var servers = await _context.Servers
+        var servers = await context.Servers
             .Include(s => s.Channels)
                 .ThenInclude(c => c.Messages)
                     .ThenInclude(m => m.User) // fetch the user who sent the message
@@ -37,7 +40,7 @@ public class ServerService
         foreach (var server in servers)
         {
             server.Channels = server.Channels
-                .Where(c => _context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id))
+                .Where(c => context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id))
                 .ToList();
         }
 
@@ -49,7 +52,9 @@ public class ServerService
     /// </summary>
     public async Task<List<ChannelDto>> GetChannelsForServerAsync(int serverId, CancellationToken cancellationToken = default)
     {
-        var channels = await _context.Channels
+        using var context = _contextFactory.CreateSharplyContext();
+
+        var channels = await context.Channels
             .Where(c => c.ServerId == serverId)
             .Include(c => c.Messages)
             .ToListAsync(cancellationToken);

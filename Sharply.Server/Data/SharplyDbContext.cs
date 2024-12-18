@@ -65,7 +65,8 @@ public class SharplyDbContext : DbContext
         modelBuilder.Entity<Models.Server>()
             .HasMany(s => s.Channels)
             .WithOne(c => c.Server)
-            .HasForeignKey(c => c.ServerId);
+            .HasForeignKey(c => c.ServerId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // A channel can have many messages, and a message belongs to one channel
         modelBuilder.Entity<Channel>()

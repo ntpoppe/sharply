@@ -30,5 +30,10 @@ public class Server
     /// </summary>
     public ICollection<UserServer> UserServers { get; set; } = new List<UserServer>();
 
+    /// <summary>
+    /// Represents if a server is deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
 }
 

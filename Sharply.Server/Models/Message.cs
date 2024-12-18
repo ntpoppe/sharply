@@ -45,4 +45,9 @@ public class Message
     /// Navigation property for the user who sent the message
     /// </summary>
     public User? User { get; set; }
+
+    /// <summary>
+    /// Represents if a message is deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

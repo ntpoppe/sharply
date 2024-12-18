@@ -1,21 +1,17 @@
 using Microsoft.AspNetCore.SignalR;
-using Sharply.Server.Services;
-using Sharply.Shared.Models;
+using Sharply.Server.Interfaces;
 
 /// <summary>
 /// Manages user presence in real-time, tracking which users are online and broadcasting updates to all connected clients.
 /// </summary>
 public class UserHub : Hub
 {
-    private readonly UserService _userService;
+    private readonly IUserTrackerService _userTrackerService;
 
-    public UserHub(UserService userService)
+    public UserHub(IUserService userService, IUserTrackerService userTrackerService)
     {
-        _userService = userService;
+        _userTrackerService = userTrackerService;
     }
-
-    private static readonly Dictionary<string, int> ConnectionUserMap = new(); // Tracks the mapping between SignalR connection IDs and user IDs.
-    private static readonly Dictionary<int, List<int>> UserChannelAccess = new(); // Tracks the channels each user has access to.
 
     /// <summary>
     /// Marks a user as online, adds their user ID to the online users list, and notifies all connected clients.
@@ -23,13 +19,8 @@ public class UserHub : Hub
     /// <param name="userId">The ID of the user who is now online.</param>
     public async Task GoOnline(int userId)
     {
-        var userChannels = await _userService.GetChannelsForUserAsync(userId);
-        var userChannelIds = userChannels.Select(c => c.Id).ToList();
-        lock (ConnectionUserMap)
-        {
-            ConnectionUserMap[Context.ConnectionId] = userId;
-            UserChannelAccess[userId] = userChannelIds;
-        }
+        await _userTrackerService.AddUser(Context.ConnectionId, userId);
+        var userChannelIds = _userTrackerService.GetTrackedUserChannels(userId);
 
         Console.WriteLine($"User {userId} is online");
         foreach (var channelId in userChannelIds)
@@ -44,22 +35,12 @@ public class UserHub : Hub
     /// <param name="userId">The ID of the user who is now offline.</param>
     public async Task GoOffline()
     {
-        int? userId = null;
-
-        lock (ConnectionUserMap)
+        int? offlineUserId = _userTrackerService.RemoveUser(Context.ConnectionId);
+        if (offlineUserId.HasValue)
         {
-            if (ConnectionUserMap.TryGetValue(Context.ConnectionId, out var id))
-            {
-                userId = id;
-                ConnectionUserMap.Remove(Context.ConnectionId);
-                UserChannelAccess.Remove(userId.Value);
-            }
-        }
+            Console.WriteLine($"User {offlineUserId} went offline");
 
-        if (userId.HasValue)
-        {
-            Console.WriteLine($"User {userId} went offline");
-            var channels = UserChannelAccess.ContainsKey(userId.Value) ? UserChannelAccess[userId.Value] : new List<int>();
+            var channels = _userTrackerService.GetTrackedUserChannels(offlineUserId.Value);
             foreach (var channelId in channels)
             {
                 await BroadcastOnlineUsers(channelId);
@@ -77,29 +58,9 @@ public class UserHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    private async Task<List<UserDto>> GetUserDtos(List<int> userIds)
-    {
-        var userDtoTasks = userIds.Select(async id =>
-        {
-            var username = await _userService.GetUsernameFromId(id);
-            return new UserDto
-            {
-                Id = id,
-                Username = username
-            };
-        });
-
-        var userDtos = await Task.WhenAll(userDtoTasks);
-
-        return userDtos.Where(dto => dto.Username != null)
-                       .OrderBy(dto => dto.Username)
-                       .ToList();
-    }
-
     private async Task BroadcastOnlineUsers(int channelId)
     {
-        var onlineUsers = ConnectionUserMap.Values.ToList();
-        var userDtos = await GetUserDtos(onlineUsers);
+        var userDtos = await _userTrackerService.GetAllTrackedUsers();
         await Clients.All.SendAsync("UpdateOnlineUsers", userDtos);
     }
 }

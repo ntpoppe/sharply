@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Sharply.Server.Services;
 using Sharply.Shared;
 using Sharply.Shared.Requests;
 using System.Security.Claims;
@@ -8,10 +7,8 @@ using System.Security.Claims;
 [Route("api/users")]
 public class UsersController : ControllerBase
 {
-    private readonly UserService _userService;
 
-    public UsersController(UserService userService)
-        => _userService = userService;
+    public UsersController() { }
 
     [HttpGet("get-user-token-data")]
     public ApiResponse<UserTokenDataRequest> GetUserTokenData()

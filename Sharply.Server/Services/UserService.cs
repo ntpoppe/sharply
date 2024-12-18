@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
+using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Shared.Models;
 
@@ -9,15 +10,15 @@ namespace Sharply.Server.Services;
 /// <summary>
 /// Handles operations related to servers, such as creating, retrieving, updating, or deleting servers and their related data (e.g., channels within servers).
 /// </summary>
-public class UserService
+public class UserService : IUserService
 {
-    private readonly SharplyDbContext _context;
+    private readonly ISharplyContextFactory<SharplyDbContext> _contextFactory;
     private readonly IMapper _mapper;
-    private readonly ServerService _serverService;
+    private readonly IServerService _serverService;
 
-    public UserService(SharplyDbContext context, IMapper mapper, ServerService serverService)
+    public UserService(ISharplyContextFactory<SharplyDbContext> contextFactory, IMapper mapper, IServerService serverService)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _mapper = mapper;
         _serverService = serverService;
     }
@@ -27,7 +28,8 @@ public class UserService
     /// </summary>
     public async Task AddUserToServerAsync(int userId, int serverId, CancellationToken cancellationToken = default)
     {
-        var serverExists = await _context.Servers.AnyAsync(s => s.Id == serverId, cancellationToken);
+        using var context = _contextFactory.CreateSharplyContext();
+        var serverExists = await context.Servers.AnyAsync(s => s.Id == serverId && s.IsDeleted == false, cancellationToken);
         if (!serverExists)
             throw new Exception("Server not found");
 
@@ -37,8 +39,8 @@ public class UserService
             ServerId = serverId
         };
 
-        _context.UserServers.Add(userServer);
-        await _context.SaveChangesAsync(cancellationToken);
+        context.UserServers.Add(userServer);
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
@@ -55,8 +57,10 @@ public class UserService
     /// </summary>
     public async Task<List<ChannelDto>> GetChannelsForUserAsync(int userId, CancellationToken cancellationToken = default)
     {
-        var channels = await _context.UserChannels
+        using var context = _contextFactory.CreateSharplyContext();
+        var channels = await context.UserChannels
             .Where(uc => uc.UserId == userId)
+            .Where(uc => uc.IsActive == true)
             .Select(uc => uc.Channel)
             .ToListAsync(cancellationToken);
 
@@ -64,8 +68,13 @@ public class UserService
     }
 
     public async Task<string?> GetUsernameFromId(int userId, CancellationToken cancellationToken = default)
-        => await _context.Users
+    {
+        using var context = _contextFactory.CreateSharplyContext();
+
+        return await context.Users
             .Where(u => u.Id == userId)
+            .Where(u => u.IsDeleted == false)
             .Select(u => u.Username)
             .FirstOrDefaultAsync(cancellationToken);
+    }
 }

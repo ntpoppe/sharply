@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Sharply.Server.Services;
+using Sharply.Server.Interfaces;
 using Sharply.Shared;
 using Sharply.Shared.Models;
 using System.Security.Claims;
@@ -8,9 +8,9 @@ using System.Security.Claims;
 [Route("api/servers")]
 public class ServersController : ControllerBase
 {
-    private readonly UserService _userService;
+    private readonly IUserService _userService;
 
-    public ServersController(UserService userService)
+    public ServersController(IUserService userService)
         => _userService = userService;
 
     [HttpPost("{serverId}/add-user")]

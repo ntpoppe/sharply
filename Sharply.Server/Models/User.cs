@@ -45,4 +45,9 @@ public class User
     /// A collection of channels the user is in.
     /// </summary>
     public ICollection<UserChannel> UserChannels { get; set; } = new List<UserChannel>();
+
+    /// <summary>
+    /// Represents if a user is deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

@@ -11,7 +11,10 @@ public class SignalRService : ISignalRService
 {
     private HubConnection? _messageHubConnection;
     private HubConnection? _userHubConnection;
-    private const string URI = "https://localhost:8000";
+    private string _serverUri;
+
+    public SignalRService(string serverUri)
+        => _serverUri = serverUri;
 
     /// <summary>
     /// Connects to the "messages" SignalR hub using the provided token for authentication.
@@ -23,7 +26,7 @@ public class SignalRService : ISignalRService
             return;
 
         _messageHubConnection = new HubConnectionBuilder()
-            .WithUrl($"{URI}/hubs/messages", options =>
+            .WithUrl($"{_serverUri}/hubs/messages", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(token);
             })
@@ -40,7 +43,7 @@ public class SignalRService : ISignalRService
     public async Task ConnectUserHubAsync(string? token)
     {
         _userHubConnection = new HubConnectionBuilder()
-            .WithUrl($"{URI}/hubs/users", options =>
+            .WithUrl($"{_serverUri}/hubs/users", options =>
             {
                 options.AccessTokenProvider = () => Task.FromResult(token);
             })

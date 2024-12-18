@@ -1,4 +1,5 @@
-﻿using Sharply.Client.ViewModels;
+﻿using Sharply.Client.Interfaces;
+using Sharply.Client.ViewModels;
 using Sharply.Shared;
 using Sharply.Shared.Models;
 using Sharply.Shared.Requests;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.Services;
 
-public class ApiService
+public class ApiService : IApiService
 {
     private readonly HttpClient _client;
     private readonly TokenStorageService _tokenStorageService;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Sharply.Client.Interfaces;
 using Sharply.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.Services;
 
-public class SignalRService
+public class SignalRService : ISignalRService
 {
     private HubConnection? _messageHubConnection;
     private HubConnection? _userHubConnection;

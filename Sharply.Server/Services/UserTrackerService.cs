@@ -26,7 +26,7 @@ public class UserTrackerService : IUserTrackerService
     /// <param name="connectionId"></param>
     /// <param name="userId"></param>
     /// <returns>The id of the user that was added.</returns>
-    public async Task<int?> AddUser(string connectionId, int userId)
+    public async Task AddUser(string connectionId, int userId)
     {
         var userChannels = await _userService.GetChannelsForUserAsync(userId);
         var userChannelIds = userChannels.Select(c => c.Id).ToList();
@@ -35,8 +35,6 @@ public class UserTrackerService : IUserTrackerService
             ConnectionUserMap[connectionId] = userId;
             UserChannelAccess[userId] = userChannelIds;
         }
-
-        return userId;
     }
 
     /// <summary>
@@ -44,18 +42,28 @@ public class UserTrackerService : IUserTrackerService
     /// </summary>
     /// <param name="connectionId"></param>
     /// <returns>The id of the user that was removed.</returns>
-    public int? RemoveUser(string connectionId)
+    public void RemoveUser(string connectionId)
     {
-        int? userId = null;
+        int? userId = GetUserIdFromConnectionId(connectionId);
         lock (ConnectionUserMap)
         {
-            if (ConnectionUserMap.TryGetValue(connectionId, out var id))
-            {
-                userId = id;
-                ConnectionUserMap.Remove(connectionId);
-                UserChannelAccess.Remove(id);
-            }
+            ConnectionUserMap.Remove(connectionId);
+
+            if (userId != null)
+                UserChannelAccess.Remove(userId.Value);
         }
+    }
+
+    /// <summary>
+    /// Gets the user's id based on the passed in connection id.
+    /// </summary>
+    /// <param name="connectionId"></param>
+    /// <returns></returns>
+    public int? GetUserIdFromConnectionId(string connectionId)
+    {
+        int? userId = null;
+        if (ConnectionUserMap.TryGetValue(connectionId, out var id))
+            userId = id;
 
         return userId;
     }

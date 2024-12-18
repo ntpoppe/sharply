@@ -35,12 +35,14 @@ public class UserHub : Hub
     /// <param name="userId">The ID of the user who is now offline.</param>
     public async Task GoOffline()
     {
-        int? offlineUserId = _userTrackerService.RemoveUser(Context.ConnectionId);
-        if (offlineUserId.HasValue)
+        var userId = _userTrackerService.GetUserIdFromConnectionId(Context.ConnectionId);
+        if (userId.HasValue)
         {
-            Console.WriteLine($"User {offlineUserId} went offline");
+            var channels = _userTrackerService.GetTrackedUserChannels(userId.Value);
+            _userTrackerService.RemoveUser(Context.ConnectionId);
 
-            var channels = _userTrackerService.GetTrackedUserChannels(offlineUserId.Value);
+            Console.WriteLine($"User {userId} went offline");
+
             foreach (var channelId in channels)
             {
                 await BroadcastOnlineUsers(channelId);

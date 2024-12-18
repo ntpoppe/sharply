@@ -6,6 +6,6 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-        InitializeComponent(loadXaml: true, attachDevTools: true);
+        InitializeComponent(loadXaml: true);
     }
 }

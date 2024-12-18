@@ -1,11 +1,14 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
 using Sharply.Client.Views;
 using System;
+using System.IO;
 using System.Net.Http;
 
 
@@ -37,26 +40,30 @@ sealed class Program
 
     private static IServiceProvider ConfigureServices()
     {
+        var configuration = LoadConfiguration();
         var services = new ServiceCollection();
 
+        services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<IApiService, ApiService>();
-        services.AddSingleton<ISignalRService, SignalRService>();
         services.AddSingleton<IOverlayService, OverlayService>();
         services.AddSingleton<HttpClient>(provider =>
         {
-            var handler = new HttpClientHandler
-            {
-                // TODO: Disable this in production
-                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-            };
+            var config = provider.GetRequiredService<IConfiguration>();
+            var serverUri = config["ServerSettings:ServerUri"] ?? "http://localhost:8000";
+            var handler = new HttpClientHandler();
 
-            var serverUri = "https://localhost:8000";
             return new HttpClient(handler)
             {
                 BaseAddress = new Uri(serverUri)
             };
+        });
+        services.AddSingleton<ISignalRService>(provider =>
+        {
+            var config = provider.GetRequiredService<IConfiguration>();
+            var serverUri = config["ServerSettings:ServerUri"] ?? "http://localhost:8000";
+            return new SignalRService(serverUri);
         });
 
         services.AddTransient<MainViewModel>();
@@ -67,5 +74,21 @@ sealed class Program
         services.AddTransient<ServerSettingsView>();
 
         return services.BuildServiceProvider();
+    }
+
+    private static IConfiguration LoadConfiguration()
+    {
+#if DEBUG
+        var environment = "Development";
+#else
+        var environment = "Production";
+#endif
+
+        var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: true)
+            .AddEnvironmentVariables();
+
+        return builder.Build();
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
+using Sharply.Client.Views;
 using System;
 using System.Net.Http;
 
@@ -40,6 +41,9 @@ sealed class Program
 
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
+        services.AddSingleton<IApiService, ApiService>();
+        services.AddSingleton<ISignalRService, SignalRService>();
+        services.AddSingleton<IOverlayService, OverlayService>();
         services.AddSingleton<HttpClient>(provider =>
         {
             var handler = new HttpClientHandler
@@ -54,12 +58,13 @@ sealed class Program
                 BaseAddress = new Uri(serverUri)
             };
         });
-        services.AddSingleton<IApiService, ApiService>();
-        services.AddSingleton<ISignalRService, SignalRService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegisterViewModel>();
+        services.AddTransient<ServerSettingsViewModel>();
+
+        services.AddTransient<ServerSettingsView>();
 
         return services.BuildServiceProvider();
     }

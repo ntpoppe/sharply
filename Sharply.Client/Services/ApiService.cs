@@ -16,9 +16,9 @@ namespace Sharply.Client.Services;
 public class ApiService : IApiService
 {
     private readonly HttpClient _client;
-    private readonly TokenStorageService _tokenStorageService;
+    private readonly ITokenStorageService _tokenStorageService;
 
-    public ApiService(HttpClient client, TokenStorageService tokenStorageService)
+    public ApiService(HttpClient client, ITokenStorageService tokenStorageService)
     {
         _client = client;
         _tokenStorageService = tokenStorageService;

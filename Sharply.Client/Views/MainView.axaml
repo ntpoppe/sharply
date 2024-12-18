@@ -45,12 +45,10 @@
 			<StackPanel>
 				<TextBlock Text="Servers" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
 
-				<!-- Underline effect... pretty weird -->
-				<ListBox Background="{DynamicResource InputBackgroundBrush}"
-                         Foreground="{DynamicResource PrimaryTextBrush}"
-                         BorderBrush="{DynamicResource AccentBrush}"
-                         BorderThickness="1"
-                         Margin="10,0,10,10" />
+				<!-- Underline -->
+				<Border Height="1"
+						Background="{DynamicResource AccentBrush}"
+						Margin="10,0,10,10" />
 
 				<!-- Actual list box -->
 				<ListBox Background="{DynamicResource InputBackgroundBrush}"
@@ -76,14 +74,7 @@
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
-				<Button Content="Test Overlay"
-						VerticalAlignment="Bottom"
-                        Background="{DynamicResource AccentBrush}"
-                        Foreground="{DynamicResource PrimaryTextBrush}"
-                        Margin="10,0,10,10"
-                        Padding="5"
-						Command="{Binding TestToggleOverlayCommand}"
-                        CornerRadius="4"/>
+
 			</StackPanel>
 		</Border>
 

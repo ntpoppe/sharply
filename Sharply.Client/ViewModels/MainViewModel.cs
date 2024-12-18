@@ -1,12 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Services;
+using Sharply.Client.Views;
 using Sharply.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,46 +15,30 @@ namespace Sharply.Client.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly IApiService _apiService;
-    private readonly TokenStorageService _tokenStorageService;
+    private readonly ITokenStorageService _tokenStorageService;
     private readonly INavigationService _navigationService;
-    private readonly SignalRService _signalRService;
-
-    public event PropertyChangedEventHandler? PropertyChangedWindow;
+    private readonly ISignalRService _signalRService;
+    private readonly IOverlayService _overlayService;
 
     #region Constructors
 
     public MainViewModel(
         IApiService apiService,
-        TokenStorageService tokenStorageService,
+        ITokenStorageService tokenStorageService,
         INavigationService navigationService,
-        SignalRService signalRService)
+        ISignalRService signalRService,
+        IOverlayService overlayService)
     {
         _apiService = apiService;
         _tokenStorageService = tokenStorageService;
         _signalRService = signalRService;
-
+        _overlayService = overlayService;
         _navigationService = navigationService;
+
+        InitializeEvents();
+        InitializeCommands();
+
         _navigationService.NavigateTo<LoginViewModel>();
-        _navigationService.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(_navigationService.CurrentView))
-            {
-                OnPropertyChanged(nameof(CurrentView));
-            }
-
-            if (e.PropertyName == nameof(_navigationService.IsOverlayVisible))
-            {
-                OnPropertyChanged(nameof(IsOverlayVisible));
-            }
-        };
-
-        AddChannelCommand = new RelayCommand(AddChannel);
-        SendMessageCommand = new RelayCommand(SendMessage);
-        TestToggleOverlayCommand = new RelayCommand(() =>
-        {
-            _navigationService.SetOverlayVisible(!IsOverlayVisible);
-        });
-
         IsServerSelected = false;
     }
 
@@ -64,8 +47,9 @@ public partial class MainViewModel : ViewModelBase
     #endregion
 
     #region Commands
-    public IRelayCommand AddChannelCommand { get; }
-    public IRelayCommand SendMessageCommand { get; }
+    public IRelayCommand? AddChannelCommand { get; set; }
+    public IRelayCommand? SendMessageCommand { get; set; }
+    public IRelayCommand? OpenServerSettingsCommand { get; set; }
     #endregion
 
     #region Properties
@@ -77,8 +61,6 @@ public partial class MainViewModel : ViewModelBase
     private string? CurrentUserName { get; set; }
 
     /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
-
-    public IRelayCommand TestToggleOverlayCommand { get; }
 
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
@@ -107,15 +89,40 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string? _channelDisplayName;
 
-    public bool IsOverlayVisible => _navigationService.IsOverlayVisible;
-
     public object? CurrentView => _navigationService.CurrentView;
+    public object? CurrentOverlay => _overlayService.CurrentOverlayView;
+    public bool IsOverlayVisible => _overlayService.IsOverlayVisible;
 
     private List<UserDto> _globalOnlineUsers = new();
 
     #endregion
 
     #region Methods
+
+    public void InitializeEvents()
+    {
+        _overlayService.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(_overlayService.IsOverlayVisible))
+                OnPropertyChanged(nameof(IsOverlayVisible));
+
+            if (e.PropertyName == nameof(_overlayService.CurrentOverlayView))
+                OnPropertyChanged(nameof(CurrentOverlay));
+        };
+
+        _navigationService.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(_navigationService.CurrentView))
+                OnPropertyChanged(nameof(CurrentView));
+        };
+    }
+
+    public void InitializeCommands()
+    {
+        AddChannelCommand = new RelayCommand(AddChannel);
+        SendMessageCommand = new RelayCommand(SendMessage);
+        OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
+    }
 
     public async Task LoadInitialData()
     {
@@ -243,8 +250,6 @@ public partial class MainViewModel : ViewModelBase
                     );
                 }
 
-                await Task.Delay(1000);
-
                 await UpdateOnlineUsersForCurrentChannel();
                 SetChannelDisplay();
             }
@@ -308,6 +313,12 @@ public partial class MainViewModel : ViewModelBase
 
         ChannelDisplayName = $"{SelectedServer.Name}/#{SelectedChannel.Name}";
     }
+
+    private void OpenServerSettings()
+        => _overlayService.ShowOverlay<ServerSettingsView>();
+
+    private void CloseOverlay()
+        => _overlayService.HideOverlay();
 
     #endregion
 }

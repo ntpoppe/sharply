@@ -15,7 +15,6 @@ public class NavigationService : INavigationService
     public NavigationService(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _isOverlayVisible = false;
     }
 
     public object? CurrentView
@@ -28,17 +27,6 @@ public class NavigationService : INavigationService
         }
     }
     private object? _currentView;
-
-    public bool IsOverlayVisible
-    {
-        get => _isOverlayVisible;
-        private set
-        {
-            _isOverlayVisible = value;
-            OnPropertyChanged();
-        }
-    }
-    private bool _isOverlayVisible;
 
     public object? NavigateTo<TViewModel>() where TViewModel : class
     {
@@ -78,7 +66,4 @@ public class NavigationService : INavigationService
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-
-    public void SetOverlayVisible(bool value)
-        => IsOverlayVisible = value;
 }

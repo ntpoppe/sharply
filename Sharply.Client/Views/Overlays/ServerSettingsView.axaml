@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Sharply.Client.Views.ServerSettingsView"
+			 x:DataType="vm:ServerSettingsViewModel">
+	
+	<UserControl.Styles>
+		<Style Selector="TextBox:focus-within /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+
+		<Style Selector="TextBox:pointerover /template/ Border">
+			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
+			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
+		</Style>
+	</UserControl.Styles>
+	
+	<Grid>
+		<Border Width="350"
+				Height="400"
+                Background="{DynamicResource InputBackgroundBrush}"
+                CornerRadius="8"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Padding="20">
+
+			<Grid>
+				<!-- Close Button -->
+				<Button Content="X"
+						Height="30"
+						HorizontalAlignment="Right"
+						VerticalAlignment="Top"
+						Margin="0,0,0,-10"
+						Background="Transparent"
+						Foreground="White"
+						FontWeight="Bold" 
+						Command="{Binding CloseCommand}"/>
+
+				<!-- Content StackPanel -->
+				<StackPanel Orientation="Vertical" Margin="15">
+					<!-- Title -->
+					<TextBlock Text="Server Settings"
+							   FontSize="16"
+							   FontWeight="Bold"
+							   HorizontalAlignment="Left"
+							   VerticalAlignment="Top"
+							   Margin="0,0,0,20"/>
+
+					<!-- Rename Section -->
+					<StackPanel Orientation="Vertical" Margin="0,0,0,20">
+						<TextBlock Text="Rename Server:"
+								   FontSize="14"
+								   Margin="0,0,0,5"/>
+						<StackPanel Orientation="Horizontal">
+							<TextBox Width="200"
+									 Height="30"
+									 Watermark="Enter new server name..."
+									 Margin="0,0,10,0"/>
+							<Button Content="Rename"
+									Height="30"
+									Background="{DynamicResource AccentBrush}"
+									Foreground="{DynamicResource PrimaryTextBrush}"/>
+						</StackPanel>
+					</StackPanel>
+
+					<!-- Server Code Section -->
+					<StackPanel Orientation="Vertical">
+						<TextBlock Text="Server Join Code:"
+								   FontSize="14"
+								   Margin="0,0,0,5"/>
+						<StackPanel Orientation="Horizontal">
+							<TextBox Width="200"
+									 Height="30"
+									 Watermark="Generate a code..."
+									 Margin="0,0,10,0"/>
+							<Button Content="Generate"
+									Height="30"
+									Background="{DynamicResource AccentBrush}"
+									Foreground="{DynamicResource PrimaryTextBrush}"/>
+						</StackPanel>
+					</StackPanel>
+				</StackPanel>
+			</Grid>
+		</Border>
+	</Grid>
+
+</UserControl>

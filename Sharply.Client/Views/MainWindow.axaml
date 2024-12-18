@@ -19,20 +19,9 @@
 	<Grid>
 		<ContentControl Content="{Binding CurrentView}" />
 
-		<Grid x:Name="OverlayGrid"
-			  Background="#80000000"
-			  IsVisible="{Binding IsOverlayVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-			<Border Background="White"
-				Width="300" Height="200"
-				CornerRadius="8"
-				HorizontalAlignment="Center"
-				VerticalAlignment="Center">
-				<TextBlock Text="Settings"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Center"
-                           FontSize="20"/>
-			</Border>
-		</Grid>
+		<Border IsVisible="{Binding IsOverlayVisible}" Background="#40000000">
+			<ContentControl Content="{Binding CurrentOverlay}" />
+		</Border>
 	</Grid>
 	
 </Window>

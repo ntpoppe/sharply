@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Services;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
@@ -11,12 +10,12 @@ namespace Sharply.Client.ViewModels;
 
 public partial class RegisterViewModel : ViewModelBase
 {
-    private readonly ApiService _apiService;
+    private readonly IApiService _apiService;
     private readonly INavigationService _navigationService;
 
     #region Constructors
 
-    public RegisterViewModel(ApiService apiService, INavigationService navigationService)
+    public RegisterViewModel(IApiService apiService, INavigationService navigationService)
     {
         _apiService = apiService;
         _navigationService = navigationService;

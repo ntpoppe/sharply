@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Services;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,12 +9,12 @@ namespace Sharply.Client.ViewModels;
 
 public partial class LoginViewModel : ViewModelBase
 {
-    private readonly ApiService _apiService;
+    private readonly IApiService _apiService;
     private readonly INavigationService _navigationService;
 
     #region Constructors
 
-    public LoginViewModel(ApiService apiService, INavigationService navigationService)
+    public LoginViewModel(IApiService apiService, INavigationService navigationService)
     {
         _apiService = apiService;
         _navigationService = navigationService;

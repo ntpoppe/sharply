@@ -38,4 +38,9 @@ public class Channel
     /// A collection of users in this channel.
     /// </summary>
     public ICollection<UserChannel> UserChannels { get; set; } = new List<UserChannel>();
+
+    /// <summary>
+    /// Represents if a channel has been deleted.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

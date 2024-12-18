@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Sharply.Server.Data;
-using Sharply.Server.Services;
+using Sharply.Server.Interfaces;
 using Sharply.Shared;
 using Sharply.Shared.Models;
 
@@ -8,15 +7,11 @@ using Sharply.Shared.Models;
 [Route("api/channels")]
 public class ChannelsController : ControllerBase
 {
-    private readonly SharplyDbContext _dbContext;
-    private readonly ChannelService _channelService;
-    private readonly UserService _userService;
+    private readonly IChannelService _channelService;
 
-    public ChannelsController(SharplyDbContext dbContext, ChannelService channelService, UserService userService)
+    public ChannelsController(IChannelService channelService)
     {
-        _dbContext = dbContext;
         _channelService = channelService;
-        _userService = userService;
     }
 
     [HttpGet("{channelId}/get-messages")]

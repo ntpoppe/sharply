@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
+using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
-using Sharply.Server.Services;
 
 namespace Sharply.Server.SignalR;
 
@@ -11,12 +10,12 @@ namespace Sharply.Server.SignalR;
 /// </summary>
 public class MessageHub : Hub
 {
-    private readonly SharplyDbContext _context;
-    private readonly UserService _userService;
+    private readonly ISharplyContextFactory<SharplyDbContext> _contextFactory;
+    private readonly IUserService _userService;
 
-    public MessageHub(SharplyDbContext context, UserService userService)
+    public MessageHub(ISharplyContextFactory<SharplyDbContext> contextFactory, IUserService userService)
     {
-        _context = context;
+        _contextFactory = contextFactory;
         _userService = userService;
     }
 
@@ -29,30 +28,6 @@ public class MessageHub : Hub
     /// </remarks>
     public async Task JoinChannel(int channelId)
         => await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
-
-    /// <summary>
-    /// Joins the default channel for the default global server.
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <returns></returns>
-    public async Task JoinDefaultChannel(int userId)
-    {
-        var generalChannel = await _context.Channels.FirstOrDefaultAsync(c => c.Name == "General");
-        if (generalChannel == null) return;
-
-        var userChannel = await _context.UserChannels.FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ChannelId == generalChannel.Id);
-        if (userChannel == null)
-        {
-            _context.UserChannels.Add(new UserChannel
-            {
-                UserId = userId,
-                ChannelId = generalChannel.Id
-            });
-            await _context.SaveChangesAsync();
-        }
-
-        await JoinChannel(generalChannel.Id);
-    }
 
     /// <summary>
     /// Removes the current connection from a SignalR group representing a specific channel.
@@ -69,7 +44,9 @@ public class MessageHub : Hub
     /// <param name="content">The content of the message.</param>
     public async Task SendMessageToChannel(int channelId, int userId, string content)
     {
-        var channel = await _context.Channels.FindAsync(channelId);
+        using var context = _contextFactory.CreateSharplyContext();
+
+        var channel = await context.Channels.FindAsync(channelId);
         if (channel == null) return;
 
         var message = new Message
@@ -80,8 +57,8 @@ public class MessageHub : Hub
             Timestamp = DateTime.UtcNow
         };
 
-        _context.Messages.Add(message);
-        await _context.SaveChangesAsync();
+        context.Messages.Add(message);
+        await context.SaveChangesAsync();
 
         var username = await _userService.GetUsernameFromId(userId);
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", username, content, message.Timestamp);

@@ -76,12 +76,14 @@
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
-				<!-- <Button Content="Add Server"
+				<Button Content="Test Overlay"
+						VerticalAlignment="Bottom"
                         Background="{DynamicResource AccentBrush}"
                         Foreground="{DynamicResource PrimaryTextBrush}"
                         Margin="10,0,10,10"
                         Padding="5"
-                        CornerRadius="4"/> -->
+						Command="{Binding TestToggleOverlayCommand}"
+                        CornerRadius="4"/>
 			</StackPanel>
 		</Border>
 
@@ -89,6 +91,6 @@
 								 IsVisible="{Binding IsServerSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
 		<views:NoServerSelectedView Grid.Column="1"
 									IsVisible="{Binding IsServerSelected, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
-		
+
 	</Grid>
 </UserControl>

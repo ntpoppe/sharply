@@ -39,7 +39,7 @@ sealed class Program
         var services = new ServiceCollection();
 
         services.AddSingleton<INavigationService, NavigationService>();
-        services.AddSingleton<TokenStorageService>();
+        services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<HttpClient>(provider =>
         {
             var handler = new HttpClientHandler
@@ -54,8 +54,8 @@ sealed class Program
                 BaseAddress = new Uri(serverUri)
             };
         });
-        services.AddSingleton<ApiService>();
-        services.AddSingleton<SignalRService>();
+        services.AddSingleton<IApiService, ApiService>();
+        services.AddSingleton<ISignalRService, SignalRService>();
 
         services.AddTransient<MainViewModel>();
         services.AddTransient<LoginViewModel>();

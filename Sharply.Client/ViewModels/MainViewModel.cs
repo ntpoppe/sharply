@@ -6,6 +6,7 @@ using Sharply.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,23 +15,21 @@ namespace Sharply.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly ApiService _apiService;
+    private readonly IApiService _apiService;
     private readonly TokenStorageService _tokenStorageService;
     private readonly INavigationService _navigationService;
     private readonly SignalRService _signalRService;
 
+    public event PropertyChangedEventHandler? PropertyChangedWindow;
 
     #region Constructors
 
     public MainViewModel(
-        ApiService apiService,
+        IApiService apiService,
         TokenStorageService tokenStorageService,
         INavigationService navigationService,
         SignalRService signalRService)
     {
-        AddChannelCommand = new RelayCommand(AddChannel);
-        SendMessageCommand = new RelayCommand(SendMessage);
-
         _apiService = apiService;
         _tokenStorageService = tokenStorageService;
         _signalRService = signalRService;
@@ -43,7 +42,19 @@ public partial class MainViewModel : ViewModelBase
             {
                 OnPropertyChanged(nameof(CurrentView));
             }
+
+            if (e.PropertyName == nameof(_navigationService.IsOverlayVisible))
+            {
+                OnPropertyChanged(nameof(IsOverlayVisible));
+            }
         };
+
+        AddChannelCommand = new RelayCommand(AddChannel);
+        SendMessageCommand = new RelayCommand(SendMessage);
+        TestToggleOverlayCommand = new RelayCommand(() =>
+        {
+            _navigationService.SetOverlayVisible(!IsOverlayVisible);
+        });
 
         IsServerSelected = false;
     }
@@ -66,6 +77,8 @@ public partial class MainViewModel : ViewModelBase
     private string? CurrentUserName { get; set; }
 
     /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
+
+    public IRelayCommand TestToggleOverlayCommand { get; }
 
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
@@ -94,11 +107,7 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string? _channelDisplayName;
 
-    [ObservableProperty]
-    private bool _isErrorNotificationOpen;
-
-    [ObservableProperty]
-    private string? _errorMessage;
+    public bool IsOverlayVisible => _navigationService.IsOverlayVisible;
 
     public object? CurrentView => _navigationService.CurrentView;
 

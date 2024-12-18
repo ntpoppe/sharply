@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using Sharply.Client.Interfaces;
+using System.Threading.Tasks;
 
-public class TokenStorageService
+public class TokenStorageService : ITokenStorageService
 {
     private string? _token;
 

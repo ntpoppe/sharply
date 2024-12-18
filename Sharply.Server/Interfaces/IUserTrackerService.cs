@@ -3,9 +3,9 @@
 namespace Sharply.Server.Interfaces;
 public interface IUserTrackerService
 {
-    Task<int?> AddUser(string connectionId, int userId);
-    int? RemoveUser(string connectionId);
-
+    Task AddUser(string connectionId, int userId);
+    void RemoveUser(string connectionId);
+    int? GetUserIdFromConnectionId(string connectionId);
     List<int> GetTrackedUserChannels(int userId);
     Task<List<UserDto>> GetAllTrackedUsers();
 }

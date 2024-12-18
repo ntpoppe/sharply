@@ -16,6 +16,11 @@ public class Server
     public required string Name { get; set; }
 
     /// <summary>
+    /// Gets or sets the owner user id of the server.
+    /// </summary>
+    public required int OwnerId { get; set; }
+
+    /// <summary>
     /// Gets or sets a collection of channels contained by the server.
     /// </summary>
     public ICollection<Channel> Channels { get; set; } = new List<Channel>();

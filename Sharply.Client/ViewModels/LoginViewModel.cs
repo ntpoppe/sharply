@@ -55,15 +55,15 @@ public partial class LoginViewModel : ViewModelBase
             if (user != null)
                 await OnLoginSuccess(user);
             else
-                OnLoginFailed("Login failed. Please check your credentials.");
+                OnLoginFailed("Check your credentials.");
         }
         catch (HttpRequestException ex)
         {
-            OnLoginFailed($"Unable to connect to the server. {ex}");
+            OnLoginFailed($"Unable to connect to the server.");
         }
         catch (Exception ex)
         {
-            OnLoginFailed(ex.Message);
+            OnLoginFailed($"Login failed. {ex.Message} Please try again.");
         }
     }
 

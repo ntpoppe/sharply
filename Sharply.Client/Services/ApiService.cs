@@ -79,7 +79,7 @@ public class ApiService : IApiService
             }
         }
 
-        throw new Exception("Login failed. Please check your credentials.");
+        throw new Exception("Check your credentials.");
     }
 
     public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)

@@ -30,16 +30,9 @@ app.Run();
 
 void ConfigureAppSettings(WebApplicationBuilder builder)
 {
-#if DEBUG
-    var environment = "Development";
-#else
-    var environment = "Production";
-#endif
-
+    DotNetEnv.Env.Load();
     builder.Configuration
         .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-        .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
-        .AddJsonFile("secrets.json", optional: true, reloadOnChange: true)
         .AddEnvironmentVariables();
 }
 
@@ -48,7 +41,7 @@ void ConfigureUrls(WebApplicationBuilder builder)
     // Define application URLs
     var serverUri = builder.Configuration["ServerSettings:ServerUri"];
     if (string.IsNullOrEmpty(serverUri))
-        serverUri = "http://localhost:8000";
+        serverUri = "http://localhost:9000";
 
     builder.WebHost.UseUrls(serverUri);
 }
@@ -113,7 +106,6 @@ void ConfigureMiddleware(WebApplication app)
 
     // Middleware pipeline
     app.UseRouting();
-    //app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapControllers();

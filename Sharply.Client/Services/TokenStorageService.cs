@@ -26,7 +26,11 @@ public class TokenStorageService : ITokenStorageService
     }
 
     public string? LoadToken() => _token ??= LoadTokenInternal();
-
+    public void ClearToken()
+    {
+        _token = null;
+        ClearTokenInternal();
+    }
 
     private void SaveTokenInternal(string token)
     {

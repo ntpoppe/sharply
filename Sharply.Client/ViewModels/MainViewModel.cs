@@ -39,7 +39,9 @@ public partial class MainViewModel : ViewModelBase
         InitializeEvents();
         InitializeCommands();
 
-        _navigationService.NavigateTo<LoginViewModel>();
+        if (_navigationService.CurrentView == null)
+            _navigationService.NavigateTo<LoginViewModel>();
+
         IsServerSelected = false;
     }
 
@@ -51,14 +53,15 @@ public partial class MainViewModel : ViewModelBase
     public IRelayCommand? AddChannelCommand { get; set; }
     public IRelayCommand? SendMessageCommand { get; set; }
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
-    public IRelayCommand? OpenUserSettingsCommands { get; set; }
-    public IRelayCommand? LogoutCommand { get; set; }
+    public IRelayCommand? OpenUserSettingsCommand { get; set; }
     #endregion
 
     #region Properties
 
     public string Title { get; } = "Sharply";
-    private CurrentUser CurrentUser { get; set; }
+
+    [ObservableProperty]
+    private CurrentUser? _currentUser;
 
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
@@ -120,6 +123,7 @@ public partial class MainViewModel : ViewModelBase
         AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
         OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
+        OpenUserSettingsCommand = new RelayCommand(OpenUserSettings);
     }
 
     public async Task LoadInitialData()
@@ -312,8 +316,32 @@ public partial class MainViewModel : ViewModelBase
     private void OpenServerSettings()
         => _overlayService.ShowOverlay<ServerSettingsView>();
 
+    private void OpenUserSettings()
+    {
+        var view = CurrentView;
+        _overlayService.ShowOverlay<UserSettingsView>();
+    }
+
     private void CloseOverlay()
         => _overlayService.HideOverlay();
+
+    public async void Logout()
+    {
+        try
+        {
+            await _signalRService.DisconnectMessageHubAsync();
+            await _signalRService.DisconnectUserHubAsync(CurrentUser.Id);
+
+            CurrentUser = null;
+            _tokenStorageService.ClearToken();
+            _overlayService.HideOverlay();
+            _navigationService.NavigateTo<LoginViewModel>();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Error during logout: {ex}");
+        }
+    }
 
     #endregion
 }

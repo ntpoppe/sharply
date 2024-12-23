@@ -35,23 +35,44 @@
 	<Grid Background="{DynamicResource BackgroundBrush}">
 		<Grid.ColumnDefinitions>
 			<!-- Server List -->
-			<ColumnDefinition Width="140" />
+			<ColumnDefinition Width="150" />
 			<!-- Server Content -->
 			<ColumnDefinition Width="*" />
 		</Grid.ColumnDefinitions>
 
 		<!-- Server List -->
-		<Border Grid.Column="0" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
-			<StackPanel>
-				<TextBlock Text="Servers" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+		<Border Grid.Column="0" 
+				Background="{DynamicResource InputBackgroundBrush}" 
+				Margin="5" 
+				CornerRadius="8">
+			<Grid>
+				<Grid.RowDefinitions>
+					<!-- Header Text -->
+					<RowDefinition Height="Auto" />
+					<!-- Underline -->
+					<RowDefinition Height="Auto" />
+					<!-- ListBox -->
+					<RowDefinition Height="*" />
+					<!-- Button -->
+					<RowDefinition Height="Auto" />
+				</Grid.RowDefinitions>
+				
+				<TextBlock Grid.Row="0"
+						   Text="Servers" 
+						   Foreground="{DynamicResource PrimaryTextBrush}" 
+						   FontWeight="Bold" 
+						   Margin="10,10,10,5" 
+						   FontSize="16"/>
 
 				<!-- Underline -->
-				<Border Height="1"
+				<Border Grid.Row="1"
+						Height="1"
 						Background="{DynamicResource AccentBrush}"
 						Margin="10,0,10,10" />
 
 				<!-- Actual list box -->
-				<ListBox Background="{DynamicResource InputBackgroundBrush}"
+				<ListBox Grid.Row="2"
+						 Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          Margin="5,0,10,10"
 						 SelectedItem="{Binding SelectedServer}"
@@ -75,7 +96,40 @@
 					</ListBox.ItemTemplate>
 				</ListBox>
 
-			</StackPanel>
+				<Button Grid.Row="3"
+									Background="{DynamicResource UserProfileBrushBrush}"
+									Foreground="{DynamicResource PrimaryTextBrush}"
+									HorizontalAlignment="Center"
+									VerticalAlignment="Bottom"
+									Padding="5"
+									Width="130"
+									CornerRadius="10"
+									Command="{Binding OpenUserSettingsCommand}">
+					<StackPanel Orientation="Horizontal">
+						<Grid Width="25" Height="25" Margin="0,0,10,0">
+							<!-- Profile Color Circle -->
+							<Ellipse Fill="{Binding CurrentUser.ProfileBrush}" />
+							<!-- User Initials -->
+							<TextBlock Text="{Binding CurrentUser.Initials}"
+							   Foreground="{DynamicResource PrimaryTextBrush}"
+							   VerticalAlignment="Center"
+							   HorizontalAlignment="Center"
+							   FontWeight="Bold" />
+						</Grid>
+
+						<!-- User Details -->
+						<StackPanel>
+							<TextBlock Text="{Binding CurrentUser.Username}"
+									   FontWeight="Bold"
+									   FontSize="14"
+									   Foreground="{DynamicResource PrimaryTextBrush}"/>
+							<TextBlock Text="{Binding CurrentUser.Status}"
+									   FontSize="12"
+									   Foreground="{DynamicResource SecondaryTextBrush}" />
+						</StackPanel>
+					</StackPanel>
+				</Button>
+			</Grid>
 		</Border>
 
 		<views:ServerContentView Grid.Column="1"

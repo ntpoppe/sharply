@@ -183,16 +183,32 @@
 
 		<!-- Online Users -->
 		<Border Grid.Column="2" Background="{DynamicResource InputBackgroundBrush}" Margin="5" CornerRadius="8">
-			<StackPanel>
-				<TextBlock Text="Online Users" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" Margin="10,10,10,5" FontSize="16"/>
+			<Grid>
+				<Grid.RowDefinitions>
+					<!-- Header Text -->
+					<RowDefinition Height="Auto" />
+					<!-- Underline -->
+					<RowDefinition Height="Auto" />
+					<!-- ListBox -->
+					<RowDefinition Height="*" />
+				</Grid.RowDefinitions>
+
+				<TextBlock Grid.Row="0"
+						   Text="Online Users" 
+						   Foreground="{DynamicResource PrimaryTextBrush}" 
+						   FontWeight="Bold" 
+						   Margin="10,10,10,5" 
+						   FontSize="16"/>
 
 				<!-- Underline -->
-				<Border Height="1"
+				<Border Grid.Row="1"
+						Height="1"
 						Background="{DynamicResource AccentBrush}"
 						Margin="10,0,10,10" />
-					
+
 				<!-- Actual listbox -->
-				<ListBox ItemsSource="{Binding OnlineUsers}"
+				<ListBox Grid.Row="2"
+						 ItemsSource="{Binding OnlineUsers}"
                          Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          Margin="10,0,10,10"
@@ -203,7 +219,7 @@
 						</DataTemplate>
 					</ListBox.ItemTemplate>
 				</ListBox>
-			</StackPanel>
+			</Grid>
 		</Border>
 	</Grid>
 </UserControl>

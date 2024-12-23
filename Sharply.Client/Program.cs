@@ -11,7 +11,6 @@ using System;
 using System.IO;
 using System.Net.Http;
 
-
 namespace Sharply.Client;
 
 sealed class Program
@@ -42,7 +41,6 @@ sealed class Program
     {
         var configuration = LoadConfiguration();
         var services = new ServiceCollection();
-
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
@@ -80,17 +78,30 @@ sealed class Program
 
     private static IConfiguration LoadConfiguration()
     {
-#if DEBUG
-        var environment = "Development";
-#else
-        var environment = "Production";
-#endif
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+        string projectDirectory = FindProjectDirectory(baseDirectory, "Sharply.Client");
+        DotNetEnv.Env.Load(Path.Combine(projectDirectory, ".env"));
 
         var builder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile($"appsettings.{environment}.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.json", optional: false, reloadOnChange: true)
             .AddEnvironmentVariables();
 
         return builder.Build();
+    }
+
+    private static string FindProjectDirectory(string startDirectory, string projectName)
+    {
+        var currentDirectory = new DirectoryInfo(startDirectory);
+
+        while (currentDirectory != null)
+        {
+            if (currentDirectory.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase))
+            {
+                return currentDirectory.FullName;
+            }
+            currentDirectory = currentDirectory.Parent;
+        }
+
+        return string.Empty;
     }
 }

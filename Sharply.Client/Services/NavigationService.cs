@@ -28,19 +28,21 @@ public class NavigationService : INavigationService
     }
     private object? _currentView;
 
-    public object? NavigateTo<TViewModel>() where TViewModel : class
+    public object NavigateTo<TViewModel>() where TViewModel : class
     {
         var viewModel = _serviceProvider.GetService(typeof(TViewModel));
         if (viewModel != null)
         {
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
-        }
+        } else {
+			throw new InvalidOperationException("Cannot navigate to null.");
+		}
 
         return viewModel;
     }
 
-    public object? NavigateTo<TViewModel>(object parameter) where TViewModel : class
+    public object NavigateTo<TViewModel>(object parameter) where TViewModel : class
     {
         var viewModel = _serviceProvider.GetService(typeof(TViewModel));
         if (viewModel != null && viewModel is INavigable navigable)
@@ -48,7 +50,9 @@ public class NavigationService : INavigationService
             navigable.OnNavigatedTo(parameter);
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
-        }
+        } else {
+			throw new InvalidOperationException("Viewmodel is either not navigable or null.");
+		}
 
         return viewModel;
     }

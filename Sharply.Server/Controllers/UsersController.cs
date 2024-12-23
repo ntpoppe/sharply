@@ -1,48 +1,46 @@
 using Microsoft.AspNetCore.Mvc;
+using Sharply.Server.Interfaces;
 using Sharply.Shared;
-using Sharply.Shared.Requests;
+using Sharply.Shared.Models;
 using System.Security.Claims;
 
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase
 {
+    private readonly IUserService _userService;
 
-    public UsersController() { }
+    public UsersController(IUserService userService)
+    {
+        _userService = userService;
+    }
 
-    [HttpGet("get-user-token-data")]
-    public ApiResponse<UserTokenDataRequest> GetUserTokenData()
+    [HttpGet("get-user-data")]
+    public async Task<ApiResponse<UserDto>> GetUserDto()
     {
         try
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userIdClaim == null)
-                return new ApiResponse<UserTokenDataRequest>
+                return new ApiResponse<UserDto>
                 {
                     Success = false,
                     Error = "User ID not found."
                 };
 
-            var usernameClaim = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (usernameClaim == null)
-                return new ApiResponse<UserTokenDataRequest>
-                {
-                    Success = false,
-                    Error = "Username not found."
-                };
-
             var userId = Int32.Parse(userIdClaim);
-            var request = new UserTokenDataRequest() { UserId = userId, Username = usernameClaim };
 
-            return new ApiResponse<UserTokenDataRequest>
+            var dto = await _userService.GetUserDto(userId);
+
+            return new ApiResponse<UserDto>
             {
                 Success = true,
-                Data = request
+                Data = dto
             };
         }
         catch (Exception ex)
         {
-            return new ApiResponse<UserTokenDataRequest>
+            return new ApiResponse<UserDto>
             {
                 Success = false,
                 Error = ex.Message

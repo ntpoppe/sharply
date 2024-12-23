@@ -57,5 +57,4 @@ public class OverlayService : IOverlayService
 
     protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-
 }

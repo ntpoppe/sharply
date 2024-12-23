@@ -32,6 +32,11 @@ public class User
     public string? PasswordHash { get; set; }
 
     /// <summary>
+    /// Gets or sets the nickname of the user.
+    /// </summary>
+    public string? Nickname { get; set; }
+
+    /// <summary>
     /// A collection of messages sent by the user. Navigation property.
     /// </summary>
     public ICollection<Message>? Messages { get; set; }

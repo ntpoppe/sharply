@@ -8,4 +8,7 @@ public partial class UserViewModel : ObservableObject
 
     [ObservableProperty]
     private string? _username;
+
+    [ObservableProperty]
+    private string? _nickname;
 }

@@ -19,6 +19,9 @@ public class MappingProfile : Profile
         // Map Message -> MessageDto
         CreateMap<Message, MessageDto>()
             .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.Username)); // Maps Username to User.Username
+
+        // Map User -> UserDto
+        CreateMap<User, UserDto>();
     }
 }
 

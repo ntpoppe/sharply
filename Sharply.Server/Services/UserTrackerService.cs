@@ -91,12 +91,8 @@ public class UserTrackerService : IUserTrackerService
 
         var userDtoTasks = onlineUsersIds.Select(async id =>
         {
-            var username = await _userService.GetUsernameFromId(id);
-            return new UserDto
-            {
-                Id = id,
-                Username = username
-            };
+            var dto = await _userService.GetUserDto(id);
+            return dto;
         });
 
         var userDtos = await Task.WhenAll(userDtoTasks);

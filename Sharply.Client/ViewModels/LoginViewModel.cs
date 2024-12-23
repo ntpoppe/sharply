@@ -69,9 +69,7 @@ public partial class LoginViewModel : ViewModelBase
 
     [RelayCommand]
     private void GoToRegister()
-    {
-        _navigationService.NavigateTo<RegisterViewModel>();
-    }
+        => _navigationService.NavigateTo<RegisterViewModel>();
 
     private async Task OnLoginSuccess(UserViewModel user)
     {
@@ -83,9 +81,7 @@ public partial class LoginViewModel : ViewModelBase
     }
 
     private void OnLoginFailed(string errorMessage)
-    {
-        ErrorMessage = errorMessage;
-    }
+        => ErrorMessage = errorMessage;
 
     #endregion
 }

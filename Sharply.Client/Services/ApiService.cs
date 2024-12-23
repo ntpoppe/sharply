@@ -121,19 +121,6 @@ public class ApiService : IApiService
 
         throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
     }
-    public async Task<UserTokenDataRequest?> GetCurrentUserTokenData(string tokenString)
-    {
-        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
-        var response = await _client.GetAsync("api/users/get-user-token-data");
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<ApiResponse<UserTokenDataRequest>>();
-            if (result != null && result.Success)
-                return result.Data;
-        }
-
-        return null;
-    }
 
     public async Task<List<MessageViewModel>> GetMessagesForChannel(string tokenString, int channelId)
     {
@@ -190,4 +177,19 @@ public class ApiService : IApiService
             return false;
         }
     }
+
+    public async Task<UserDto?> GetCurrentUserData(string tokenString)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.GetAsync("api/users/get-user-data");
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<UserDto>>();
+            if (result != null && result.Success)
+                return result.Data;
+        }
+
+        return null;
+    }
+
 }

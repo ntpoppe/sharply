@@ -23,6 +23,22 @@ public class UserService : IUserService
         _serverService = serverService;
     }
 
+    public async Task<UserDto> GetUserDto(int userId, CancellationToken cancellationToken = default)
+    {
+        using var context = _contextFactory.CreateSharplyContext();
+
+        var user = await context.Users
+            .Where(u => u.Id == userId)
+            .Where(u => u.IsDeleted == false)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (user == null)
+            throw new InvalidOperationException($"The user with id {userId} was not found from GetUserDto.");
+
+        var dto = _mapper.Map<UserDto>(user);
+        return dto;
+    }
+
     /// <summary>
     /// Adds a user to a server.
     /// </summary>
@@ -67,14 +83,19 @@ public class UserService : IUserService
         return _mapper.Map<List<ChannelDto>>(channels);
     }
 
-    public async Task<string?> GetUsernameFromId(int userId, CancellationToken cancellationToken = default)
+    public async Task<string> GetUsernameFromId(int userId, CancellationToken cancellationToken = default)
     {
         using var context = _contextFactory.CreateSharplyContext();
 
-        return await context.Users
+        var username = await context.Users
             .Where(u => u.Id == userId)
             .Where(u => u.IsDeleted == false)
             .Select(u => u.Username)
             .FirstOrDefaultAsync(cancellationToken);
+
+        if (username == null)
+            throw new InvalidOperationException($"No user found with ID {userId}.");
+
+        return username;
     }
 }

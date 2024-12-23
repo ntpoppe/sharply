@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
+using Sharply.Client.Models;
 using Sharply.Client.Views;
 using Sharply.Shared.Models;
 using System;
@@ -50,17 +51,14 @@ public partial class MainViewModel : ViewModelBase
     public IRelayCommand? AddChannelCommand { get; set; }
     public IRelayCommand? SendMessageCommand { get; set; }
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
+    public IRelayCommand? OpenUserSettingsCommands { get; set; }
+    public IRelayCommand? LogoutCommand { get; set; }
     #endregion
 
     #region Properties
 
     public string Title { get; } = "Sharply";
-
-    /* TODO: Make these into it's own class, I'm sure this is going to be extended */
-    private int? CurrentUserId { get; set; }
-    private string? CurrentUserName { get; set; }
-
-    /* ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */
+    private CurrentUser CurrentUser { get; set; }
 
     [ObservableProperty]
     private ObservableCollection<ServerViewModel> _servers = new();
@@ -132,12 +130,11 @@ public partial class MainViewModel : ViewModelBase
             var token = _tokenStorageService.LoadToken();
             if (token == null) throw new Exception("token was null");
 
-            var tokenData = await _apiService.GetCurrentUserTokenData(token);
-            if (tokenData == null)
-                throw new Exception("Token data missing.");
+            var userData = await _apiService.GetCurrentUserData(token);
+            if (userData == null)
+                throw new Exception("User data missing.");
 
-            CurrentUserId = tokenData.UserId;
-            CurrentUserName = tokenData.Username;
+            CurrentUser = CurrentUser.FromDto(userData);
 
             // Retrieve all servers and channels associated with the user
             var servers = await _apiService.GetServersAsync(token);
@@ -146,7 +143,6 @@ public partial class MainViewModel : ViewModelBase
             var channels = servers.SelectMany(s => s.Channels);
             Channels = new ObservableCollection<ChannelViewModel>(channels);
 
-            // Initialize SignalR hub connection
             await InitializeHubConnections(token);
         }
         catch (Exception ex)
@@ -164,8 +160,7 @@ public partial class MainViewModel : ViewModelBase
             _signalRService.OnMessageReceived(OnMessageReceived);
             _signalRService.OnOnlineUsersUpdated(users => OnOnlineUsersUpdatedAsync(users).Wait());
 
-            if (CurrentUserId.HasValue)
-                await _signalRService.GoOnline(CurrentUserId.Value);
+            await _signalRService.GoOnline(CurrentUser.Id);
 
         }
         catch (Exception ex)
@@ -186,10 +181,10 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            if (SelectedChannel?.Id == null || CurrentUserId == null || string.IsNullOrWhiteSpace(NewMessage))
+            if (SelectedChannel?.Id == null || string.IsNullOrWhiteSpace(NewMessage))
                 return;
 
-            await _signalRService.SendMessageAsync(SelectedChannel.Id.Value, CurrentUserId.Value, NewMessage);
+            await _signalRService.SendMessageAsync(SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
             NewMessage = string.Empty;
         }
         catch (Exception ex)
@@ -299,7 +294,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         OnlineUsers = new ObservableCollection<UserViewModel>(
-            usersForChannel.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username })
+            usersForChannel.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username, Nickname = dto.Nickname })
         );
     }
 

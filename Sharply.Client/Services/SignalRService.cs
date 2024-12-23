@@ -107,7 +107,7 @@ public class SignalRService : ISignalRService
     }
 
     /// <summary>
-    /// Disconnects the SignalR connection gracefully.
+    /// Disconnects the message SignalR connection gracefully.
     /// </summary>
     public async Task DisconnectMessageHubAsync()
     {
@@ -116,6 +116,21 @@ public class SignalRService : ISignalRService
             await _messageHubConnection.StopAsync();
             await _messageHubConnection.DisposeAsync();
             _messageHubConnection = null;
+        }
+    }
+
+    /// <summary>
+    /// Disconnects the user SignalR connection gracefully.
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    public async Task DisconnectUserHubAsync(int userId)
+    {
+        if (_userHubConnection != null && _userHubConnection.State != HubConnectionState.Disconnected)
+        {
+            await _userHubConnection.StopAsync();
+            await _userHubConnection.DisposeAsync();
+            _userHubConnection = null;
         }
     }
 
@@ -136,6 +151,6 @@ public class SignalRService : ISignalRService
     /// Notifies the server that a user has gone offline.
     /// </summary>
     /// <param name="userId">The ID of the user who is now offline.</param>
-    public async Task GoOffline(int userId)
-        => await _userHubConnection?.InvokeAsync("GoOffline", userId);
+    public async Task GoOffline()
+        => await _userHubConnection?.InvokeAsync("GoOffline");
 }

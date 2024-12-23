@@ -41,6 +41,7 @@ public class OverlayService : IOverlayService
 
     public void ShowOverlay<TView>() where TView : class
     {
+        HideOverlay();
         var view = _serviceProvider.GetService(typeof(TView));
         if (view != null)
         {

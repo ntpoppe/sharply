@@ -16,7 +16,8 @@ public interface ISignalRService
     Task LeaveChannelAsync(int channelId);
     Task SendMessageAsync(int channelId, int userId, string message);
     Task DisconnectMessageHubAsync();
+    Task DisconnectUserHubAsync(int userId);
     void OnOnlineUsersUpdated(Action<List<UserDto>> callback);
     Task GoOnline(int userId);
-    Task GoOffline(int userId);
+    Task GoOffline();
 }

@@ -24,6 +24,8 @@ cd sharply
 ### Setting Up the Environment
 #### Install dependencies:
 ```bash
+dotnet tool install --global dotnet-ef
+
 cd Sharply.Server
 dotnet restore
 

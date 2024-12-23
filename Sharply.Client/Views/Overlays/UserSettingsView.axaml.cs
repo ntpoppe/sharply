@@ -16,8 +16,8 @@ public partial class UserSettingsView : UserControl
         DataContext = _serviceProvider.GetRequiredService<UserSettingsViewModel>();
     }
 
-    public UserSettingsView()
-    {
-        InitializeComponent();
-    }
+// Avalonia previewer
+#pragma warning disable CS8618
+    public UserSettingsView() => InitializeComponent();
+#pragma warning restore CS8618
 }

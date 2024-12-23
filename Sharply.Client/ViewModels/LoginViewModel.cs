@@ -59,6 +59,7 @@ public partial class LoginViewModel : ViewModelBase
         }
         catch (HttpRequestException ex)
         {
+			Console.WriteLine(ex);
             OnLoginFailed($"Unable to connect to the server.");
         }
         catch (Exception ex)

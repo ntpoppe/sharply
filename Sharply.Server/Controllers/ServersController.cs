@@ -20,6 +20,7 @@ public class ServersController : ControllerBase
         {
             //await _userService.AddUserToServerAsync(request.UserId, serverId);
             //return Ok(new { message = "User added to server successfully" });
+			await Task.Delay(2);
             return BadRequest();
         }
         catch (Exception ex)

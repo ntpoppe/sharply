@@ -65,6 +65,7 @@ public class AuthController : ControllerBase
         // Create the new user
         var user = new User { Username = request.Username };
         var passwordHasher = new PasswordHasher<User>();
+		var passwordHash = passwordHasher.HashPassword(user, request.Password);
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
         context.Users.Add(user);
@@ -107,25 +108,24 @@ public class AuthController : ControllerBase
     /// <response code="200">The user was successfully authenticated.</response>
     /// <response code="401">The username or password is invalid.</response>
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public IActionResult Login([FromBody] LoginRequest request)
     {
         using var context = _contextFactory.CreateSharplyContext();
 
         // Find the user by username
         var user = context.Users.SingleOrDefault(u => u.Username == request.Username);
         if (user == null)
-        {
             return Unauthorized("Invalid credentials.");
-        }
 
         // Verify password
+		if (user.PasswordHash == null)
+			return Unauthorized("PasswordHash does not exist. You should never see this.");
+
         var passwordHasher = new PasswordHasher<User>();
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
         if (result == PasswordVerificationResult.Failed)
-        {
             return Unauthorized("Invalid credentials.");
-        }
 
         // Generate a token for the user
         var tokenHandler = new JwtSecurityTokenHandler();

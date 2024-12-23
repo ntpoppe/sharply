@@ -59,6 +59,7 @@
                      Background="{DynamicResource InputBackgroundBrush}"
                      Foreground="{DynamicResource PrimaryTextBrush}"
                      BorderBrush="{DynamicResource AccentBrush}"
+					 KeyDown="PasswordBox_KeyDown"
                      Margin="0,10,0,0"/>
 
 			<!-- Error Message -->

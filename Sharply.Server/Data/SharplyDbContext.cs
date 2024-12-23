@@ -91,6 +91,10 @@ public class SharplyDbContext : DbContext
             .HasOne(uc => uc.Channel)
             .WithMany(c => c.UserChannels)
             .HasForeignKey(uc => uc.ChannelId);
+
+        modelBuilder.Entity<UserChannel>()
+            .Property(uc => uc.IsActive)
+            .HasDefaultValue(1);
     }
 
     private void ConfigureUserServerRelationship(ModelBuilder modelBuilder)
@@ -109,6 +113,10 @@ public class SharplyDbContext : DbContext
             .HasOne(us => us.Server)
             .WithMany(s => s.UserServers)
             .HasForeignKey(us => us.ServerId);
+
+        modelBuilder.Entity<UserServer>()
+            .Property(us => us.IsActive)
+            .HasDefaultValue(1);
     }
 
     private void SeedData(ModelBuilder modelBuilder)
@@ -118,6 +126,6 @@ public class SharplyDbContext : DbContext
 
         // Seed a default channel in the default server
         modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });
-		modelBuilder.Entity<Channel>().HasData(new Channel { Id = 2, Name = "Testing", ServerId = 1 });
+        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 2, Name = "Testing", ServerId = 1 });
     }
 }

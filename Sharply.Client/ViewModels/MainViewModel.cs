@@ -45,7 +45,10 @@ public partial class MainViewModel : ViewModelBase
         IsServerSelected = false;
     }
 
+// Avalonia previewer
+#pragma warning disable CS8618
     public MainViewModel() { }
+#pragma warning restore CS8618
 
     #endregion
 

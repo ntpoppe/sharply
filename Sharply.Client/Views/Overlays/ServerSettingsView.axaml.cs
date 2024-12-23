@@ -16,8 +16,8 @@ public partial class ServerSettingsView : UserControl
         DataContext = _serviceProvider.GetRequiredService<ServerSettingsViewModel>();
     }
 
-    public ServerSettingsView()
-    {
-        InitializeComponent();
-    }
+// Avalonia previewer
+#pragma warning disable CS8618
+    public ServerSettingsView() => InitializeComponent();
+#pragma warning restore CS8618
 }

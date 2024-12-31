@@ -11,19 +11,19 @@ public class OverlayServiceTests
 	private Mock<IServiceProvider> _serviceProviderMock;
 	private OverlayService _overlayService;
 
-	[SetUp]
-	public void Setup()
-	{
-		_serviceProviderMock = new Mock<IServiceProvider>();
-		_overlayService = new OverlayService(_serviceProviderMock.Object);
-	}
-
 	public class MockOverlayViewModel : IOverlay
 	{
 		public void Close() { }
 	}
 
 	public class MockNonOverlayViewModel { }
+
+	[SetUp]
+	public void Setup()
+	{
+		_serviceProviderMock = new Mock<IServiceProvider>();
+		_overlayService = new OverlayService(_serviceProviderMock.Object);
+	}
 
 	[Test]
 	public void ShowOverlay_ValidOverlay_SetsCurrentOverlayViewAndVisibility()

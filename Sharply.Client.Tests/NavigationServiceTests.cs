@@ -11,13 +11,6 @@ public class NavigationServiceTests
 	private Mock<IServiceProvider> _serviceProviderMock;
 	private NavigationService _navigationService;
 
-	[SetUp]
-	public void Setup()
-	{
-		_serviceProviderMock = new Mock<IServiceProvider>();
-		_navigationService = new NavigationService(_serviceProviderMock.Object);
-	}
-
 	public class MockNonNavigableViewModel { }
 
 	public class MockNavigableViewModel : INavigable 
@@ -28,6 +21,13 @@ public class NavigationServiceTests
         {
             NavigatedParameter = parameter;
         }
+	}
+
+	[SetUp]
+	public void Setup()
+	{
+		_serviceProviderMock = new Mock<IServiceProvider>();
+		_navigationService = new NavigationService(_serviceProviderMock.Object);
 	}
 
 	[Test]

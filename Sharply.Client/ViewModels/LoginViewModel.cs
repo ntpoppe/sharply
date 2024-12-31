@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
-public partial class LoginViewModel : ViewModelBase
+public partial class LoginViewModel : ViewModelBase, INavigable
 {
     private readonly IApiService _apiService;
     private readonly INavigationService _navigationService;
@@ -42,14 +42,11 @@ public partial class LoginViewModel : ViewModelBase
             ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true
         };
 
-        // Call API service to authenticate
         try
         {
-            // Validate input
             if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
                 throw new Exception("Username or password cannot be empty.");
 
-            // Attempt to log in
             var user = await _apiService.LoginAsync(Username, Password);
 
             if (user != null)
@@ -71,6 +68,11 @@ public partial class LoginViewModel : ViewModelBase
     [RelayCommand]
     private void GoToRegister()
         => _navigationService.NavigateTo<RegisterViewModel>();
+
+	public void OnNavigatedTo(object? parameter)
+	{
+		// Do nothing, may be useful in the future
+	}
 
     private async Task OnLoginSuccess(UserViewModel user)
     {

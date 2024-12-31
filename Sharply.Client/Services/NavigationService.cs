@@ -31,12 +31,12 @@ public class NavigationService : INavigationService
     public object NavigateTo<TViewModel>() where TViewModel : class
     {
         var viewModel = _serviceProvider.GetService(typeof(TViewModel));
-        if (viewModel != null)
+        if (viewModel != null && viewModel is INavigable)
         {
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
         } else {
-			throw new InvalidOperationException("Cannot navigate to null.");
+			throw new InvalidOperationException("ViewModel is either not navigable or null.");
 		}
 
         return viewModel;
@@ -51,7 +51,7 @@ public class NavigationService : INavigationService
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
         } else {
-			throw new InvalidOperationException("Viewmodel is either not navigable or null.");
+			throw new InvalidOperationException("ViewModel is either not navigable or null.");
 		}
 
         return viewModel;

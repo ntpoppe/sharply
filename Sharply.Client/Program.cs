@@ -70,9 +70,6 @@ sealed class Program
         services.AddTransient<ServerSettingsViewModel>();
         services.AddTransient<UserSettingsViewModel>();
 
-        services.AddTransient<ServerSettingsView>();
-        services.AddTransient<UserSettingsView>();
-
         return services.BuildServiceProvider();
     }
 

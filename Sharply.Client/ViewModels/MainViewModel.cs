@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel : ViewModelBase, INavigable
 {
     private readonly IApiService _apiService;
     private readonly ITokenStorageService _tokenStorageService;
@@ -102,6 +102,11 @@ public partial class MainViewModel : ViewModelBase
     #endregion
 
     #region Methods
+
+	public void OnNavigatedTo(object? parameter)
+	{
+		// Do nothing, may be useful in the future;
+	}
 
     public void InitializeEvents()
     {
@@ -317,12 +322,12 @@ public partial class MainViewModel : ViewModelBase
     }
 
     private void OpenServerSettings()
-        => _overlayService.ShowOverlay<ServerSettingsView>();
+        => _overlayService.ShowOverlay<ServerSettingsViewModel>();
 
     private void OpenUserSettings()
     {
         var view = CurrentView;
-        _overlayService.ShowOverlay<UserSettingsView>();
+        _overlayService.ShowOverlay<UserSettingsViewModel>();
     }
 
     private void CloseOverlay()

@@ -39,14 +39,18 @@ public class OverlayService : IOverlayService
     }
     private object? _currentOverlayView;
 
-    public void ShowOverlay<TView>() where TView : class
+    public void ShowOverlay<TViewModel>() where TViewModel : class, IOverlay
     {
         HideOverlay();
-        var view = _serviceProvider.GetService(typeof(TView));
+        var view = _serviceProvider.GetService(typeof(TViewModel));
         if (view != null)
         {
             CurrentOverlayView = view;
             IsOverlayVisible = true;
+        }
+		else
+        {
+            throw new InvalidOperationException($"Overlay ViewModel of type {typeof(TViewModel).Name} is not registered.");
         }
     }
 

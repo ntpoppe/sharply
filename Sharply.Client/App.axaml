@@ -21,9 +21,23 @@
 		<DataTemplate DataType="{x:Type vm:LoginViewModel}">
 			<views:LoginView />
 		</DataTemplate>
+
+		<DataTemplate DataType="{x:Type vm:RegisterViewModel}">
+			<views:RegisterView />
+		</DataTemplate>
+
 		<DataTemplate DataType="{x:Type vm:MainViewModel}">
 			<views:MainView />
 		</DataTemplate>
+
+		<DataTemplate DataType="{x:Type vm:ServerSettingsViewModel}">
+			<views:ServerSettingsView />
+		</DataTemplate>
+
+		<DataTemplate DataType="{x:Type vm:UserSettingsViewModel}">
+			<views:UserSettingsView />
+		</DataTemplate>
+
     </Application.DataTemplates>
   
     <Application.Styles>

@@ -3,7 +3,7 @@ using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.ViewModels;
 
-public class ServerSettingsViewModel
+public class ServerSettingsViewModel : IOverlay
 {
     private IOverlayService _overlayService;
 

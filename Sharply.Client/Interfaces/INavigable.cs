@@ -5,5 +5,5 @@
 /// </summary>
 public interface INavigable
 {
-    void OnNavigatedTo(object parameter);
+    void OnNavigatedTo(object? parameter);
 }

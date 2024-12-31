@@ -7,6 +7,6 @@ public interface IOverlayService : INotifyPropertyChanged
     bool IsOverlayVisible { get; }
     object? CurrentOverlayView { get; }
 
-    void ShowOverlay<TView>() where TView : class;
+    void ShowOverlay<TView>() where TView : class, IOverlay;
     void HideOverlay();
 }

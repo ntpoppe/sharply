@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
 
-public partial class RegisterViewModel : ViewModelBase
+public partial class RegisterViewModel : ViewModelBase, INavigable
 {
     private readonly IApiService _apiService;
     private readonly INavigationService _navigationService;
@@ -83,6 +83,11 @@ public partial class RegisterViewModel : ViewModelBase
     {
         _navigationService.NavigateTo<LoginViewModel>();
     }
+
+	public void OnNavigatedTo(object? parameter)
+	{
+		// Do nothing, may be useful in the future
+	}
 
     private async Task OnRegisterSuccess(UserViewModel user)
     {

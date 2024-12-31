@@ -1,0 +1,94 @@
+using Moq;
+using NUnit.Framework;
+using Sharply.Client.Services;
+using Sharply.Client.Interfaces;
+
+namespace Sharply.Client.Tests;
+
+[TestFixture]
+public class OverlayServiceTests
+{
+	private Mock<IServiceProvider> _serviceProviderMock;
+	private OverlayService _overlayService;
+
+	[SetUp]
+	public void Setup()
+	{
+		_serviceProviderMock = new Mock<IServiceProvider>();
+		_overlayService = new OverlayService(_serviceProviderMock.Object);
+	}
+
+	public class MockOverlayViewModel : IOverlay
+	{
+		public void Close() { }
+	}
+
+	public class MockNonOverlayViewModel { }
+
+	[Test]
+	public void ShowOverlay_ValidOverlay_SetsCurrentOverlayViewAndVisibility()
+	{
+		// Arrange
+		var overlayView = new Mock<IOverlay>();
+		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))
+							.Returns(overlayView.Object);
+
+		// Act
+		_overlayService.ShowOverlay<MockOverlayViewModel>();
+
+		// Assert
+		Assert.That(_overlayService.CurrentOverlayView, Is.EqualTo(overlayView.Object));
+		Assert.That(_overlayService.IsOverlayVisible, Is.True);
+	}
+
+	[Test]
+	public void ShowOverlay_UnregisteredOverlay_ThrowsException()
+	{
+		// Act & Assert
+		Assert.Throws<InvalidOperationException>(() =>
+		{
+			_overlayService.ShowOverlay<MockOverlayViewModel>();
+		});
+	}
+
+	[Test]
+	public void HideOverlay_ResetsCurrentOverlayViewAndVisibility()
+	{
+		// Arrange
+		var overlayView = new Mock<IOverlay>();
+		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))
+							.Returns(overlayView.Object);
+		_overlayService.ShowOverlay<MockOverlayViewModel>();
+
+		// Act
+		_overlayService.HideOverlay();
+
+		// Assert
+		Assert.That(_overlayService.CurrentOverlayView, Is.Null);
+		Assert.That(_overlayService.IsOverlayVisible, Is.False);
+	}
+
+	[Test]
+	public void ShowOverlay_RaisesPropertyChangedForIsOverlayVisible()
+	{
+		// Arrange
+		var overlayView = new Mock<IOverlay>();
+		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))
+							.Returns(overlayView.Object);
+		bool eventRaised = false;
+		_overlayService.PropertyChanged += (sender, args) =>
+		{
+			if (args.PropertyName == nameof(_overlayService.IsOverlayVisible))
+			{
+				eventRaised = true;
+			}
+		};
+
+		// Act
+		_overlayService.ShowOverlay<MockOverlayViewModel>();
+
+		// Assert
+		Assert.That(eventRaised, Is.True);
+	}
+}
+

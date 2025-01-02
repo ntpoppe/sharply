@@ -154,7 +154,7 @@ public class ApiService : IApiService
         }
     }
 
-    public async Task<bool> DoesUserHaveAccessToChannel(string tokenString, int userId, int channelId)
+    public async Task<bool> CheckUserChannelAccess(string tokenString, int userId, int channelId)
     {
         try
         {

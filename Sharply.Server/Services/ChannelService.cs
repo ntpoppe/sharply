@@ -61,7 +61,7 @@ public class ChannelService : IChannelService
     /// <param name="channelId"></param>
     /// <param name="userId"></param>
     /// <returns></returns>
-    public async Task<bool> DoesUserHaveChannelAccessAsync(int channelId, int userId)
+    public async Task<bool> CheckUserChannelAccessAsync(int channelId, int userId)
     {
         using var context = _contextFactory.CreateSharplyContext();
         return await context.UserChannels

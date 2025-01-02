@@ -12,5 +12,5 @@ public interface IApiService
     Task<List<ServerViewModel>> GetServersAsync(string tokenString);
     Task<UserDto?> GetCurrentUserData(string tokenString);
     Task<List<MessageViewModel>> GetMessagesForChannel(string tokenString, int channelId);
-    Task<bool> DoesUserHaveAccessToChannel(string tokenString, int userId, int channelId);
+    Task<bool> CheckUserChannelAccess(string tokenString, int userId, int channelId);
 }

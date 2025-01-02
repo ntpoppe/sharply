@@ -21,6 +21,15 @@ public class ServerService : IServerService
         _mapper = mapper;
     }
 
+	/// <summary>
+	/// Creates a new server.
+	/// </summary>
+	public async Task<ServerDto> CreateServer(CancellationToken cancellationToken = default)
+	{
+		using var context = _contextFactory.CreateSharplyContext();
+		return _mapper.Map<ServerDto>(context.Servers.First());
+	}
+
     /// <summary>
     /// Retrieves servers with associated channels for a user.
     /// </summary>

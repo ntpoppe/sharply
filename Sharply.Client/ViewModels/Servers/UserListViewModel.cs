@@ -44,7 +44,7 @@ public partial class UserListViewModel : ObservableObject
 
         foreach (var user in _globalOnlineUsers)
         {
-            bool hasAccess = await _apiService.DoesUserHaveAccessToChannel(token, user.Id, channelId);
+            bool hasAccess = await _apiService.CheckUserChannelAccess(token, user.Id, channelId);
             if (hasAccess)
             {
                 usersForChannel.Add(user);

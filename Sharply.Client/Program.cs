@@ -63,6 +63,7 @@ sealed class Program
             var serverUri = config["ServerSettings:ServerUri"] ?? "http://localhost:8000";
             return new SignalRService(serverUri);
         });
+		services.AddSingleton<ApplicationServices>();
         services.AddSingleton<MainViewModel>();
 
         services.AddTransient<LoginViewModel>();

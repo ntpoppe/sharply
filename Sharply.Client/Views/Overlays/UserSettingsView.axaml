@@ -58,6 +58,18 @@
 								Foreground="{DynamicResource PrimaryTextBrush}" 
 								Command="{Binding LogoutCommand}"/>
 					</StackPanel>
+
+					<Button Content="Join Server"
+							Height="30"
+							Background="{DynamicResource AccentBrush}"
+							Foreground="{DynamicResource PrimaryTextBrush}"
+							Command="{Binding JoinServerCommand}" />
+
+					<Button Content="Create Server"
+							Height="30"
+							Background="{DynamicResource AccentBrush}"
+							Foreground="{DynamicResource PrimaryTextBrush}"
+							Command="{Binding CreateServerCommand}" />
 				</StackPanel>
 			</Grid>
 		</Border>

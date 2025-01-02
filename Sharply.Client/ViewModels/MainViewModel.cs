@@ -2,13 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
-using Sharply.Client.Views;
-using Sharply.Shared.Models;
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sharply.Client.ViewModels;
@@ -35,6 +30,10 @@ public partial class MainViewModel : ViewModelBase, INavigable
         _signalRService = signalRService;
         _overlayService = overlayService;
         _navigationService = navigationService;
+
+		ServerList = new ServerListViewModel(_apiService, _tokenStorageService);
+		ChannelList = new ChannelListViewModel(_apiService, _signalRService, _tokenStorageService);
+		UserList = new UserListViewModel(_apiService, _tokenStorageService);
 
         InitializeEvents();
         InitializeCommands();
@@ -66,26 +65,9 @@ public partial class MainViewModel : ViewModelBase, INavigable
     [ObservableProperty]
     private CurrentUser? _currentUser;
 
-    [ObservableProperty]
-    private ObservableCollection<ServerViewModel> _servers = new();
-
-    [ObservableProperty]
-    private ServerViewModel? _selectedServer;
 
     [ObservableProperty]
     private bool _isServerSelected;
-
-    [ObservableProperty]
-    private ObservableCollection<ChannelViewModel> _channels = new();
-
-    [ObservableProperty]
-    private ChannelViewModel? _selectedChannel;
-
-    [ObservableProperty]
-    private ObservableCollection<MessageViewModel> _messages = new();
-
-    [ObservableProperty]
-    private ObservableCollection<UserViewModel> _onlineUsers = new();
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
@@ -93,11 +75,15 @@ public partial class MainViewModel : ViewModelBase, INavigable
     [ObservableProperty]
     private string? _channelDisplayName;
 
+	/* NEW VIEW MODELS */
+	public ServerListViewModel ServerList { get; set; }
+	public ChannelListViewModel ChannelList { get; set; }
+	public UserListViewModel UserList { get; set; }
+
     public object? CurrentView => _navigationService.CurrentView;
     public object? CurrentOverlay => _overlayService.CurrentOverlayView;
     public bool IsOverlayVisible => _overlayService.IsOverlayVisible;
 
-    private List<UserDto> _globalOnlineUsers = new();
 
     #endregion
 
@@ -110,6 +96,29 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     public void InitializeEvents()
     {
+		ServerList.PropertyChanged += (s, e) =>
+		{
+			if (e.PropertyName == nameof(ServerList.SelectedServer))
+			{
+				var selectedServer = ServerList.SelectedServer;
+                if (selectedServer != null)
+                    ChannelList.LoadChannelsAsync(selectedServer);
+			}
+		};
+
+		ChannelList.PropertyChanged += async (s, e) =>
+        {
+            if (e.PropertyName == nameof(ChannelList.SelectedChannel))
+            {
+                var selectedChannel = ChannelList.SelectedChannel;
+                if (selectedChannel != null)
+				{
+					SetChannelDisplay();
+                    await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
+				}
+            }
+        };
+
         _overlayService.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(_overlayService.IsOverlayVisible))
@@ -138,7 +147,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            // Get the token, and parse the data from it
             var token = _tokenStorageService.LoadToken();
             if (token == null) throw new Exception("token was null");
 
@@ -148,13 +156,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
             CurrentUser = CurrentUser.FromDto(userData);
 
-            // Retrieve all servers and channels associated with the user
-            var servers = await _apiService.GetServersAsync(token);
-            Servers = new ObservableCollection<ServerViewModel>(servers);
-
-            var channels = servers.SelectMany(s => s.Channels);
-            Channels = new ObservableCollection<ChannelViewModel>(channels);
-
+			await ServerList.LoadServersAsync();
             await InitializeHubConnections(token);
         }
         catch (Exception ex)
@@ -162,6 +164,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             Debug.WriteLine(ex);
         }
     }
+
     public async Task InitializeHubConnections(string token)
     {
         try
@@ -169,8 +172,11 @@ public partial class MainViewModel : ViewModelBase, INavigable
             await _signalRService.ConnectMessageHubAsync(token);
             await _signalRService.ConnectUserHubAsync(token);
 
-            _signalRService.OnMessageReceived(OnMessageReceived);
-            _signalRService.OnOnlineUsersUpdated(users => OnOnlineUsersUpdatedAsync(users).Wait());
+            _signalRService.OnMessageReceived(ChannelList.OnMessageReceived);
+            _signalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
+
+			if (CurrentUser == null)
+				throw new Exception("CurrentUser was null. You should never see this.");
 
             await _signalRService.GoOnline(CurrentUser.Id);
 
@@ -193,10 +199,10 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            if (SelectedChannel?.Id == null || string.IsNullOrWhiteSpace(NewMessage))
+            if (CurrentUser == null || ChannelList.SelectedChannel == null || ChannelList.SelectedChannel.Id == null || string.IsNullOrWhiteSpace(NewMessage))
                 return;
 
-            await _signalRService.SendMessageAsync(SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
+            await _signalRService.SendMessageAsync(ChannelList.SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
             NewMessage = string.Empty;
         }
         catch (Exception ex)
@@ -204,122 +210,24 @@ public partial class MainViewModel : ViewModelBase, INavigable
             Debug.WriteLine($"Error sending message: {ex.Message}");
         }
     }
+   
+	private void SetChannelDisplay()
+	{
+		if (ServerList.SelectedServer == null) 
+		{
+			ChannelDisplayName = "unknown";
+			return;
+		}
 
-    partial void OnSelectedServerChanged(ServerViewModel? value)
-    {
-        if (value == null) return;
+		if (ChannelList.SelectedChannel == null)
+		{
+			ChannelDisplayName = $"{ServerList.SelectedServer?.Name}/~unknown";
+			return;
+		}
 
-        Channels.Clear();
-        Channels = new ObservableCollection<ChannelViewModel>(value.Channels);
-        if (Channels.Any())
-        {
-            SelectedChannel = value.Channels.First();
-        }
+		ChannelDisplayName = $"{ServerList.SelectedServer?.Name}/#{ChannelList.SelectedChannel?.Name}";
+	}
 
-        IsServerSelected = value != null;
-    }
-
-    partial void OnSelectedChannelChanged(ChannelViewModel? oldValue, ChannelViewModel? newValue)
-    {
-        _ = OnSelectedChannelChangedAsync(oldValue, newValue);
-    }
-
-    private async Task OnSelectedChannelChangedAsync(ChannelViewModel? oldValue, ChannelViewModel? newValue)
-    {
-        try
-        {
-            if (oldValue?.Id != null)
-                await _signalRService.LeaveChannelAsync(oldValue.Id.Value);
-
-            if (newValue?.Id != null)
-            {
-                await _signalRService.JoinChannelAsync(newValue.Id.Value);
-
-                Messages.Clear();
-
-                var token = _tokenStorageService.LoadToken();
-                if (token == null) throw new Exception("Token was null");
-
-                var fetchedMessages = await _apiService.GetMessagesForChannel(token, newValue.Id.Value);
-
-                if (fetchedMessages != null)
-                {
-                    var combinedMessages = new HashSet<MessageViewModel>(newValue.Messages);
-
-                    foreach (var fetchedMessage in fetchedMessages)
-                    {
-                        if (!combinedMessages.Any(m => m.Id == fetchedMessage.Id))
-                            combinedMessages.Add(fetchedMessage);
-                    }
-
-                    Messages = new ObservableCollection<MessageViewModel>(
-                        combinedMessages.OrderBy(m => m.Timestamp)
-                    );
-                }
-
-                await UpdateOnlineUsersForCurrentChannel();
-                SetChannelDisplay();
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error in OnSelectedChannelChangedAsync: {ex.Message}");
-        }
-    }
-
-    private void OnMessageReceived(string user, string message, DateTime timestamp)
-    {
-        var newMessage = new MessageViewModel()
-        {
-            Username = user,
-            Content = message,
-            Timestamp = timestamp
-        };
-        Messages.Add(newMessage);
-        SelectedChannel.Messages.Add(newMessage);
-    }
-
-    private async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos)
-    {
-        _globalOnlineUsers = userDtos;
-        await UpdateOnlineUsersForCurrentChannel();
-    }
-
-    private async Task UpdateOnlineUsersForCurrentChannel()
-    {
-        if (SelectedChannel == null || SelectedChannel.Id == null) return;
-
-        var token = _tokenStorageService.LoadToken();
-        if (token == null)
-            throw new Exception("Token was null");
-
-        var channelId = SelectedChannel.Id.Value;
-        var usersForChannel = new List<UserDto>();
-
-        foreach (var user in _globalOnlineUsers)
-        {
-            bool hasAccess = await _apiService.DoesUserHaveAccessToChannel(token, user.Id, channelId);
-            if (hasAccess)
-            {
-                usersForChannel.Add(user);
-            }
-        }
-
-        OnlineUsers = new ObservableCollection<UserViewModel>(
-            usersForChannel.Select(dto => new UserViewModel { Id = dto.Id, Username = dto.Username, Nickname = dto.Nickname })
-        );
-    }
-
-    private void SetChannelDisplay()
-    {
-        if (SelectedServer == null)
-            ChannelDisplayName = "unknown";
-
-        if (SelectedChannel == null)
-            ChannelDisplayName = $"{SelectedServer.Name}/~unknown";
-
-        ChannelDisplayName = $"{SelectedServer.Name}/#{SelectedChannel.Name}";
-    }
 
     private void OpenServerSettings()
         => _overlayService.ShowOverlay<ServerSettingsViewModel>();
@@ -337,6 +245,9 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
+			if (CurrentUser == null)
+				return;
+
             await _signalRService.DisconnectMessageHubAsync();
             await _signalRService.DisconnectUserHubAsync(CurrentUser.Id);
 

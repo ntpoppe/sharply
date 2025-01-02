@@ -49,8 +49,8 @@
 					
 				<!-- ListBox -->
 				<ListBox Grid.Row="2"
-						 ItemsSource="{Binding Channels}"
-						 SelectedItem="{Binding SelectedChannel}"
+						 ItemsSource="{Binding ChannelList.Channels}"
+						 SelectedItem="{Binding ChannelList.SelectedChannel}"
 						 Background="{DynamicResource InputBackgroundBrush}"
 						 Foreground="{DynamicResource PrimaryTextBrush}"
 						 Margin="10,0,10,10"
@@ -115,9 +115,9 @@
 							  Margin="10"
 							  Padding="0,0,10,0">
 					<Interaction.Behaviors>
-						<behaviors:ScrollToEndBehavior ItemsSource="{Binding Messages}" />
+						<behaviors:ScrollToEndBehavior ItemsSource="{Binding ChannelList.Messages}" />
 					</Interaction.Behaviors>
-					<ItemsControl ItemsSource="{Binding Messages}">
+					<ItemsControl ItemsSource="{Binding ChannelList.Messages}">
 						<ItemsControl.ItemTemplate>
 							<DataTemplate>
 								<StackPanel Margin="0, 0, 0, 10">
@@ -209,7 +209,7 @@
 
 				<!-- Actual listbox -->
 				<ListBox Grid.Row="2"
-						 ItemsSource="{Binding OnlineUsers}"
+						 ItemsSource="{Binding UserList.OnlineUsers}"
                          Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          Margin="10,0,10,10"

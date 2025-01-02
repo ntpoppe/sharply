@@ -92,6 +92,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddSingleton<IServerService, ServerService>();
     services.AddSingleton<IChannelService, ChannelService>();
     services.AddSingleton<IUserTrackerService, UserTrackerService>();
+	services.AddSingleton<IMessageService, MessageService>();
 }
 
 void ConfigureMiddleware(WebApplication app)

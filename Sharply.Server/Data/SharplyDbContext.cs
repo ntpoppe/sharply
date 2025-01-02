@@ -8,17 +8,17 @@ namespace Sharply.Server.Data;
 /// </summary>
 public class SharplyDbContext : DbContext
 {
-    public required DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; }
 
-    public required DbSet<Message> Messages { get; set; }
+    public DbSet<Message> Messages { get; set; }
 
-    public required DbSet<Models.Server> Servers { get; set; }
+    public DbSet<Models.Server> Servers { get; set; }
 
-    public required DbSet<UserServer> UserServers { get; set; }
+    public DbSet<UserServer> UserServers { get; set; }
 
-    public required DbSet<Channel> Channels { get; set; }
+    public DbSet<Channel> Channels { get; set; }
 
-    public required DbSet<UserChannel> UserChannels { get; set; }
+    public DbSet<UserChannel> UserChannels { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SharplyDbContext"/> class.

@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
+using Sharply.Client.Services;
 using Sharply.Client.Models;
 using System;
 using System.Diagnostics;
@@ -10,36 +11,23 @@ namespace Sharply.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase, INavigable
 {
-    private readonly IApiService _apiService;
-    private readonly ITokenStorageService _tokenStorageService;
-    private readonly INavigationService _navigationService;
-    private readonly ISignalRService _signalRService;
-    private readonly IOverlayService _overlayService;
+	private readonly ApplicationServices _services;
 
     #region Constructors
 
-    public MainViewModel(
-        IApiService apiService,
-        ITokenStorageService tokenStorageService,
-        INavigationService navigationService,
-        ISignalRService signalRService,
-        IOverlayService overlayService)
+    public MainViewModel(ApplicationServices services)
     {
-        _apiService = apiService;
-        _tokenStorageService = tokenStorageService;
-        _signalRService = signalRService;
-        _overlayService = overlayService;
-        _navigationService = navigationService;
+   		_services = services;
 
-		ServerList = new ServerListViewModel(_apiService, _tokenStorageService);
-		ChannelList = new ChannelListViewModel(_apiService, _signalRService, _tokenStorageService);
-		UserList = new UserListViewModel(_apiService, _tokenStorageService);
+		ServerList = new ServerListViewModel(services.ApiService, services.TokenStorageService);
+		ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
+		UserList = new UserListViewModel(services.ApiService, services.TokenStorageService);
 
         InitializeEvents();
         InitializeCommands();
 
-        if (_navigationService.CurrentView == null)
-            _navigationService.NavigateTo<LoginViewModel>();
+        if (services.NavigationService.CurrentView == null)
+            services.NavigationService.NavigateTo<LoginViewModel>();
 
         IsServerSelected = false;
     }
@@ -52,10 +40,12 @@ public partial class MainViewModel : ViewModelBase, INavigable
     #endregion
 
     #region Commands
+
     public IRelayCommand? AddChannelCommand { get; set; }
     public IRelayCommand? SendMessageCommand { get; set; }
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
     public IRelayCommand? OpenUserSettingsCommand { get; set; }
+
     #endregion
 
     #region Properties
@@ -64,7 +54,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     [ObservableProperty]
     private CurrentUser? _currentUser;
-
 
     [ObservableProperty]
     private bool _isServerSelected;
@@ -75,15 +64,13 @@ public partial class MainViewModel : ViewModelBase, INavigable
     [ObservableProperty]
     private string? _channelDisplayName;
 
-	/* NEW VIEW MODELS */
 	public ServerListViewModel ServerList { get; set; }
 	public ChannelListViewModel ChannelList { get; set; }
 	public UserListViewModel UserList { get; set; }
 
-    public object? CurrentView => _navigationService.CurrentView;
-    public object? CurrentOverlay => _overlayService.CurrentOverlayView;
-    public bool IsOverlayVisible => _overlayService.IsOverlayVisible;
-
+    public object? CurrentView => _services.NavigationService.CurrentView;
+    public object? CurrentOverlay => _services.OverlayService.CurrentOverlayView;
+    public bool IsOverlayVisible => _services.OverlayService.IsOverlayVisible;
 
     #endregion
 
@@ -119,18 +106,18 @@ public partial class MainViewModel : ViewModelBase, INavigable
             }
         };
 
-        _overlayService.PropertyChanged += (s, e) =>
+        _services.OverlayService.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_overlayService.IsOverlayVisible))
+            if (e.PropertyName == nameof(_services.OverlayService.IsOverlayVisible))
                 OnPropertyChanged(nameof(IsOverlayVisible));
 
-            if (e.PropertyName == nameof(_overlayService.CurrentOverlayView))
+            if (e.PropertyName == nameof(_services.OverlayService.CurrentOverlayView))
                 OnPropertyChanged(nameof(CurrentOverlay));
         };
 
-        _navigationService.PropertyChanged += (s, e) =>
+        _services.NavigationService.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_navigationService.CurrentView))
+            if (e.PropertyName == nameof(_services.NavigationService.CurrentView))
                 OnPropertyChanged(nameof(CurrentView));
         };
     }
@@ -147,10 +134,10 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            var token = _tokenStorageService.LoadToken();
+            var token = _services.TokenStorageService.LoadToken();
             if (token == null) throw new Exception("token was null");
 
-            var userData = await _apiService.GetCurrentUserData(token);
+            var userData = await _services.ApiService.GetCurrentUserData(token);
             if (userData == null)
                 throw new Exception("User data missing.");
 
@@ -169,16 +156,16 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            await _signalRService.ConnectMessageHubAsync(token);
-            await _signalRService.ConnectUserHubAsync(token);
+            await _services.SignalRService.ConnectMessageHubAsync(token);
+            await _services.SignalRService.ConnectUserHubAsync(token);
 
-            _signalRService.OnMessageReceived(ChannelList.OnMessageReceived);
-            _signalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
+            _services.SignalRService.OnMessageReceived(ChannelList.OnMessageReceived);
+            _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
 
 			if (CurrentUser == null)
 				throw new Exception("CurrentUser was null. You should never see this.");
 
-            await _signalRService.GoOnline(CurrentUser.Id);
+            await _services.SignalRService.GoOnline(CurrentUser.Id);
 
         }
         catch (Exception ex)
@@ -202,7 +189,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             if (CurrentUser == null || ChannelList.SelectedChannel == null || ChannelList.SelectedChannel.Id == null || string.IsNullOrWhiteSpace(NewMessage))
                 return;
 
-            await _signalRService.SendMessageAsync(ChannelList.SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
+            await _services.SignalRService.SendMessageAsync(ChannelList.SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
             NewMessage = string.Empty;
         }
         catch (Exception ex)
@@ -230,16 +217,16 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
 
     private void OpenServerSettings()
-        => _overlayService.ShowOverlay<ServerSettingsViewModel>();
+        => _services.OverlayService.ShowOverlay<ServerSettingsViewModel>();
 
     private void OpenUserSettings()
     {
         var view = CurrentView;
-        _overlayService.ShowOverlay<UserSettingsViewModel>();
+        _services.OverlayService.ShowOverlay<UserSettingsViewModel>();
     }
 
     private void CloseOverlay()
-        => _overlayService.HideOverlay();
+        => _services.OverlayService.HideOverlay();
 
     public async void Logout()
     {
@@ -248,13 +235,13 @@ public partial class MainViewModel : ViewModelBase, INavigable
 			if (CurrentUser == null)
 				return;
 
-            await _signalRService.DisconnectMessageHubAsync();
-            await _signalRService.DisconnectUserHubAsync(CurrentUser.Id);
+            await _services.SignalRService.DisconnectMessageHubAsync();
+            await _services.SignalRService.DisconnectUserHubAsync(CurrentUser.Id);
 
             CurrentUser = null;
-            _tokenStorageService.ClearToken();
-            _overlayService.HideOverlay();
-            _navigationService.NavigateTo<LoginViewModel>();
+            _services.TokenStorageService.ClearToken();
+            _services.OverlayService.HideOverlay();
+            _services.NavigationService.NavigateTo<LoginViewModel>();
         }
         catch (Exception ex)
         {

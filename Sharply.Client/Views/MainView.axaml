@@ -75,9 +75,9 @@
 						 Background="{DynamicResource InputBackgroundBrush}"
                          Foreground="{DynamicResource PrimaryTextBrush}"
                          Margin="5,0,10,10"
-						 SelectedItem="{Binding SelectedServer}"
+						 SelectedItem="{Binding ServerList.SelectedServer}"
                          SelectionMode="Single"
-						 ItemsSource="{Binding Servers}">
+						 ItemsSource="{Binding ServerList.Servers}">
 					<ListBox.ItemTemplate>
 						<DataTemplate>
 							<TextBlock Text="{Binding Name}"
@@ -133,9 +133,9 @@
 		</Border>
 
 		<views:ServerContentView Grid.Column="1"
-								 IsVisible="{Binding IsServerSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
+								 IsVisible="{Binding ServerList.IsServerSelected, Converter={StaticResource BoolToVisibilityConverter}}" />
 		<views:NoServerSelectedView Grid.Column="1"
-									IsVisible="{Binding IsServerSelected, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
+									IsVisible="{Binding ServerList.IsServerSelected, Converter={StaticResource InvertedBoolToVisibilityConverter}}" />
 
 	</Grid>
 </UserControl>

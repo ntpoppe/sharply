@@ -8,8 +8,8 @@ namespace Sharply.Client.Tests;
 [TestFixture]
 public class OverlayServiceTests
 {
-	private Mock<IServiceProvider> _serviceProviderMock;
-	private OverlayService _overlayService;
+	private Mock<IServiceProvider>? _serviceProviderMock;
+	private OverlayService? _overlayService;
 
 	public class MockOverlayViewModel : IOverlay
 	{
@@ -28,6 +28,9 @@ public class OverlayServiceTests
 	[Test]
 	public void ShowOverlay_ValidOverlay_SetsCurrentOverlayViewAndVisibility()
 	{
+		if (_serviceProviderMock == null || _overlayService== null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var overlayView = new Mock<IOverlay>();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))
@@ -44,6 +47,9 @@ public class OverlayServiceTests
 	[Test]
 	public void ShowOverlay_UnregisteredOverlay_ThrowsException()
 	{
+		if (_overlayService== null)
+			throw new Exception("Services were null");
+
 		// Act & Assert
 		Assert.Throws<InvalidOperationException>(() =>
 		{
@@ -54,6 +60,9 @@ public class OverlayServiceTests
 	[Test]
 	public void HideOverlay_ResetsCurrentOverlayViewAndVisibility()
 	{
+		if (_serviceProviderMock == null || _overlayService== null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var overlayView = new Mock<IOverlay>();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))
@@ -71,6 +80,9 @@ public class OverlayServiceTests
 	[Test]
 	public void ShowOverlay_RaisesPropertyChangedForIsOverlayVisible()
 	{
+		if (_serviceProviderMock == null || _overlayService== null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var overlayView = new Mock<IOverlay>();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockOverlayViewModel)))

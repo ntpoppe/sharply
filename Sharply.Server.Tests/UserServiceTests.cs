@@ -14,11 +14,11 @@ namespace Sharply.Server.Tests
     [TestFixture]
     public class UserServiceTests
     {
-        private DbContextOptions<SharplyDbContext> _dbOptions;
-        private Mock<ISharplyContextFactory<SharplyDbContext>> _contextFactoryMock;
-        private Mock<IServerService> _serverServiceMock;
-        private IMapper _realMapper;
-        private UserService _service;
+        private DbContextOptions<SharplyDbContext>? _dbOptions;
+        private Mock<ISharplyContextFactory<SharplyDbContext>>? _contextFactoryMock;
+        private Mock<IServerService>? _serverServiceMock;
+        private IMapper? _realMapper;
+        private UserService? _service;
 
         [SetUp]
         public void Setup()
@@ -50,16 +50,24 @@ namespace Sharply.Server.Tests
         [Test]
         public void GetUserDto_ThrowsIfNotFound()
         {
+			if (_service == null)
+				throw new Exception("_service were null");
+
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await _service.GetUserDto(999)
             );
+
+			if (ex == null) throw new Exception("ex was null");
             Assert.That(ex.Message, Does.Contain("was not found from GetUserDto"));
         }
 
         [Test]
         public async Task GetUserDto_ReturnsUserDtoIfFound()
         {
+			if (_dbOptions == null || _service == null)
+				throw new Exception("_dbOptions and _service were null");
+
             // Arrange
             await using (var seedContext = new SharplyDbContext(_dbOptions))
             {
@@ -84,16 +92,24 @@ namespace Sharply.Server.Tests
         [Test]
         public void AddUserToServerAsync_ThrowsIfServerNotFound()
         {
+			if (_service == null)
+				throw new Exception("_service were null");
+
             // Act & Assert
             var ex = Assert.ThrowsAsync<Exception>(async () =>
                 await _service.AddUserToServerAsync(userId: 1, serverId: 999)
             );
+
+			if (ex == null) throw new Exception("ex was null");
             Assert.That(ex.Message, Is.EqualTo("Server not found"));
         }
 
         [Test]
         public async Task AddUserToServerAsync_AddsIfServerFound()
         {
+			if (_dbOptions == null || _service == null)
+				throw new Exception("_dbOptions and _service were null");
+
             // Arrange
             await using (var seedContext = new SharplyDbContext(_dbOptions))
             {
@@ -120,6 +136,9 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task GetServersForUserAsync_CallsServerServiceAndReturnsResult()
         {
+			if (_serverServiceMock == null || _service == null)
+				throw new Exception("_serverServiceMock and _service were null");
+
             // Arrange
             var fakeServers = new System.Collections.Generic.List<ServerDto>
             {
@@ -141,6 +160,9 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task GetChannelsForUserAsync_ReturnsUserChannels()
         {
+			if (_dbOptions == null || _service == null)
+				throw new Exception("_dbOptions and _service were null");
+
             // Arrange
             await using (var seedContext = new SharplyDbContext(_dbOptions))
             {
@@ -170,16 +192,24 @@ namespace Sharply.Server.Tests
         [Test]
         public void GetUsernameFromId_ThrowsIfNotFound()
         {
+			if (_service == null)
+				throw new Exception("_service were null");
+
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await _service.GetUsernameFromId(userId: 999)
             );
+
+			if (ex == null) throw new Exception("ex was null");
             Assert.That(ex.Message, Does.Contain("No user found with ID 999."));
         }
 
         [Test]
         public async Task GetUsernameFromId_ReturnsUsernameIfFound()
         {
+			if (_dbOptions == null || _service == null)
+				throw new Exception("_dbOptions and _service were null");
+
             // Arrange
             await using (var seedContext = new SharplyDbContext(_dbOptions))
             {

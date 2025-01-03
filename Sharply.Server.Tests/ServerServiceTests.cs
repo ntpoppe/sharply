@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -16,10 +14,10 @@ namespace Sharply.Server.Tests;
 [TestFixture]
 public class ServerServiceTests
 {
-	private DbContextOptions<SharplyDbContext> _dbOptions;
-	private Mock<ISharplyContextFactory<SharplyDbContext>> _contextFactoryMock;
-	private ServerService _service;
-	private IMapper _mapper;
+	private DbContextOptions<SharplyDbContext>? _dbOptions;
+	private Mock<ISharplyContextFactory<SharplyDbContext>>? _contextFactoryMock;
+	private ServerService? _service;
+	private IMapper? _mapper;
 
 	[SetUp]
 	public void SetUp()
@@ -45,6 +43,9 @@ public class ServerServiceTests
 	[Test]
 	public async Task CreateServer_ShouldCreateServerAndAssignOwner()
 	{
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
 		// Arrange
 		var request = new CreateServerRequest
 		{
@@ -62,16 +63,16 @@ public class ServerServiceTests
 		await using var verificationContext = new SharplyDbContext(_dbOptions);
 
 		var server = await verificationContext.Servers.FirstOrDefaultAsync();
-		Assert.That(server, Is.Not.Null);
+		if (server == null) throw new Exception("server was null");
 		Assert.That(server.Name, Is.EqualTo("Test Server"));
 
 		var userServer = await verificationContext.UserServers.FirstOrDefaultAsync();
-		Assert.That(userServer, Is.Not.Null);
+		if (userServer == null) throw new Exception("userServer was null");
 		Assert.That(userServer.UserId, Is.EqualTo(1));
 		Assert.That(userServer.ServerId, Is.EqualTo(server.Id));
 
 		var channel = await verificationContext.Channels.FirstOrDefaultAsync();
-		Assert.That(channel, Is.Not.Null);
+		if (channel == null) throw new Exception("channel was null");
 		Assert.That(channel.Name, Is.EqualTo("/general"));
 		Assert.That(channel.ServerId, Is.EqualTo(server.Id));
 	}
@@ -79,6 +80,9 @@ public class ServerServiceTests
 	[Test]
 	public async Task GetServersWithChannelsForUserAsync_ReturnCorrectly()
 	{
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
 		// Arrange
 		await using (var seedContext = new SharplyDbContext(_dbOptions))
 		{
@@ -121,6 +125,9 @@ public class ServerServiceTests
 	[Test]
 	public async Task GetChannelsForServerAsync_ReturnsNonDeletedChannels()
 	{
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
 		// Arrange
 		await using (var seedContext = new SharplyDbContext(_dbOptions))
 		{

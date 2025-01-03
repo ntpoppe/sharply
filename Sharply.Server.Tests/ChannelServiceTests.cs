@@ -13,10 +13,10 @@ namespace Sharply.Server.Tests;
 [TestFixture]
 public class ChannelServiceTests
 {
-    private DbContextOptions<SharplyDbContext> _dbOptions;
-    private Mock<ISharplyContextFactory<SharplyDbContext>> _contextFactoryMock;
-	private IMapper _mapper;
-    private IChannelService _service;
+    private DbContextOptions<SharplyDbContext>? _dbOptions;
+    private Mock<ISharplyContextFactory<SharplyDbContext>>? _contextFactoryMock;
+	private IMapper? _mapper;
+    private IChannelService? _service;
 
     [SetUp]
     public void SetUp()
@@ -42,6 +42,9 @@ public class ChannelServiceTests
     [Test]
     public async Task GetMessagesForChannelAsync_ShouldReturnOnlyNonDeletedMessages()
     {
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
         // Arrange 
         await using (var seedContext = new SharplyDbContext(_dbOptions))
         {
@@ -68,6 +71,9 @@ public class ChannelServiceTests
     [Test]
     public async Task AddUserToChannelAsync_ShouldCreateUserChannelRecord()
     {
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
         // Arrange
         var userId = 100;
         var channelId = 100;
@@ -81,13 +87,16 @@ public class ChannelServiceTests
         var userChannel = await verifyContext.UserChannels
             .FirstOrDefaultAsync(uc => uc.UserId == userId && uc.ChannelId == channelId);
 
-        Assert.That(userChannel, Is.Not.Null);
+		if (userChannel == null) throw new Exception("userChannel was null");
         Assert.That(userChannel.IsActive, Is.True);
     }
 
     [Test]
     public async Task CheckUserChannelAccessAsync_ShouldReturnTrue_IfIsActive()
     {
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
         // Arrange
         var userId = 200;
         var channelId = 200;
@@ -114,6 +123,8 @@ public class ChannelServiceTests
     [Test]
     public async Task CheckUserChannelAccessAsync_ShouldReturnFalse_IfNotActiveOrDoesNotExist()
     {
+		if (_service == null) throw new Exception("_service were null");
+
         // Arrange
         var userId = 300;
         var channelId = 300;

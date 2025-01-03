@@ -28,7 +28,7 @@ public class UserTrackerService : IUserTrackerService
     /// <returns>The id of the user that was added.</returns>
     public async Task AddUser(string connectionId, int userId)
     {
-        var userChannels = await _userService.GetChannelsForUserAsync(userId);
+        var userChannels = await _userService.GetChannelsForUserAsync(userId) ?? new List<ChannelDto>();
         var userChannelIds = userChannels.Select(c => c.Id).ToList();
         lock (ConnectionUserMap)
         {

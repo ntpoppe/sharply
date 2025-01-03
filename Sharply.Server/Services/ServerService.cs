@@ -102,6 +102,7 @@ public class ServerService : IServerService
 
         var channels = await context.Channels
             .Where(c => c.ServerId == serverId)
+			.Where(c => c.IsDeleted == false)
             .Include(c => c.Messages)
             .ToListAsync(cancellationToken);
 

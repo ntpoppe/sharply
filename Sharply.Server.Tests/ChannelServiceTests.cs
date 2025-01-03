@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Sharply.Server.Data;
+using Sharply.Server.Automapper;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Server.Services;
-using Sharply.Shared.Models;
 
 namespace Sharply.Server.Tests;
 
@@ -15,7 +15,7 @@ public class ChannelServiceTests
 {
     private DbContextOptions<SharplyDbContext> _dbOptions;
     private Mock<ISharplyContextFactory<SharplyDbContext>> _contextFactoryMock;
-    private Mock<IMapper> _mapperMock;
+	private IMapper _mapper;
     private IChannelService _service;
 
     [SetUp]
@@ -25,33 +25,18 @@ public class ChannelServiceTests
             .UseInMemoryDatabase(databaseName: $"SharplyTestDb_{Guid.NewGuid()}")
             .Options;
 
-        // Mock the context factory so that each call to CreateSharplyContext()
-        // returns a brand-new SharplyDbContext pointed at our unique in-memory DB.
         _contextFactoryMock = new Mock<ISharplyContextFactory<SharplyDbContext>>();
         _contextFactoryMock
             .Setup(factory => factory.CreateSharplyContext())
             .Returns(() => new SharplyDbContext(_dbOptions));
 
-        // Mock the mapper for when we map from Message -> MessageDto, etc.
-        _mapperMock = new Mock<IMapper>();
-        _mapperMock
-            .Setup(m => m.Map<List<MessageDto>>(It.IsAny<List<Message>>()))
-            .Returns((List<Message> source) =>
-            {
-                // For simplicity, produce a minimal list of MessageDto objects.
-                // You can adapt this to your real mapping logic as needed.
-                return source.Select(msg => new MessageDto
-                {
-                    Id = msg.Id.Value,
-                    Content = msg.Content,
-                    UserId = msg.UserId,
-                    Username = "TestUsername",
-                    Timestamp = msg.Timestamp,
-                    ChannelId = msg.ChannelId
-                }).ToList();
-            });
+		var mapperConfig = new MapperConfiguration(cfg =>
+		{
+			cfg.AddProfile<MappingProfile>(); 
+		});
 
-        _service = new ChannelService(_contextFactoryMock.Object, _mapperMock.Object);
+		_mapper = mapperConfig.CreateMapper();
+        _service = new ChannelService(_contextFactoryMock.Object, _mapper);
     }
 
     [Test]
@@ -66,7 +51,7 @@ public class ChannelServiceTests
 
             seedContext.Messages.AddRange(
                 new Message { Id = 1, ChannelId = 10, Content = "Msg1", UserId = 999, Timestamp = DateTime.UtcNow, IsDeleted = false },
-                new Message { Id = 2, ChannelId = 10, Content = "Msg2", UserId = 999, Timestamp = DateTime.UtcNow, IsDeleted = true },  // Deleted
+                new Message { Id = 2, ChannelId = 10, Content = "Msg2", UserId = 999, Timestamp = DateTime.UtcNow, IsDeleted = true }, 
                 new Message { Id = 3, ChannelId = 20, Content = "Msg3", UserId = 999, Timestamp = DateTime.UtcNow, IsDeleted = false }
             );
             await seedContext.SaveChangesAsync();

@@ -8,7 +8,7 @@ public class Server
     /// <summary>
     /// Gets or sets the unique id of the server.
     /// </summary>
-    public required int Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the server.

@@ -125,7 +125,7 @@ public class SharplyDbContext : DbContext
         modelBuilder.Entity<Models.Server>().HasData(new Models.Server { Id = 1, Name = "Global", OwnerId = 1 });
 
         // Seed a default channel in the default server
-        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "General", ServerId = 1 });
-        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 2, Name = "Testing", ServerId = 1 });
+        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 1, Name = "/general", ServerId = 1 });
+        modelBuilder.Entity<Channel>().HasData(new Channel { Id = 2, Name = "/testing", ServerId = 1 });
     }
 }

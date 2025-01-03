@@ -9,7 +9,7 @@ public class Channel
     /// <summary>
     /// Gets or sets the unique id for the channel.
     /// </summary>
-    public required int Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the channel

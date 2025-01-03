@@ -1,8 +1,10 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
+using Sharply.Server.Models;
 using Sharply.Server.Interfaces;
 using Sharply.Shared.Models;
+using Sharply.Shared.Requests;
 
 namespace Sharply.Server.Services;
 
@@ -24,10 +26,45 @@ public class ServerService : IServerService
 	/// <summary>
 	/// Creates a new server.
 	/// </summary>
-	public async Task<ServerDto> CreateServer(CancellationToken cancellationToken = default)
+	public async Task<ServerDto> CreateServer(CreateServerRequest request, CancellationToken cancellationToken = default)
 	{
 		using var context = _contextFactory.CreateSharplyContext();
-		return _mapper.Map<ServerDto>(context.Servers.First());
+
+		var newServer = new Models.Server
+		{
+			OwnerId = request.OwnerId,
+			Name = request.Name
+		};
+
+		context.Servers.Add(newServer);
+		await context.SaveChangesAsync();
+
+		var defaultChannel = new Channel
+		{
+			ServerId = newServer.Id,
+			Name = "/general"
+		};
+
+		context.Channels.Add(defaultChannel);
+		await context.SaveChangesAsync();
+
+		var newUserServer = new UserServer
+		{
+			UserId = request.OwnerId,
+			ServerId = newServer.Id
+		};
+
+		var newUserChannel = new UserChannel
+		{
+			ChannelId = defaultChannel.Id,
+			UserId = request.OwnerId
+		};
+
+		context.UserServers.Add(newUserServer);
+		context.UserChannels.Add(newUserChannel);
+		await context.SaveChangesAsync();
+
+		return _mapper.Map<ServerDto>(newServer);
 	}
 
     /// <summary>

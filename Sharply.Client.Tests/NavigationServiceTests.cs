@@ -8,8 +8,8 @@ namespace Sharply.Client.Tests;
 [TestFixture]
 public class NavigationServiceTests 
 {
-	private Mock<IServiceProvider> _serviceProviderMock;
-	private NavigationService _navigationService;
+	private Mock<IServiceProvider>? _serviceProviderMock;
+	private NavigationService? _navigationService;
 
 	public class MockNonNavigableViewModel { }
 
@@ -33,6 +33,9 @@ public class NavigationServiceTests
 	[Test]
 	public void NavigateTo_ValidNavigableViewModel_SetsCurrentView()
 	{
+		if (_serviceProviderMock == null || _navigationService == null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var navigableViewModel = new Mock<INavigable>();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockNavigableViewModel)))
@@ -50,6 +53,9 @@ public class NavigationServiceTests
 	[Test]
 	public void NavigateTo_NonNavigableViewModel_ThrowsException()
 	{
+		if (_serviceProviderMock == null || _navigationService == null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockNonNavigableViewModel)))
 							.Returns(new MockNonNavigableViewModel());
@@ -65,6 +71,9 @@ public class NavigationServiceTests
 	[Test]
 	public void GoBack_PopsStackAndUpdatesCurrentView()
 	{
+		if (_serviceProviderMock == null || _navigationService == null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var viewModel1 = new MockNavigableViewModel();
 		var viewModel2 = new MockNavigableViewModel();
@@ -85,6 +94,9 @@ public class NavigationServiceTests
 	[Test]
 	public void GoBack_DoesNothingIfStackHasOneItem()
 	{
+		if (_serviceProviderMock == null || _navigationService == null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var viewModel = new MockNavigableViewModel();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockNavigableViewModel)))
@@ -101,6 +113,9 @@ public class NavigationServiceTests
 	[Test]
 	public void NavigateTo_RaisesPropertyChangedForCurrentView()
 	{
+		if (_serviceProviderMock == null || _navigationService == null)
+			throw new Exception("Services were null");
+
 		// Arrange
 		var viewModel = new MockNavigableViewModel();
 		_serviceProviderMock.Setup(sp => sp.GetService(typeof(MockNavigableViewModel)))
@@ -124,6 +139,9 @@ public class NavigationServiceTests
 	[Test]
 	public void NavigateTo_UnregisteredViewModel_ThrowsException()
 	{
+		if (_navigationService == null)
+			throw new Exception("Services were null");
+
 		// Act & Assert
 		Assert.Throws<InvalidOperationException>(() =>
 		{

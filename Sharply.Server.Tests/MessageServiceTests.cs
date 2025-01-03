@@ -7,17 +7,16 @@ using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Server.Services;
 using Sharply.Server.Automapper;
-using Sharply.Shared.Requests;
 
 namespace Sharply.Server.Tests;
 
 [TestFixture]
 public class MessageServiceTests
 {
-	private DbContextOptions<SharplyDbContext> _dbOptions;
-	private Mock<ISharplyContextFactory<SharplyDbContext>> _contextFactoryMock;
-	private MessageService _service;
-	private IMapper _mapper;
+	private DbContextOptions<SharplyDbContext>? _dbOptions;
+	private Mock<ISharplyContextFactory<SharplyDbContext>>? _contextFactoryMock;
+	private MessageService? _service;
+	private IMapper? _mapper;
 
 	[SetUp]
 	public void SetUp()
@@ -43,6 +42,9 @@ public class MessageServiceTests
 	[Test]
 	public async Task CreateMessage_Exists()
 	{
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
 		// Arrange
 		await using (var seedContext = new SharplyDbContext(_dbOptions))
 		{
@@ -78,7 +80,7 @@ public class MessageServiceTests
 			.Where(m => m.Content == content)
 			.FirstOrDefaultAsync();
 
-		Assert.That(dbMessage, Is.Not.Null);
+		if (dbMessage == null) throw new Exception("dbMessage was null");
 		Assert.That(dbMessage.Content, Is.EqualTo(content));
 		Assert.That(dto, Is.Not.Null);
 		Assert.That(dto.Content, Is.EqualTo(content));
@@ -87,6 +89,9 @@ public class MessageServiceTests
 	[Test]
 	public async Task CreateMessage_ThrowsException_NullChannel()
 	{
+		if (_dbOptions == null || _service == null)
+			throw new Exception("_dbOptions and _service were null");
+
 		// Arrange
 		await using (var seedContext = new SharplyDbContext(_dbOptions))
 		{
@@ -114,7 +119,9 @@ public class MessageServiceTests
 			await _service.CreateMessage(nonExistentChannelId, userId, content)
 		);
 
-		Assert.That(ex.Message, Is.EqualTo("Channel not found. (MessageService/CreateMessage)"));	}
+		if (ex == null) throw new Exception("ex was null");
+		Assert.That(ex.Message, Is.EqualTo("Channel not found. (MessageService/CreateMessage)"));	
+	}
 }
 
 

@@ -13,10 +13,10 @@ namespace Sharply.Client.Tests;
 [TestFixture]
 public class ApiServiceTests
 {
-	private Mock<HttpMessageHandler> _mockHttpMessageHandler;
-	private TokenStorageService _tokenStorageService;
-	private HttpClient _httpClient;
-	private ApiService _apiService;
+	private Mock<HttpMessageHandler>? _mockHttpMessageHandler;
+	private TokenStorageService? _tokenStorageService;
+	private HttpClient? _httpClient;
+	private ApiService? _apiService;
 
 	[SetUp]
 	public void SetUp()
@@ -33,6 +33,8 @@ public class ApiServiceTests
 	[Test]
 	public async Task RegisterAsync_SuccessfulResponse_ReturnsUser()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var expectedId = 1;
 		var expectedUsername = "testuser";
@@ -45,7 +47,7 @@ public class ApiServiceTests
 			Token = expectedToken
 		};
 
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -70,11 +72,13 @@ public class ApiServiceTests
 	[Test]
 	public void RegisterAsync_FailedResponse_ThrowsException()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var errorMessage = "User already exists";
 
 		// Setup the mock to return a bad request response with the error message
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -91,9 +95,11 @@ public class ApiServiceTests
 		// Act & Assert
 		var ex = Assert.ThrowsAsync<Exception>(async () =>
 		{
+			if (_apiService == null) return;
 			await _apiService.RegisterAsync("existinguser", "password123");
 		});
 
+		if (ex == null) return;
 		Assert.That(ex.Message, Does.Contain("Registration failed"));
 		Assert.That(ex.Message, Does.Contain(errorMessage));
 	}
@@ -101,6 +107,8 @@ public class ApiServiceTests
 	[Test]
 	public async Task LoginAsync_SuccessfulResponse_ReturnsUser()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var expectedId = 1;
 		var expectedUsername = "testuser";
@@ -114,7 +122,7 @@ public class ApiServiceTests
 		};
 
 		// Setup the mock to return a successful response with the expected content
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -139,11 +147,13 @@ public class ApiServiceTests
 	[Test]
 	public void LoginAsync_FailedResponse_ThrowsException()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var errorMessage = "Invalid credentials";
 
 		// Setup the mock to return an unauthorized response with the error message
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -163,12 +173,15 @@ public class ApiServiceTests
 			await _apiService.LoginAsync("nonexistentuser", "wrongpassword");
 		});
 
+		if (ex == null) return;
 		Assert.That(ex.Message, Does.Contain("Check your credentials."));
 	}
 
 	[Test]
 	public async Task GetServersAsync_ValidResponse_ReturnsServerViewModels()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var mockResponse = new ApiResponse<List<ServerDto>>
 		{
@@ -197,7 +210,7 @@ public class ApiServiceTests
 			}
 		};
 
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>("SendAsync",
 				ItExpr.IsAny<HttpRequestMessage>(),
 				ItExpr.IsAny<CancellationToken>())
@@ -220,6 +233,8 @@ public class ApiServiceTests
 	[Test]
 	public async Task GetMessagesForChannel_ValidResponse_ReturnsMessages()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var mockResponse = new ApiResponse<List<MessageDto>>
 		{
@@ -230,7 +245,7 @@ public class ApiServiceTests
 			}
 		};
 
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -257,6 +272,8 @@ public class ApiServiceTests
 	[Test]
 	public async Task CheckUserChannelAccess_UserHasAccess_ReturnsTrue()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var mockResponse = new ApiResponse<bool>
 		{
@@ -264,7 +281,7 @@ public class ApiServiceTests
 			Data = true
 		};
 
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -289,6 +306,8 @@ public class ApiServiceTests
 	[Test]
 	public async Task GetCurrentUserData_ValidResponse_ReturnsUserDto()
 	{
+		if (_apiService == null) throw new Exception("_apiService was null");	
+
 		// Arrange
 		var mockResponse = new ApiResponse<UserDto>
 		{
@@ -296,7 +315,7 @@ public class ApiServiceTests
 			Data = new UserDto { Id = 1, Username = "TestUser" }
 		};
 
-		_mockHttpMessageHandler.Protected()
+		_mockHttpMessageHandler?.Protected()
 			.Setup<Task<HttpResponseMessage>>(
 				"SendAsync",
 				ItExpr.Is<HttpRequestMessage>(req =>
@@ -315,7 +334,7 @@ public class ApiServiceTests
 		var result = await _apiService.GetCurrentUserData("dummy_token");
 
 		// Assert
-		Assert.That(result, Is.Not.Null);
+		if (result == null) throw new Exception("result was null");
 		Assert.That(result.Username, Is.EqualTo("TestUser"));
 	}
 }

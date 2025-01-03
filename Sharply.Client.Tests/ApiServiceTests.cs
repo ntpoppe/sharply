@@ -255,7 +255,7 @@ public class ApiServiceTests
 	}
 
 	[Test]
-	public async Task DoesUserHaveAccessToChannel_UserHasAccess_ReturnsTrue()
+	public async Task CheckUserChannelAccess_UserHasAccess_ReturnsTrue()
 	{
 		// Arrange
 		var mockResponse = new ApiResponse<bool>
@@ -280,7 +280,7 @@ public class ApiServiceTests
 			});
 
 		// Act
-		var result = await _apiService.DoesUserHaveAccessToChannel("dummy_token", 123, 456);
+		var result = await _apiService.CheckUserChannelAccess("dummy_token", 123, 456);
 
 		// Assert
 		Assert.That(result, Is.True);

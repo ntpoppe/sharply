@@ -37,16 +37,16 @@ public class ServerService : IServerService
 		};
 
 		context.Servers.Add(newServer);
-		await context.SaveChangesAsync();
+		await context.SaveChangesAsync(cancellationToken);
 
 		var defaultChannel = new Channel
 		{
 			ServerId = newServer.Id,
-			Name = "/general"
+			Name = "general"
 		};
 
 		context.Channels.Add(defaultChannel);
-		await context.SaveChangesAsync();
+		await context.SaveChangesAsync(cancellationToken);
 
 		var newUserServer = new UserServer
 		{
@@ -62,7 +62,7 @@ public class ServerService : IServerService
 
 		context.UserServers.Add(newUserServer);
 		context.UserChannels.Add(newUserChannel);
-		await context.SaveChangesAsync();
+		await context.SaveChangesAsync(cancellationToken);
 
 		return _mapper.Map<ServerDto>(newServer);
 	}

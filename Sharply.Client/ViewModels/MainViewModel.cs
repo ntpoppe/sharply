@@ -41,7 +41,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     #region Commands
 
-    public IRelayCommand? AddChannelCommand { get; set; }
     public IRelayCommand? SendMessageCommand { get; set; }
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
     public IRelayCommand? OpenUserSettingsCommand { get; set; }
@@ -124,7 +123,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     public void InitializeCommands()
     {
-        AddChannelCommand = new RelayCommand(AddChannel);
         SendMessageCommand = new RelayCommand(SendMessage);
         OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
         OpenUserSettingsCommand = new RelayCommand(OpenUserSettings);
@@ -174,17 +172,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
         }
     }
 
-    public void AddServer(string name)
-    {
-		if (CurrentUser == null)
-			throw new Exception("CurrentUser was null.");
-
-		_services.ServerService.CreateServer(CurrentUser.Id, name);
-    }
-
-    public void AddChannel()
-    {
-    }
+    public async Task RefreshServerList()
+		=> await ServerList.LoadServersAsync();
 
     private async void SendMessage()
     {
@@ -212,11 +201,11 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
 		if (ChannelList.SelectedChannel == null)
 		{
-			ChannelDisplayName = $"{ServerList.SelectedServer?.Name}/~unknown";
+			ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - ~unknown";
 			return;
 		}
 
-		ChannelDisplayName = $"{ServerList.SelectedServer?.Name}/#{ChannelList.SelectedChannel?.Name}";
+		ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - #{ChannelList.SelectedChannel?.Name}";
 	}
 
 

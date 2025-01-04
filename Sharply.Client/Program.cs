@@ -47,6 +47,7 @@ sealed class Program
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IOverlayService, OverlayService>();
+		services.AddSingleton<IServerService, ServerSerivce>();
         services.AddSingleton<HttpClient>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
@@ -71,6 +72,7 @@ sealed class Program
         services.AddTransient<RegisterViewModel>();
         services.AddTransient<ServerSettingsViewModel>();
         services.AddTransient<UserSettingsViewModel>();
+		services.AddTransient<CreateServerViewModel>();
 
 		services.AddAutoMapper(typeof(MappingProfile));
 

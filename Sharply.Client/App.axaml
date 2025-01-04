@@ -38,6 +38,10 @@
 			<views:UserSettingsView />
 		</DataTemplate>
 
+		<DataTemplate DataType="{x:Type vm:CreateServerViewModel}">
+			<views:CreateServerView />
+		</DataTemplate>
+
     </Application.DataTemplates>
   
     <Application.Styles>

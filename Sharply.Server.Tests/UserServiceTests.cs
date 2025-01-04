@@ -1,13 +1,10 @@
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
+using Sharply.Server.Automapper;
 using Sharply.Server.Data;
 using Sharply.Server.Interfaces;
-using Sharply.Server.Automapper; 
 using Sharply.Server.Models;
 using Sharply.Server.Services;
 using Sharply.Shared.Models;
@@ -55,7 +52,7 @@ namespace Sharply.Server.Tests
         {
             // Act & Assert
             var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                await _service.GetUserDto(999) 
+                await _service.GetUserDto(999)
             );
             Assert.That(ex.Message, Does.Contain("was not found from GetUserDto"));
         }
@@ -89,7 +86,7 @@ namespace Sharply.Server.Tests
         {
             // Act & Assert
             var ex = Assert.ThrowsAsync<Exception>(async () =>
-                await _service.AddUserToServerAsync(userId: 1, serverId: 999) 
+                await _service.AddUserToServerAsync(userId: 1, serverId: 999)
             );
             Assert.That(ex.Message, Is.EqualTo("Server not found"));
         }
@@ -150,11 +147,14 @@ namespace Sharply.Server.Tests
                 seedContext.Users.Add(new User { Id = 1, Username = "Test User" });
                 seedContext.Servers.Add(new Models.Server { Id = 1, OwnerId = 1, Name = "Test Server" });
                 seedContext.Channels.Add(new Channel { Id = 1, ServerId = 1, Name = "Test Channel" });
+
                 seedContext.UserChannels.Add(new UserChannel
                 {
                     UserId = 1,
                     ChannelId = 1,
+                    IsActive = true // needs to be set, in-memory doesnt apply default values for some reason
                 });
+
                 await seedContext.SaveChangesAsync();
             }
 

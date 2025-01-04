@@ -94,7 +94,7 @@ public class SharplyDbContext : DbContext
 
         modelBuilder.Entity<UserChannel>()
             .Property(uc => uc.IsActive)
-            .HasDefaultValue(1);
+            .HasDefaultValue(true);
     }
 
     private void ConfigureUserServerRelationship(ModelBuilder modelBuilder)
@@ -116,7 +116,7 @@ public class SharplyDbContext : DbContext
 
         modelBuilder.Entity<UserServer>()
             .Property(us => us.IsActive)
-            .HasDefaultValue(1);
+            .HasDefaultValue(true);
     }
 
     private void SeedData(ModelBuilder modelBuilder)

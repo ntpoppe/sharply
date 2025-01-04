@@ -8,16 +8,16 @@ namespace Sharply.Client.Services;
 
 public class ServerSerivce : IServerService
 {
-	private readonly ApplicationServices _services;
-	private readonly MainViewModel _mainViewModel;
+	private readonly IApiService _apiService;
+	private readonly ITokenStorageService _tokenStorageService;
 
-	public ServerSerivce(ApplicationServices services, MainViewModel mainViewModel)
+	public ServerSerivce(IApiService apiService, ITokenStorageService tokenStorageService)
 	{
-		_services = services;
-		_mainViewModel = mainViewModel;
+		_apiService = apiService;
+		_tokenStorageService = tokenStorageService;
 	}
 
-	public async Task CreateServer(int userId, string name)
+	public async Task<ServerViewModel> CreateServer(int userId, string name)
 	{
 		var request = new CreateServerRequest()
 		{
@@ -25,11 +25,11 @@ public class ServerSerivce : IServerService
 			Name = name
 		};
 
-		var token = _services.TokenStorageService.LoadToken();
+		var token = _tokenStorageService.LoadToken();
 		if (token == null)
 			throw new InvalidOperationException("token was null");
 
-		await _services.ApiService.CreateServerAsync(token, request);
-
+		var newServer = await _apiService.CreateServerAsync(token, request);
+		return newServer;
 	}
 }

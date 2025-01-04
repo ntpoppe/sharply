@@ -10,10 +10,12 @@ namespace Sharply.Client.ViewModels;
 public partial class CreateServerViewModel : ViewModelBase, IOverlay
 {
     private readonly ApplicationServices _services;
+	private readonly MainViewModel _mainViewModel;
 
-    public CreateServerViewModel(ApplicationServices services)
+    public CreateServerViewModel(ApplicationServices services, MainViewModel mainViewModel)
     {
-		_services = services;	
+		_services = services;
+		_mainViewModel = mainViewModel;
 		
 		CloseCommand = new RelayCommand(Close);
 		CreateServerCommand = new AsyncRelayCommand(CreateServer);
@@ -38,7 +40,10 @@ public partial class CreateServerViewModel : ViewModelBase, IOverlay
 		if (user == null)
 			throw new InvalidOperationException("User fetch returned null");
 
-		_services.ServerService.CreateServer(user.Id, NewServerName);
+		var newServer = await _services.ServerService.CreateServer(user.Id, NewServerName);
+		await _mainViewModel.RefreshServerList();
+		_mainViewModel.ServerList.SelectedServer = newServer;
+		Close();
 	}
 
     public void Close()

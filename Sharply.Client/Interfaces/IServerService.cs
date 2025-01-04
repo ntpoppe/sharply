@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
+using Sharply.Client.ViewModels;
 
 namespace Sharply.Client.Interfaces;
 
 public interface IServerService
 {
-	Task CreateServer(int userId, string name);
+	Task<ServerViewModel> CreateServer(int userId, string name);
 }

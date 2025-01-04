@@ -1,19 +1,21 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
+using Sharply.Client.Services;
 
 namespace Sharply.Client.ViewModels;
 
 public class UserSettingsViewModel : IOverlay
 {
-    private IOverlayService _overlayService;
+    private ApplicationServices _services;
 
-    public UserSettingsViewModel(IOverlayService overlayService, MainViewModel mainViewModel)
+    public UserSettingsViewModel(ApplicationServices services, MainViewModel mainViewModel)
     {
-        _overlayService = overlayService;
+		_services = services;	
+
         LogoutCommand = new RelayCommand(mainViewModel.Logout);
         CloseCommand = new RelayCommand(Close);
 		JoinServerCommand = new RelayCommand(Close);
-		CreateServerCommand = new RelayCommand(Close);
+		CreateServerCommand = new RelayCommand(OpenCreateServerOverlay);
     }
 
     public IRelayCommand LogoutCommand { get; set; }
@@ -21,6 +23,9 @@ public class UserSettingsViewModel : IOverlay
 	public IRelayCommand JoinServerCommand { get; set; }
 	public IRelayCommand CreateServerCommand { get; set; }
 
+	public void OpenCreateServerOverlay()
+		=> _services.OverlayService.ShowOverlay<CreateServerViewModel>();
+
 	public void Close()
-        => _overlayService.HideOverlay();
+        => _services.OverlayService.HideOverlay();
 }

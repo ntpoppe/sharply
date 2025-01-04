@@ -50,7 +50,10 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
 {
     // Database
     services.AddDbContext<SharplyDbContext>(options =>
-        options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+        options.UseSqlite(configuration.GetConnectionString("DefaultConnection"), options =>
+		{
+			options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+		}));
 
     // OpenAPI (Swagger)
     services.AddEndpointsApiExplorer();

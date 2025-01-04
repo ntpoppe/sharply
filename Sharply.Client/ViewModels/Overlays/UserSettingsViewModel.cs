@@ -21,6 +21,6 @@ public class UserSettingsViewModel : IOverlay
 	public IRelayCommand JoinServerCommand { get; set; }
 	public IRelayCommand CreateServerCommand { get; set; }
 
-    public void Close()
+	public void Close()
         => _overlayService.HideOverlay();
 }

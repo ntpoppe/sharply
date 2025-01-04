@@ -2,7 +2,7 @@
 using Sharply.Server.Models;
 using Sharply.Shared.Models;
 
-namespace Sharply.Server.Automapper;
+namespace Sharply.Server.AutoMapper;
 
 public class MappingProfile : Profile
 {

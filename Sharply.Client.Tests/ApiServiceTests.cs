@@ -1,7 +1,9 @@
 ﻿using Moq;
 using Moq.Protected;
+using AutoMapper;
 using NUnit.Framework;
 using Sharply.Client.Services;
+using Sharply.Client.AutoMapper;
 using Sharply.Shared.Requests;
 using Sharply.Shared.Models;
 using Sharply.Shared;
@@ -17,6 +19,7 @@ public class ApiServiceTests
 	private TokenStorageService? _tokenStorageService;
 	private HttpClient? _httpClient;
 	private ApiService? _apiService;
+	private IMapper? _mapper;
 
 	[SetUp]
 	public void SetUp()
@@ -26,8 +29,15 @@ public class ApiServiceTests
 		{
 			BaseAddress = new Uri("https://localhost:9999/")
 		};
+
+		var mapperConfig = new MapperConfiguration(cfg =>
+		{
+			cfg.AddProfile<MappingProfile>(); 
+		});
+		_mapper = mapperConfig.CreateMapper();
+
 		_tokenStorageService = new TokenStorageService();
-		_apiService = new ApiService(_httpClient, _tokenStorageService);
+		_apiService = new ApiService(_httpClient, _tokenStorageService, _mapper);
 	}
 
 	[Test]
@@ -336,6 +346,137 @@ public class ApiServiceTests
 		// Assert
 		if (result == null) throw new Exception("result was null");
 		Assert.That(result.Username, Is.EqualTo("TestUser"));
+	}
+
+	[Test]
+	public async Task CreateServerAsync_SuccessfulResponse_ReturnsServerViewModel()
+	{
+		if (_apiService == null)
+			throw new Exception("_apiService was null");
+
+		// Arrange
+		var tokenString = "dummy_token";
+		var createServerRequest = new CreateServerRequest
+		{
+			Name = "Test Server",
+			OwnerId = 1
+		};
+
+		var apiResponse = new ApiResponse<ServerDto>
+		{
+			Success = true,
+			Data = new ServerDto
+			{
+				Id = 1,
+				OwnerId = 1,
+				Name = "Test Server",
+				Channels = new List<ChannelDto>() // possibly empty for this test
+			}
+		};
+
+		_mockHttpMessageHandler?.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.Is<HttpRequestMessage>(req =>
+					req.Method == HttpMethod.Post &&
+					req.RequestUri == new Uri("https://localhost:9999/api/servers/create-server")),
+				ItExpr.IsAny<CancellationToken>()
+			)
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.OK,
+				Content = JsonContent.Create(apiResponse)
+			});
+
+		// Act
+		var result = await _apiService.CreateServerAsync(tokenString, createServerRequest);
+
+		// Assert
+		Assert.That(result, Is.Not.Null);
+		Assert.That(result.Id, Is.EqualTo(1));
+		Assert.That(result.Name, Is.EqualTo("Test Server"));
+	}
+
+	[Test]
+	public void CreateServerAsync_NonSuccessStatusCode_ThrowsException()
+	{
+		if (_apiService == null)
+			throw new Exception("_apiService was null");
+
+		// Arrange
+		var tokenString = "dummy_token";
+		var createServerRequest = new CreateServerRequest
+		{
+			Name = "Failing Server",
+			OwnerId = 1
+		};
+
+		// Mock an HTTP 500 Internal Server Error
+		_mockHttpMessageHandler?.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.Is<HttpRequestMessage>(req =>
+					req.Method == HttpMethod.Post &&
+					req.RequestUri == new Uri("https://localhost:9999/api/servers/create-server")),
+				ItExpr.IsAny<CancellationToken>()
+			)
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.InternalServerError,
+				Content = new StringContent("Something went wrong on the server.")
+			});
+
+		// Act & Assert
+		var ex = Assert.ThrowsAsync<Exception>(async () =>
+			await _apiService.CreateServerAsync(tokenString, createServerRequest)
+		);
+
+		Assert.That(ex, Is.Not.Null);
+		Assert.That(ex?.Message, Does.Contain("Server returned InternalServerError"));
+	}
+
+	[Test]
+	public void CreateServerAsync_ApiResponseFailure_ThrowsException()
+	{
+		if (_apiService == null)
+			throw new Exception("_apiService was null");
+
+		// Arrange
+		var tokenString = "dummy_token";
+		var createServerRequest = new CreateServerRequest
+		{
+			Name = "Failing Server",
+			OwnerId = 1
+		};
+
+		// Server returns 200 OK, but the "Success" property is false.
+		var failureApiResponse = new ApiResponse<ServerDto>
+		{
+			Success = false,
+			Error = "Uncreative error."
+		};
+
+		_mockHttpMessageHandler?.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.Is<HttpRequestMessage>(req =>
+					req.Method == HttpMethod.Post &&
+					req.RequestUri == new Uri("https://localhost:9999/api/servers/create-server")),
+				ItExpr.IsAny<CancellationToken>()
+			)
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.OK,
+				Content = JsonContent.Create(failureApiResponse)
+			});
+
+		// Act & Assert
+		var ex = Assert.ThrowsAsync<Exception>(async () =>
+			await _apiService.CreateServerAsync(tokenString, createServerRequest)
+		);
+
+		Assert.That(ex, Is.Not.Null);
+		Assert.That(ex!.Message, Is.EqualTo("Uncreative error."));
 	}
 }
 

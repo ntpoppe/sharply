@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
-using Sharply.Client.Views;
+using Sharply.Client.AutoMapper;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -41,6 +41,7 @@ sealed class Program
     {
         var configuration = LoadConfiguration();
         var services = new ServiceCollection();
+
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
@@ -70,6 +71,8 @@ sealed class Program
         services.AddTransient<RegisterViewModel>();
         services.AddTransient<ServerSettingsViewModel>();
         services.AddTransient<UserSettingsViewModel>();
+
+		services.AddAutoMapper(typeof(MappingProfile));
 
         return services.BuildServiceProvider();
     }

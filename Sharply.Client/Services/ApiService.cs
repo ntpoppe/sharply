@@ -1,4 +1,5 @@
-﻿using Sharply.Client.Interfaces;
+﻿using AutoMapper;
+using Sharply.Client.Interfaces;
 using Sharply.Client.ViewModels;
 using Sharply.Shared;
 using Sharply.Shared.Models;
@@ -17,11 +18,13 @@ public class ApiService : IApiService
 {
     private readonly HttpClient _client;
     private readonly ITokenStorageService _tokenStorageService;
+	private readonly IMapper _mapper;
 
-    public ApiService(HttpClient client, ITokenStorageService tokenStorageService)
+    public ApiService(HttpClient client, ITokenStorageService tokenStorageService, IMapper mapper)
     {
         _client = client;
         _tokenStorageService = tokenStorageService;
+		_mapper = mapper;
     }
 
     public async Task<UserViewModel> RegisterAsync(string username, string password)
@@ -81,6 +84,29 @@ public class ApiService : IApiService
 
         throw new Exception("Check your credentials.");
     }
+
+	public async Task<ServerViewModel> CreateServerAsync(string tokenString, CreateServerRequest request)
+	{
+		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+		var response = await _client.PostAsJsonAsync("api/servers/create-server", request);
+
+		if (response.IsSuccessStatusCode)
+		{
+			var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
+
+			if (result != null && result.Success)
+			{
+				var newServer = _mapper.Map<ServerViewModel>(result.Data);
+				return newServer;
+			}
+			else
+            {
+                throw new Exception(result?.Error ?? "Unknown error occurred.");
+            }
+		}
+
+		throw new Exception($"Server returned {response.StatusCode} in CreateServerAsync()");
+	}
 
     public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
     {
@@ -191,5 +217,36 @@ public class ApiService : IApiService
 
         return null;
     }
+
+	private ServerViewModel MapToServerViewModel(ServerDto serverDto)
+	{
+		return new ServerViewModel
+		{
+			Id = serverDto.Id,
+			Name = serverDto.Name,
+			Channels = serverDto.Channels.Select(MapToChannelViewModel).ToList()
+		};
+	}
+
+	private ChannelViewModel MapToChannelViewModel(ChannelDto channelDto)
+	{
+		return new ChannelViewModel
+		{
+			Id = channelDto.Id,
+			Name = channelDto.Name,
+			ServerId = channelDto.ServerId,
+			Messages = channelDto.Messages.Select(MapToMessageViewModel).ToList()
+		};
+	}
+
+	private MessageViewModel MapToMessageViewModel(MessageDto messageDto)
+	{
+		return new MessageViewModel
+		{
+			Username = messageDto.Username,
+			Content = messageDto.Content,
+			Timestamp = messageDto.Timestamp
+		};
+	}
 
 }

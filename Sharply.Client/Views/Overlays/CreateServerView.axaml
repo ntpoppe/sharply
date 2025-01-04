@@ -4,8 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Sharply.Client.Views.UserSettingsView"
-			 x:DataType="vm:UserSettingsViewModel">
+             x:Class="Sharply.Client.Views.CreateServerView"
+			 x:DataType="vm:CreateServerViewModel">
 	
 	<UserControl.Styles>
 		<Style Selector="TextBox:focus-within /template/ Border">
@@ -43,7 +43,7 @@
 				<!-- Content StackPanel -->
 				<StackPanel Orientation="Vertical" Margin="15">
 					<!-- Title -->
-					<TextBlock Text="User Settings"
+					<TextBlock Text="Create a Server"
 							   FontSize="16"
 							   FontWeight="Bold"
 							   HorizontalAlignment="Left"
@@ -52,27 +52,25 @@
 
 					<!-- Rename Section -->
 					<StackPanel Orientation="Vertical" Margin="0,0,0,20">
-						<Button Content="Logout"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}" 
-								Command="{Binding LogoutCommand}"/>
-
-						<Button Content="Join Server"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								Command="{Binding JoinServerCommand}" />
-
-						<Button Content="Create Server"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								Command="{Binding CreateServerCommand}" />
+						<TextBlock Text="Name:"
+								   FontSize="14"
+								   Margin="0,0,0,5"/>
+						<StackPanel Orientation="Horizontal">
+							<TextBox Width="200"
+									 Height="30"
+									 Text="{Binding NewServerName, Mode=TwoWay}"
+									 Watermark="Enter a name..."
+									 Margin="0,0,10,0"/>
+						</StackPanel>
 					</StackPanel>
+
+					<Button Content="Create"
+							Height="30"
+							Background="{DynamicResource AccentBrush}"
+							Foreground="{DynamicResource PrimaryTextBrush}"
+							Command="{Binding CreateServerCommand}" />
 				</StackPanel>
 			</Grid>
 		</Border>
 	</Grid>
-
 </UserControl>

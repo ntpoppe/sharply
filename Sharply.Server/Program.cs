@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Sharply.Server.Automapper;
+using Sharply.Server.AutoMapper;
 using Sharply.Server.Data;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Services;

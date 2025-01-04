@@ -6,7 +6,7 @@ using Sharply.Server.Data;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Server.Services;
-using Sharply.Server.Automapper;
+using Sharply.Server.AutoMapper;
 
 namespace Sharply.Server.Tests;
 

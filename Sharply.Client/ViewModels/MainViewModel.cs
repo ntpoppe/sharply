@@ -163,7 +163,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
 
 			if (CurrentUser == null)
-				throw new Exception("CurrentUser was null. You should never see this.");
+				throw new Exception("CurrentUser was null.");
 
             await _services.SignalRService.GoOnline(CurrentUser.Id);
 
@@ -174,11 +174,15 @@ public partial class MainViewModel : ViewModelBase, INavigable
         }
     }
 
-    private void AddServer()
+    public void AddServer(string name)
     {
+		if (CurrentUser == null)
+			throw new Exception("CurrentUser was null.");
+
+		_services.ServerService.CreateServer(CurrentUser.Id, name);
     }
 
-    private void AddChannel()
+    public void AddChannel()
     {
     }
 

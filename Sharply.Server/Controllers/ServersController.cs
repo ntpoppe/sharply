@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sharply.Server.Interfaces;
 using Sharply.Shared;
+using Sharply.Shared.Requests;
 using Sharply.Shared.Models;
 using System.Security.Claims;
 
@@ -9,9 +10,13 @@ using System.Security.Claims;
 public class ServersController : ControllerBase
 {
     private readonly IUserService _userService;
+	private readonly IServerService _serverService;
 
-    public ServersController(IUserService userService)
-        => _userService = userService;
+    public ServersController(IUserService userService, IServerService serverService)
+	{
+		_userService = userService;
+		_serverService = serverService;
+	}
 
     [HttpPost("{serverId}/add-user")]
     public async Task<IActionResult> AddUserToServer(int serverId)
@@ -28,6 +33,29 @@ public class ServersController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+	[HttpPost("create-server")]
+	public async Task<ApiResponse<ServerDto>> CreateServer([FromBody] CreateServerRequest request)
+	{
+		try
+		{
+			var createdServer = await _serverService.CreateServer(request);
+			return new ApiResponse<ServerDto>
+			{
+				Success = true,
+				Data = createdServer
+			};
+		}
+		catch (Exception ex)
+		{
+		    return new ApiResponse<ServerDto>
+            {
+                Success = false,
+                Error = ex.Message
+            };
+
+		}
+	}
 
     [HttpGet("get-user-servers")]
     public async Task<ApiResponse<List<ServerDto>>> GetUserServers()

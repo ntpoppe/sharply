@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using NUnit.Framework;
 using Sharply.Server.Data;
-using Sharply.Server.Automapper;
+using Sharply.Server.AutoMapper;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Server.Services;

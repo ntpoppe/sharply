@@ -73,7 +73,7 @@ public class ServerServiceTests
 
 		var channel = await verificationContext.Channels.FirstOrDefaultAsync();
 		if (channel == null) throw new Exception("channel was null");
-		Assert.That(channel.Name, Is.EqualTo("/general"));
+		Assert.That(channel.Name, Is.EqualTo("general"));
 		Assert.That(channel.ServerId, Is.EqualTo(server.Id));
 	}
 

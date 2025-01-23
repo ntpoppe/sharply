@@ -1,6 +1,6 @@
 # Sharply
 
-Sharply is a cross-platform chat application inspired by popular real-time communication platforms. It enables users to join servers and message others within channels.
+-Sharply is a cross-platform chat application inspired by popular real-time communication platforms. It enables users to join servers and message others within channels.
 
 ---
 

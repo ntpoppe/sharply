@@ -205,7 +205,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 			return;
 		}
 
-		ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - #{ChannelList.SelectedChannel?.Name}";
+		ChannelDisplayName = $"{ServerList.SelectedServer?.Name} / {ChannelList.SelectedChannel?.Name}";
 	}
 
 

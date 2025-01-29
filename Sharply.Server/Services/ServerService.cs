@@ -57,7 +57,8 @@ public class ServerService : IServerService
 		var newUserChannel = new UserChannel
 		{
 			ChannelId = defaultChannel.Id,
-			UserId = request.OwnerId
+			UserId = request.OwnerId,
+			IsActive = true
 		};
 
 		context.UserServers.Add(newUserServer);

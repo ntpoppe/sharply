@@ -26,7 +26,7 @@ public class ServerService : IServerService
 	/// <summary>
 	/// Creates a new server.
 	/// </summary>
-	public async Task<ServerDto> CreateServer(CreateServerRequest request, CancellationToken cancellationToken = default)
+	public async Task<ServerDto> CreateServerAsync(CreateServerRequest request, CancellationToken cancellationToken = default)
 	{
 		using var context = _contextFactory.CreateSharplyContext();
 
@@ -66,6 +66,49 @@ public class ServerService : IServerService
 		await context.SaveChangesAsync(cancellationToken);
 
 		return _mapper.Map<ServerDto>(newServer);
+	}
+
+	/// <summary>
+	/// Soft deletes a server.
+	/// </summary>
+	public async Task SoftDeleteServerAsync(int serverId, CancellationToken cancellationToken = default)
+	{
+		using var context = _contextFactory.CreateSharplyContext();
+
+		var server = await context.Servers.FirstOrDefaultAsync(s => s.Id == serverId, cancellationToken);
+		if (server == null) 
+			throw new InvalidOperationException($"Attempted to delete server with id {serverId}. Server does not exist.");
+
+		await using var transaction = await context.Database.BeginTransactionAsync(cancellationToken);
+
+		try
+		{
+			// Soft delete all related channels
+			await context.Channels
+				.Where(c => c.ServerId == serverId)
+				.ExecuteUpdateAsync(s => s.SetProperty(c => c.IsDeleted, true), cancellationToken);
+
+			// Soft delete user-server relationships
+			await context.UserServers
+				.Where(us => us.ServerId == serverId)
+				.ExecuteUpdateAsync(s => s.SetProperty(us => us.IsActive, false), cancellationToken);
+
+			// Soft delete user-channel relationships
+			await context.UserChannels
+				.Where(uc => context.Channels.Any(c => c.ServerId == serverId && c.Id == uc.ChannelId))
+				.ExecuteUpdateAsync(s => s.SetProperty(uc => uc.IsActive, false), cancellationToken);
+
+			// Soft delete the server
+			server.IsDeleted = true;
+			await context.SaveChangesAsync(cancellationToken);
+
+			await transaction.CommitAsync(cancellationToken);
+		}
+		catch (Exception)
+		{
+			await transaction.RollbackAsync(cancellationToken);
+			throw;
+		}
 	}
 
     /// <summary>

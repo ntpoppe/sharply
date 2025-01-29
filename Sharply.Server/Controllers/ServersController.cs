@@ -39,7 +39,7 @@ public class ServersController : ControllerBase
 	{
 		try
 		{
-			var createdServer = await _serverService.CreateServer(request);
+			var createdServer = await _serverService.CreateServerAsync(request);
 			return new ApiResponse<ServerDto>
 			{
 				Success = true,
@@ -54,6 +54,27 @@ public class ServersController : ControllerBase
                 Error = ex.Message
             };
 
+		}
+	}
+
+	[HttpPost("soft-delete-server")]
+	public async Task<ApiResponse<bool>> SoftDeleteServer([FromBody] int serverId)
+	{
+		try
+		{
+			await _serverService.SoftDeleteServerAsync(serverId);
+			return new ApiResponse<bool>
+			{
+				Success = true,
+			};
+		}
+		catch (Exception ex)
+		{
+			return new ApiResponse<bool>
+			{
+				Success = false,
+				Error = ex.Message
+			};
 		}
 	}
 

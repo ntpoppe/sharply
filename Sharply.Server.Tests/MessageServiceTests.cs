@@ -53,7 +53,7 @@ public class MessageServiceTests
 			);
 
 			seedContext.Servers.AddRange(
-				new Models.Server() { Id = 1, OwnerId = 1, Name = "Test Server 1" }
+				new Models.Server() { Id = 1, OwnerId = 1, Name = "Test Server 1", InviteCode = "12345678" }
 			);
  
 			seedContext.Channels.AddRange(
@@ -100,7 +100,7 @@ public class MessageServiceTests
 			);
 
 			seedContext.Servers.AddRange(
-				new Models.Server() { Id = 1, OwnerId = 1, Name = "Test Server 1" }
+				new Models.Server() { Id = 1, OwnerId = 1, Name = "Test Server 1", InviteCode = "12345678" }
 			);
  
 			seedContext.Channels.AddRange(

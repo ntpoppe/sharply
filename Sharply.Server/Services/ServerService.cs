@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sharply.Server.Data;
@@ -33,7 +34,8 @@ public class ServerService : IServerService
 		var newServer = new Models.Server
 		{
 			OwnerId = request.OwnerId,
-			Name = request.Name
+			Name = request.Name,
+			InviteCode = Guid.NewGuid().ToString().Substring(0, 8)
 		};
 
 		context.Servers.Add(newServer);
@@ -42,7 +44,8 @@ public class ServerService : IServerService
 		var defaultChannel = new Channel
 		{
 			ServerId = newServer.Id,
-			Name = "general"
+			Name = "general",
+			IsDefault = true
 		};
 
 		context.Channels.Add(defaultChannel);
@@ -111,6 +114,39 @@ public class ServerService : IServerService
 		}
 	}
 
+	/// <summary>
+	/// Adds a user to a server.
+	/// </summary>
+	public async Task<bool> AddUserToServerAsync(int userId, int serverId, CancellationToken cancellationToken = default)
+	{
+		using var context = _contextFactory.CreateSharplyContext();
+
+		var exists = await context.UserServers.AnyAsync(us => us.UserId == userId && us.ServerId == serverId, cancellationToken);
+		if (exists)
+		{
+			Console.WriteLine("exists");
+			return false;
+		}
+
+		var newUserServer = new UserServer { UserId = userId, ServerId = serverId };
+		context.UserServers.Add(newUserServer);
+
+		var defaultChannel = context.Channels
+			.Where(c => c.ServerId == serverId)
+			.FirstOrDefault(c => c.IsDefault == true);
+
+		if (defaultChannel == null)
+			throw new InvalidOperationException("Server doesn't have a default channel.");
+
+		Console.WriteLine(defaultChannel.Id);
+		var newUserChannel = new UserChannel { UserId = userId, ChannelId = defaultChannel.Id };
+		context.UserChannels.Add(newUserChannel);
+
+		await context.SaveChangesAsync(cancellationToken);
+
+		return true;
+	}
+
     /// <summary>
     /// Retrieves servers with associated channels for a user.
     /// </summary>
@@ -132,12 +168,23 @@ public class ServerService : IServerService
         {
             server.Channels = server.Channels
 				.Where(c => c.IsDeleted == false)
-                .Where(c => context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id))
+                .Where(c => context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id && uc.IsActive == true))
                 .ToList();
         }
 
         return _mapper.Map<List<ServerDto>>(servers);
     }
+
+	/// <summary>
+	/// Retrieves a server via an invite code.
+	/// </summary>
+	public async Task<ServerDto?> GetServerByInviteCodeAsync(string inviteCode, CancellationToken cancellationToken = default)
+	{
+		using var context = _contextFactory.CreateSharplyContext();
+
+		var server = await context.Servers.FirstOrDefaultAsync(s => s.InviteCode == inviteCode, cancellationToken);
+		return _mapper.Map<ServerDto>(server);
+	}
 
     /// <summary>
     /// Retrieves all channels for a given server.

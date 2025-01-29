@@ -118,6 +118,7 @@ namespace Sharply.Server.Tests
                     Id = 1,
                     OwnerId = 1,
                     Name = "Test Server",
+					InviteCode = "12345678",
                     IsDeleted = false
                 });
                 await seedContext.SaveChangesAsync();
@@ -142,7 +143,7 @@ namespace Sharply.Server.Tests
             // Arrange
             var fakeServers = new System.Collections.Generic.List<ServerDto>
             {
-                new ServerDto { Id = 1, OwnerId = 1, Name = "MockServer1" }
+                new ServerDto { Id = 1, OwnerId = 1, Name = "MockServer1", InviteCode = "123456789" }
             };
             _serverServiceMock
                 .Setup(s => s.GetServersWithChannelsForUserAsync(It.IsAny<int>(), default))
@@ -167,7 +168,7 @@ namespace Sharply.Server.Tests
             await using (var seedContext = new SharplyDbContext(_dbOptions))
             {
                 seedContext.Users.Add(new User { Id = 1, Username = "Test User" });
-                seedContext.Servers.Add(new Models.Server { Id = 1, OwnerId = 1, Name = "Test Server" });
+                seedContext.Servers.Add(new Models.Server { Id = 1, OwnerId = 1, Name = "Test Server", InviteCode = "12345678" });
                 seedContext.Channels.Add(new Channel { Id = 1, ServerId = 1, Name = "Test Channel" });
 
                 seedContext.UserChannels.Add(new UserChannel

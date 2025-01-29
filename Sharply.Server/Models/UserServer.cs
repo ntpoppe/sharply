@@ -12,6 +12,6 @@ public class UserServer
     public int ServerId { get; set; }
     public Server? Server { get; set; }
 
-    public bool IsActive { get; set; }
+    public bool IsActive { get; set; } = true;
 }
 

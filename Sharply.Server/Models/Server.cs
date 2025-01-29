@@ -20,6 +20,11 @@ public class Server
     /// </summary>
     public required int OwnerId { get; set; }
 
+	/// <summary>
+	/// Gets or sets the invite code for the server.
+	/// </summary>
+	public required string InviteCode { get; set; }
+
     /// <summary>
     /// Gets or sets a collection of channels contained by the server.
     /// </summary>

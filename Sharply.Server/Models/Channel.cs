@@ -39,6 +39,11 @@ public class Channel
     /// </summary>
     public ICollection<UserChannel> UserChannels { get; set; } = new List<UserChannel>();
 
+	/// <summary>
+	/// Represents if the channel is the default channel in a server.
+	/// </summary>
+	public bool IsDefault { get; set; }
+
     /// <summary>
     /// Represents if a channel has been deleted.
     /// </summary>

@@ -14,7 +14,7 @@ public class UserSettingsViewModel : IOverlay
 
         LogoutCommand = new RelayCommand(mainViewModel.Logout);
         CloseCommand = new RelayCommand(Close);
-		JoinServerCommand = new RelayCommand(Close);
+		JoinServerCommand = new RelayCommand(OpenJoinServerOverlay);
 		CreateServerCommand = new RelayCommand(OpenCreateServerOverlay);
     }
 
@@ -22,6 +22,9 @@ public class UserSettingsViewModel : IOverlay
     public IRelayCommand CloseCommand { get; set; }
 	public IRelayCommand JoinServerCommand { get; set; }
 	public IRelayCommand CreateServerCommand { get; set; }
+
+	public void OpenJoinServerOverlay()
+		=> _services.OverlayService.ShowOverlay<JoinServerViewModel>();
 
 	public void OpenCreateServerOverlay()
 		=> _services.OverlayService.ShowOverlay<CreateServerViewModel>();

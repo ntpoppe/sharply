@@ -18,11 +18,12 @@ public class ServerSettingsViewModel : IOverlay
 		_mainViewModel = mainViewModel;
 		SoftDeleteServerCommand = new AsyncRelayCommand(SoftDeleteServer);
         CloseCommand = new RelayCommand(Close);
-		
+		ServerInviteCode = GetServerInviteCode();	
     }
 
 	public IRelayCommand SoftDeleteServerCommand { get; set; }
     public IRelayCommand CloseCommand { get; set; }
+	public string ServerInviteCode { get; private set; }
 
 	private async Task SoftDeleteServer()
 	{
@@ -41,6 +42,14 @@ public class ServerSettingsViewModel : IOverlay
 		await _mainViewModel.RefreshServerList();
 		_mainViewModel.ServerList.SelectedServer = _mainViewModel.ServerList.Servers.FirstOrDefault();
 		Close();
+	}
+
+	public string GetServerInviteCode()
+	{
+		if (_mainViewModel.ServerList.SelectedServer == null)
+			throw new InvalidOperationException("SelectedServer was null in GetServerInviteCode()");
+
+		return _mainViewModel.ServerList.SelectedServer.InviteCode ?? "No invite code found";		
 	}
 
     public void Close()

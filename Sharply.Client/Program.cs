@@ -73,6 +73,7 @@ sealed class Program
         services.AddTransient<ServerSettingsViewModel>();
         services.AddTransient<UserSettingsViewModel>();
 		services.AddTransient<CreateServerViewModel>();
+		services.AddTransient<JoinServerViewModel>();
 
 		services.AddAutoMapper(typeof(MappingProfile));
 

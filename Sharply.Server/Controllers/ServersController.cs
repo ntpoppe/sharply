@@ -18,22 +18,6 @@ public class ServersController : ControllerBase
 		_serverService = serverService;
 	}
 
-    [HttpPost("{serverId}/add-user")]
-    public async Task<IActionResult> AddUserToServer(int serverId)
-    {
-        try
-        {
-            //await _userService.AddUserToServerAsync(request.UserId, serverId);
-            //return Ok(new { message = "User added to server successfully" });
-			await Task.Delay(2);
-            return BadRequest();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-    }
-
 	[HttpPost("create-server")]
 	public async Task<ApiResponse<ServerDto>> CreateServer([FromBody] CreateServerRequest request)
 	{
@@ -54,6 +38,38 @@ public class ServersController : ControllerBase
                 Error = ex.Message
             };
 
+		}
+	}
+
+	[HttpPost("join-server")]
+	public async Task<ApiResponse<ServerDto>> JoinServer([FromBody] JoinServerRequest request)
+	{
+		try
+		{
+			var server = await _serverService.GetServerByInviteCodeAsync(request.InviteCode);
+			if (server == null)
+				return new ApiResponse<ServerDto> { Success = false, Error = "Invalid invite code." };
+
+			var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+			if (userIdClaim == null)
+				return new ApiResponse<ServerDto> { Success = false, Error = "User not authenticated." };
+
+			var userId = int.Parse(userIdClaim);
+			var result = await _serverService.AddUserToServerAsync(userId, server.Id);
+
+			return new ApiResponse<ServerDto>
+			{
+				Success = result,
+				Data = server 
+			};
+		}
+		catch (Exception ex)
+		{
+			return new ApiResponse<ServerDto>
+			{
+				Success = false,
+				Error = ex.Message
+			};
 		}
 	}
 

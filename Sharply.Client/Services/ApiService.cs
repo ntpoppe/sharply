@@ -123,11 +123,27 @@ public class ApiService : IApiService
 			}
 			else
 			{
-				throw new Exception(result?.Error ?? "Unknown error occured");
+				throw new Exception(result?.Error ?? "Unknown error occurred");
 			}
 		}
 
 		throw new Exception($"Server returned {response.StatusCode} in SoftDeleteServerAsync()");
+	}
+
+	public async Task<ApiResponse<ServerDto>> JoinServerAsync(string tokenString, JoinServerRequest request)
+	{
+		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+		var response = await _client.PostAsJsonAsync("api/servers/join-server", request);
+
+		if (!response.IsSuccessStatusCode)
+			throw new Exception($"Server returned {response.StatusCode} in JoinServerAsync()");
+
+		var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
+
+		if (result == null)
+			throw new Exception("Response could not be deserialized.");
+
+		return result;
 	}
 
     public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
@@ -141,26 +157,7 @@ public class ApiService : IApiService
 
             if (result != null && result.Success)
             {
-                var viewModels = result.Data?.Select(serverDto => new ServerViewModel
-                {
-                    Id = serverDto.Id,
-					OwnerId = serverDto.OwnerId,
-                    Name = serverDto.Name,
-                    Channels = serverDto.Channels.Select(channelDto => new ChannelViewModel
-                    {
-                        Id = channelDto.Id,
-                        Name = channelDto.Name,
-                        ServerId = channelDto.ServerId,
-                        Messages = channelDto.Messages.Select(messageDto => new MessageViewModel
-                        {
-                            Username = messageDto.Username,
-                            Content = messageDto.Content,
-                            Timestamp = messageDto.Timestamp,
-                        }).ToList()
-                    }).ToList()
-                }).ToList();
-
-                return viewModels ?? new List<ServerViewModel>();
+                return _mapper.Map<List<ServerViewModel>>(result.Data ?? new List<ServerDto>());
             }
             else
             {
@@ -240,36 +237,4 @@ public class ApiService : IApiService
 
         return null;
     }
-
-	private ServerViewModel MapToServerViewModel(ServerDto serverDto)
-	{
-		return new ServerViewModel
-		{
-			Id = serverDto.Id,
-			Name = serverDto.Name,
-			Channels = serverDto.Channels.Select(MapToChannelViewModel).ToList()
-		};
-	}
-
-	private ChannelViewModel MapToChannelViewModel(ChannelDto channelDto)
-	{
-		return new ChannelViewModel
-		{
-			Id = channelDto.Id,
-			Name = channelDto.Name,
-			ServerId = channelDto.ServerId,
-			Messages = channelDto.Messages.Select(MapToMessageViewModel).ToList()
-		};
-	}
-
-	private MessageViewModel MapToMessageViewModel(MessageDto messageDto)
-	{
-		return new MessageViewModel
-		{
-			Username = messageDto.Username,
-			Content = messageDto.Content,
-			Timestamp = messageDto.Timestamp
-		};
-	}
-
 }

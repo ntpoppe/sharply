@@ -14,6 +14,8 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private string? _name;
 
+	public required string InviteCode { get; set; }
+
     [ObservableProperty]
     private List<ChannelViewModel> _channels = new();
 }

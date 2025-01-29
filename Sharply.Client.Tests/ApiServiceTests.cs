@@ -203,6 +203,7 @@ public class ApiServiceTests
 					Id = 1,
 					Name = "Test Server",
 					OwnerId = 1,
+					InviteCode = "12345678",
 					Channels = new List<ChannelDto>
 					{
 						new ChannelDto
@@ -370,6 +371,7 @@ public class ApiServiceTests
 				Id = 1,
 				OwnerId = 1,
 				Name = "Test Server",
+				InviteCode = "12345678",
 				Channels = new List<ChannelDto>() // possibly empty for this test
 			}
 		};

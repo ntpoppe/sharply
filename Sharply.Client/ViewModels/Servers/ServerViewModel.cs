@@ -8,6 +8,9 @@ public partial class ServerViewModel : ObservableObject
     [ObservableProperty]
     private int? _id;
 
+	[ObservableProperty]
+	private int? _ownerId;
+
     [ObservableProperty]
     private string? _name;
 

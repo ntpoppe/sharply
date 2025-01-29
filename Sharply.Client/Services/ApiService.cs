@@ -144,6 +144,7 @@ public class ApiService : IApiService
                 var viewModels = result.Data?.Select(serverDto => new ServerViewModel
                 {
                     Id = serverDto.Id,
+					OwnerId = serverDto.OwnerId,
                     Name = serverDto.Name,
                     Channels = serverDto.Channels.Select(channelDto => new ChannelViewModel
                     {

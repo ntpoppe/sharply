@@ -67,6 +67,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 	public ChannelListViewModel ChannelList { get; set; }
 	public UserListViewModel UserList { get; set; }
 
+	public bool IsCurrentUserServerOwner => CurrentUser != null && ServerList.SelectedServer?.OwnerId == CurrentUser.Id;
     public object? CurrentView => _services.NavigationService.CurrentView;
     public object? CurrentOverlay => _services.OverlayService.CurrentOverlayView;
     public bool IsOverlayVisible => _services.OverlayService.IsOverlayVisible;
@@ -89,6 +90,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
 				var selectedServer = ServerList.SelectedServer;
                 if (selectedServer != null)
                     ChannelList.LoadChannelsAsync(selectedServer);
+
+				OnPropertyChanged(nameof(IsCurrentUserServerOwner));
 			}
 		};
 

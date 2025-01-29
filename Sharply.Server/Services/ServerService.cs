@@ -123,6 +123,7 @@ public class ServerService : IServerService
             .Include(s => s.Channels)
                 .ThenInclude(c => c.Messages)
                     .ThenInclude(m => m.User) // fetch the user who sent the message
+			.Where(s => s.IsDeleted == false)
             .Where(s => s.UserServers.Any(us => us.UserId == userId))
             .ToListAsync(cancellationToken);
 
@@ -130,6 +131,7 @@ public class ServerService : IServerService
         foreach (var server in servers)
         {
             server.Channels = server.Channels
+				.Where(c => c.IsDeleted == false)
                 .Where(c => context.UserChannels.Any(uc => uc.UserId == userId && uc.ChannelId == c.Id))
                 .ToList();
         }

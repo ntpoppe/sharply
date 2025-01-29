@@ -4,10 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:behaviors="clr-namespace:Sharply.Client.Behaviors"
              xmlns:viewModels="using:Sharply.Client.ViewModels"
+			 xmlns:converters="using:Sharply.Client.Converters"
 			 xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
              mc:Ignorable="d"
              x:Class="Sharply.Client.Views.ServerContentView"
              x:DataType="viewModels:MainViewModel">
+
+	<UserControl.Resources>
+		<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+		<converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+	</UserControl.Resources>
+
 
 	<Grid>
 		<Grid.ColumnDefinitions>
@@ -76,6 +83,7 @@
 				<!-- Button -->
 				<Button Grid.Row="3"
 						Content="Server Settings"
+						IsVisible="{Binding IsCurrentUserServerOwner, Converter={StaticResource BoolToVisibilityConverter}}"
 						Background="{DynamicResource AccentBrush}"
 						Foreground="{DynamicResource PrimaryTextBrush}"
 						Margin="10"

@@ -18,6 +18,11 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
+  </PropertyGroup>
+
   <ItemGroup>
     <AvaloniaXaml Remove="Themes\DarkTheme.axaml" />
     <AvaloniaXaml Remove="Themes\LightTheme.axaml" />

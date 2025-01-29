@@ -41,7 +41,7 @@ ConnectionString__DefaultConnection=Data Source=sharply.db
 ServerSettings__ServerUri=http://localhost:8000
 JWT__Key=override_this_key_here
 ```
-- **ConnectionString_DefaultConnection**: Defines the database connection string. To change, set this value to, for example, `Data Source=exampleDatabase.db`
+- **ConnectionString_DefaultConnection**: Defines the database connection string. Sharply uses SQLIte. To change the connection string, set this value to, for example, `Data Source=exampleDatabase.db`
 - **ServerSettings_ServerUri**: The URI of the server backend. This should point where your server is hosted.
 - **JWT__Key**: A key used for signing and validating tokens. Must be at least 128 bits. Replace this with a randomly generated string.
 

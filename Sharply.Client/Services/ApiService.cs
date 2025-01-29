@@ -108,6 +108,28 @@ public class ApiService : IApiService
 		throw new Exception($"Server returned {response.StatusCode} in CreateServerAsync()");
 	}
 
+	public async Task SoftDeleteServerAsync(string tokenString, int serverId)
+	{
+		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+		var response = await _client.PostAsJsonAsync("api/servers/soft-delete-server", serverId);
+
+		if (response.IsSuccessStatusCode)
+		{
+			var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+			if (result != null && result.Success)
+			{
+				return;
+			}
+			else
+			{
+				throw new Exception(result?.Error ?? "Unknown error occured");
+			}
+		}
+
+		throw new Exception($"Server returned {response.StatusCode} in SoftDeleteServerAsync()");
+	}
+
     public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);

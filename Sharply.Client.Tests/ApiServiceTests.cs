@@ -478,5 +478,39 @@ public class ApiServiceTests
 		Assert.That(ex, Is.Not.Null);
 		Assert.That(ex!.Message, Is.EqualTo("Uncreative error."));
 	}
+
+	[Test]
+	public void SoftDeleteServerAsync_NonSuccessStatusCode_ThrowsException()
+	{
+		if (_apiService == null)
+			throw new Exception("_apiService was null");
+
+		// Arrange
+		var tokenString = "dummy_token";
+		var mockServerId = 1;
+
+		// Mock an HTTP 500 Internal Server Error
+		_mockHttpMessageHandler?.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.Is<HttpRequestMessage>(req =>
+					req.Method == HttpMethod.Post &&
+					req.RequestUri == new Uri("https://localhost:9999/api/servers/soft-delete-server")),
+				ItExpr.IsAny<CancellationToken>()
+			)
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.InternalServerError,
+				Content = new StringContent("Something went wrong on the server.")
+			});
+
+		// Act & Assert
+		var ex = Assert.ThrowsAsync<Exception>(async () =>
+			await _apiService.SoftDeleteServerAsync(tokenString, mockServerId)
+		);
+
+		Assert.That(ex, Is.Not.Null);
+		Assert.That(ex?.Message, Does.Contain("Server returned InternalServerError"));
+	}
 }
 

@@ -18,13 +18,13 @@ public class ApiService : IApiService
 {
     private readonly HttpClient _client;
     private readonly ITokenStorageService _tokenStorageService;
-	private readonly IMapper _mapper;
+    private readonly IMapper _mapper;
 
     public ApiService(HttpClient client, ITokenStorageService tokenStorageService, IMapper mapper)
     {
         _client = client;
         _tokenStorageService = tokenStorageService;
-		_mapper = mapper;
+        _mapper = mapper;
     }
 
     public async Task<UserViewModel> RegisterAsync(string username, string password)
@@ -85,66 +85,82 @@ public class ApiService : IApiService
         throw new Exception("Check your credentials.");
     }
 
-	public async Task<ServerViewModel> CreateServerAsync(string tokenString, CreateServerRequest request)
-	{
-		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
-		var response = await _client.PostAsJsonAsync("api/servers/create-server", request);
+    public async Task<ServerViewModel> CreateServerAsync(string tokenString, CreateServerRequest request)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.PostAsJsonAsync("api/servers/create-server", request);
 
-		if (response.IsSuccessStatusCode)
-		{
-			var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
 
-			if (result != null && result.Success)
-			{
-				var newServer = _mapper.Map<ServerViewModel>(result.Data);
-				return newServer;
-			}
-			else
+            if (result != null && result.Success)
+            {
+                var newServer = _mapper.Map<ServerViewModel>(result.Data);
+                return newServer;
+            }
+            else
             {
                 throw new Exception(result?.Error ?? "Unknown error occurred.");
             }
-		}
+        }
 
-		throw new Exception($"Server returned {response.StatusCode} in CreateServerAsync()");
-	}
+        throw new Exception($"Server returned {response.StatusCode} in CreateServerAsync()");
+    }
 
-	public async Task SoftDeleteServerAsync(string tokenString, int serverId)
-	{
-		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
-		var response = await _client.PostAsJsonAsync("api/servers/soft-delete-server", serverId);
+    public async Task SoftDeleteServerAsync(string tokenString, int serverId)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.PostAsJsonAsync("api/servers/soft-delete-server", serverId);
 
-		if (response.IsSuccessStatusCode)
-		{
-			var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
-			if (result != null && result.Success)
-			{
-				return;
-			}
-			else
-			{
-				throw new Exception(result?.Error ?? "Unknown error occurred");
-			}
-		}
+            if (result != null && result.Success)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception(result?.Error ?? "Unknown error occurred");
+            }
+        }
 
-		throw new Exception($"Server returned {response.StatusCode} in SoftDeleteServerAsync()");
-	}
+        throw new Exception($"Server returned {response.StatusCode} in SoftDeleteServerAsync()");
+    }
 
-	public async Task<ApiResponse<ServerDto>> JoinServerAsync(string tokenString, JoinServerRequest request)
-	{
-		_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
-		var response = await _client.PostAsJsonAsync("api/servers/join-server", request);
+    public async Task<ApiResponse<ServerDto>> JoinServerAsync(string tokenString, JoinServerRequest request)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.PostAsJsonAsync("api/servers/join-server", request);
 
-		if (!response.IsSuccessStatusCode)
-			throw new Exception($"Server returned {response.StatusCode} in JoinServerAsync()");
+        if (!response.IsSuccessStatusCode)
+            throw new Exception($"Server returned {response.StatusCode} in JoinServerAsync()");
 
-		var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
 
-		if (result == null)
-			throw new Exception("Response could not be deserialized.");
+        if (result == null)
+            throw new Exception("Response could not be deserialized.");
 
-		return result;
-	}
+        return result;
+    }
+
+    public async Task<ApiResponse<bool>> LeaveServerAsync(string tokenString, LeaveServerRequest request)
+    {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        var response = await _client.PostAsJsonAsync("api/servers/leave-server", request);
+
+        if (!response.IsSuccessStatusCode)
+            throw new Exception($"Server returned {response.StatusCode} in LeaveServerAsync()");
+
+        var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
+
+        if (result == null)
+            throw new Exception("Response could not be deserialized.");
+
+        return result;
+    }
 
     public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
     {

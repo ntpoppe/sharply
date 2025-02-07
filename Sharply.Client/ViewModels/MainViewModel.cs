@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
 using Sharply.Client.Services;
+using Sharply.Shared.Requests;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -29,8 +30,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
         if (services.NavigationService.CurrentView == null)
             services.NavigationService.NavigateTo<LoginViewModel>();
-
-        IsServerSelected = false;
     }
 
     // Avalonia previewer
@@ -46,6 +45,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
     public IRelayCommand? OpenUserSettingsCommand { get; set; }
 
+    public IRelayCommand? LeaveServerCommand { get; set; }
+
     #endregion
 
     #region Properties
@@ -54,9 +55,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     [ObservableProperty]
     private CurrentUser? _currentUser;
-
-    [ObservableProperty]
-    private bool _isServerSelected;
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
@@ -68,6 +66,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
     public ChannelListViewModel ChannelList { get; set; }
     public UserListViewModel UserList { get; set; }
 
+    public bool IsServerSelected => ServerList.IsServerSelected;
     public bool IsCurrentUserServerOwner => CurrentUser != null && ServerList.SelectedServer?.OwnerId == CurrentUser.Id;
     public object? CurrentView => _services.NavigationService.CurrentView;
     public object? CurrentOverlay => _services.OverlayService.CurrentOverlayView;
@@ -77,11 +76,11 @@ public partial class MainViewModel : ViewModelBase, INavigable
         ? new ObservableCollection<MenuItemViewModel>
         {
             new MenuItemViewModel { Header = "Settings", Command = OpenServerSettingsCommand ?? new RelayCommand(OpenServerSettings) },
-            new MenuItemViewModel { Header = "Leave Server", Command = OpenUserSettingsCommand ?? new RelayCommand(OpenServerSettings) }
+            new MenuItemViewModel { Header = "Leave Server", Command = LeaveServerCommand ?? new RelayCommand(OpenServerSettings) }
         }
         : new ObservableCollection<MenuItemViewModel>
         {
-            new MenuItemViewModel { Header = "Leave Server", Command = OpenUserSettingsCommand ?? new RelayCommand(OpenServerSettings) }
+            new MenuItemViewModel { Header = "Leave Server", Command = LeaveServerCommand ?? new RelayCommand(OpenServerSettings) }
         };
 
     #endregion
@@ -103,6 +102,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
                 if (selectedServer != null)
                     ChannelList.LoadChannelsAsync(selectedServer);
 
+                OnPropertyChanged(nameof(IsServerSelected));
                 OnPropertyChanged(nameof(IsCurrentUserServerOwner));
                 OnPropertyChanged(nameof(ServerMenuItems));
             }
@@ -142,6 +142,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         SendMessageCommand = new RelayCommand(SendMessage);
         OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
         OpenUserSettingsCommand = new RelayCommand(OpenUserSettings);
+        LeaveServerCommand = new AsyncRelayCommand(LeaveServer);
     }
 
     public async Task LoadInitialData()
@@ -234,8 +235,23 @@ public partial class MainViewModel : ViewModelBase, INavigable
         _services.OverlayService.ShowOverlay<UserSettingsViewModel>();
     }
 
-    private void CloseOverlay()
-        => _services.OverlayService.HideOverlay();
+    private async Task LeaveServer()
+    {
+        var token = _services.TokenStorageService.LoadToken();
+        if (token == null) throw new Exception("token was null");
+
+        var serverId = ServerList.SelectedServer.Id;
+        if (serverId == null) return;
+
+        var request = new LeaveServerRequest() { ServerId = serverId.Value };
+
+        var result = await _services.ApiService.LeaveServerAsync(token, request);
+        if (result.Success)
+        {
+            await RefreshServerList();
+            ServerList.SelectedServer = null;
+        }
+    }
 
     public async void Logout()
     {

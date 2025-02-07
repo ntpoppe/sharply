@@ -123,10 +123,7 @@ public class ServerService : IServerService
 
 		var exists = await context.UserServers.AnyAsync(us => us.UserId == userId && us.ServerId == serverId, cancellationToken);
 		if (exists)
-		{
-			Console.WriteLine("exists");
 			return false;
-		}
 
 		var newUserServer = new UserServer { UserId = userId, ServerId = serverId };
 		context.UserServers.Add(newUserServer);
@@ -138,11 +135,21 @@ public class ServerService : IServerService
 		if (defaultChannel == null)
 			throw new InvalidOperationException("Server doesn't have a default channel.");
 
-		Console.WriteLine(defaultChannel.Id);
 		var newUserChannel = new UserChannel { UserId = userId, ChannelId = defaultChannel.Id };
 		context.UserChannels.Add(newUserChannel);
 
 		await context.SaveChangesAsync(cancellationToken);
+
+		return true;
+	}
+
+	public async Task<bool> RemoveUserFromServerAsync(int userId, int serverId, CancellationToken cancellationToken = default)
+	{
+		using var context = _contextFactory.CreateSharplyContext();
+
+		var existingUserServer = await context.UserServers.AnyAsync(us => us.UserId == userId && us.ServerId == serverId, cancellationToken);
+		if (!existingUserServer)
+			return false;
 
 		return true;
 	}

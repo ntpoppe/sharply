@@ -3,6 +3,9 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
 namespace Sharply.Client.ViewModels;
+
+#pragma warning disable CS8618
+
 public partial class MenuItemViewModel : ViewModelBase
 {
     public MenuItemViewModel()

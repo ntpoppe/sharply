@@ -1,9 +1,10 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
-using Sharply.Client.Services;
 using Sharply.Client.Models;
+using Sharply.Client.Services;
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -11,17 +12,17 @@ namespace Sharply.Client.ViewModels;
 
 public partial class MainViewModel : ViewModelBase, INavigable
 {
-	private readonly ApplicationServices _services;
+    private readonly ApplicationServices _services;
 
     #region Constructors
 
     public MainViewModel(ApplicationServices services)
     {
-   		_services = services;
+        _services = services;
 
-		ServerList = new ServerListViewModel(services.ApiService, services.TokenStorageService);
-		ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
-		UserList = new UserListViewModel(services.ApiService, services.TokenStorageService);
+        ServerList = new ServerListViewModel(services.ApiService, services.TokenStorageService);
+        ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
+        UserList = new UserListViewModel(services.ApiService, services.TokenStorageService);
 
         InitializeEvents();
         InitializeCommands();
@@ -32,7 +33,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         IsServerSelected = false;
     }
 
-// Avalonia previewer
+    // Avalonia previewer
 #pragma warning disable CS8618
     public MainViewModel() { }
 #pragma warning restore CS8618
@@ -63,48 +64,60 @@ public partial class MainViewModel : ViewModelBase, INavigable
     [ObservableProperty]
     private string? _channelDisplayName;
 
-	public ServerListViewModel ServerList { get; set; }
-	public ChannelListViewModel ChannelList { get; set; }
-	public UserListViewModel UserList { get; set; }
+    public ServerListViewModel ServerList { get; set; }
+    public ChannelListViewModel ChannelList { get; set; }
+    public UserListViewModel UserList { get; set; }
 
-	public bool IsCurrentUserServerOwner => CurrentUser != null && ServerList.SelectedServer?.OwnerId == CurrentUser.Id;
+    public bool IsCurrentUserServerOwner => CurrentUser != null && ServerList.SelectedServer?.OwnerId == CurrentUser.Id;
     public object? CurrentView => _services.NavigationService.CurrentView;
     public object? CurrentOverlay => _services.OverlayService.CurrentOverlayView;
     public bool IsOverlayVisible => _services.OverlayService.IsOverlayVisible;
+
+    public ObservableCollection<MenuItemViewModel> ServerMenuItems => IsCurrentUserServerOwner
+        ? new ObservableCollection<MenuItemViewModel>
+        {
+            new MenuItemViewModel { Header = "Settings", Command = OpenServerSettingsCommand ?? new RelayCommand(OpenServerSettings) },
+            new MenuItemViewModel { Header = "Leave Server", Command = OpenUserSettingsCommand ?? new RelayCommand(OpenServerSettings) }
+        }
+        : new ObservableCollection<MenuItemViewModel>
+        {
+            new MenuItemViewModel { Header = "Leave Server", Command = OpenUserSettingsCommand ?? new RelayCommand(OpenServerSettings) }
+        };
 
     #endregion
 
     #region Methods
 
-	public void OnNavigatedTo(object? parameter)
-	{
-		// Do nothing, may be useful in the future;
-	}
+    public void OnNavigatedTo(object? parameter)
+    {
+        // Do nothing, may be useful in the future;
+    }
 
     public void InitializeEvents()
     {
-		ServerList.PropertyChanged += (s, e) =>
-		{
-			if (e.PropertyName == nameof(ServerList.SelectedServer))
-			{
-				var selectedServer = ServerList.SelectedServer;
+        ServerList.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(ServerList.SelectedServer))
+            {
+                var selectedServer = ServerList.SelectedServer;
                 if (selectedServer != null)
                     ChannelList.LoadChannelsAsync(selectedServer);
 
-				OnPropertyChanged(nameof(IsCurrentUserServerOwner));
-			}
-		};
+                OnPropertyChanged(nameof(IsCurrentUserServerOwner));
+                OnPropertyChanged(nameof(ServerMenuItems));
+            }
+        };
 
-		ChannelList.PropertyChanged += async (s, e) =>
+        ChannelList.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(ChannelList.SelectedChannel))
             {
                 var selectedChannel = ChannelList.SelectedChannel;
                 if (selectedChannel != null)
-				{
-					SetChannelDisplay();
+                {
+                    SetChannelDisplay();
                     await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
-				}
+                }
             }
         };
 
@@ -144,7 +157,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
             CurrentUser = CurrentUser.FromDto(userData);
 
-			await ServerList.LoadServersAsync();
+            await ServerList.LoadServersAsync();
             await InitializeHubConnections(token);
         }
         catch (Exception ex)
@@ -163,8 +176,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
             _services.SignalRService.OnMessageReceived(ChannelList.OnMessageReceived);
             _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
 
-			if (CurrentUser == null)
-				throw new Exception("CurrentUser was null.");
+            if (CurrentUser == null)
+                throw new Exception("CurrentUser was null.");
 
             await _services.SignalRService.GoOnline(CurrentUser.Id);
 
@@ -176,7 +189,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
     }
 
     public async Task RefreshServerList()
-		=> await ServerList.LoadServersAsync();
+        => await ServerList.LoadServersAsync();
 
     private async void SendMessage()
     {
@@ -193,23 +206,23 @@ public partial class MainViewModel : ViewModelBase, INavigable
             Debug.WriteLine($"Error sending message: {ex.Message}");
         }
     }
-   
-	private void SetChannelDisplay()
-	{
-		if (ServerList.SelectedServer == null) 
-		{
-			ChannelDisplayName = "unknown";
-			return;
-		}
 
-		if (ChannelList.SelectedChannel == null)
-		{
-			ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - ~unknown";
-			return;
-		}
+    private void SetChannelDisplay()
+    {
+        if (ServerList.SelectedServer == null)
+        {
+            ChannelDisplayName = "unknown";
+            return;
+        }
 
-		ChannelDisplayName = $"{ServerList.SelectedServer?.Name} / {ChannelList.SelectedChannel?.Name}";
-	}
+        if (ChannelList.SelectedChannel == null)
+        {
+            ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - ~unknown";
+            return;
+        }
+
+        ChannelDisplayName = $"{ServerList.SelectedServer?.Name} / {ChannelList.SelectedChannel?.Name}";
+    }
 
 
     private void OpenServerSettings()
@@ -228,8 +241,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-			if (CurrentUser == null)
-				return;
+            if (CurrentUser == null)
+                return;
 
             await _services.SignalRService.DisconnectMessageHubAsync();
             await _services.SignalRService.DisconnectUserHubAsync(CurrentUser.Id);

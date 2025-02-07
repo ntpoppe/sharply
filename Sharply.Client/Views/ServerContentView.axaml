@@ -36,7 +36,7 @@
 					<RowDefinition Height="Auto" />
 					<!-- ListBox -->
 					<RowDefinition Height="*" />
-					<!-- Button -->
+					<!-- Server Button-->
 					<RowDefinition Height="Auto" />
 				</Grid.RowDefinitions>
 
@@ -80,18 +80,65 @@
 					</ListBox.ItemTemplate>
 				</ListBox>
 
-				<!-- Button -->
 				<Button Grid.Row="3"
-						Content="Server Settings"
-						IsVisible="{Binding IsCurrentUserServerOwner, Converter={StaticResource BoolToVisibilityConverter}}"
-						Background="{DynamicResource AccentBrush}"
+						Background="{DynamicResource UserProfileBrushBrush}"
 						Foreground="{DynamicResource PrimaryTextBrush}"
-						Margin="10"
-						Padding="5"
-						Command="{Binding OpenServerSettingsCommand}"
 						HorizontalAlignment="Center"
 						VerticalAlignment="Bottom"
-						CornerRadius="4"/>
+						Padding="5"
+						Width="120"
+						CornerRadius="10">
+
+					<Button.Flyout>
+						<MenuFlyout Placement="Top" ItemsSource="{Binding ServerMenuItems}">
+							<MenuFlyout.ItemContainerTheme>
+								<ControlTheme TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}"
+								  x:DataType="viewModels:MenuItemViewModel">
+									<Setter Property="Header" Value="{Binding Header}"/>
+									<Setter Property="ItemsSource" Value="{Binding Items}"/>
+									<Setter Property="Command" Value="{Binding Command}"/>
+									<Setter Property="CommandParameter" Value="{Binding CommandParameter}"/>
+								</ControlTheme>
+							</MenuFlyout.ItemContainerTheme>
+						</MenuFlyout>
+					</Button.Flyout>
+
+					<StackPanel Orientation="Horizontal">
+						<!-- Server Icon -->
+						<Grid Width="25" Height="25" Margin="0,0,10,0">
+							<Ellipse Fill="{DynamicResource AccentBrush}" />
+							<TextBlock Text="?"
+									   Foreground="{DynamicResource PrimaryTextBrush}"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Center"
+									   FontWeight="Bold" />
+						</Grid>
+
+						
+						<!-- Server Details -->
+						<Grid VerticalAlignment="Center">
+							<Grid.RowDefinitions>
+								<RowDefinition Height="Auto"/>
+								<RowDefinition Height="Auto"/>
+							</Grid.RowDefinitions>
+
+							<!-- Invisible second line preserves space -->
+							<TextBlock Grid.Row="1"
+									   Text=""
+									   FontSize="12"
+									   MinHeight="16"
+									   Opacity="0" />
+
+							<TextBlock Grid.RowSpan="2"
+									   Text="{Binding ServerList.SelectedServer.Name, FallbackValue='Unknown Server'}"
+									   VerticalAlignment="Center"
+									   HorizontalAlignment="Center"
+									   FontWeight="Bold"
+									   FontSize="14"
+									   Foreground="{DynamicResource PrimaryTextBrush}"/>
+						</Grid>
+					</StackPanel>
+				</Button>
 			</Grid>
 		</Border>
 

@@ -5,74 +5,107 @@
              xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Sharply.Client.Views.UserSettingsView"
-			 x:DataType="vm:UserSettingsViewModel">
-	
+             x:DataType="vm:UserSettingsViewModel">
+
 	<UserControl.Styles>
 		<Style Selector="TextBox:focus-within /template/ Border">
 			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
 		</Style>
-
 		<Style Selector="TextBox:pointerover /template/ Border">
 			<Setter Property="Background" Value="{DynamicResource TextBoxSelectedBackgroundBrush}" />
 			<Setter Property="BorderBrush" Value="{DynamicResource TextBoxSelectedBorderBrush}" />
 		</Style>
 	</UserControl.Styles>
-	
+
 	<Grid>
+		<!-- Border remains unchanged -->
 		<Border Width="350"
-				Height="400"
+                Height="400"
                 Background="{DynamicResource InputBackgroundBrush}"
                 CornerRadius="8"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Padding="20">
+                
+			<DockPanel LastChildFill="True">
+				<!-- Logout Button docked to the bottom -->
+				<Button DockPanel.Dock="Bottom"
+                        Content="Logout"
+                        Height="30"
+                        Margin="15"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="{DynamicResource PrimaryTextBrush}"
+                        Command="{Binding LogoutCommand}"/>
 
-			<Grid>
-				<!-- Close Button -->
-				<Button Content="X"
-						Height="30"
-						HorizontalAlignment="Right"
-						VerticalAlignment="Top"
-						Margin="0,0,0,-10"
-						Background="Transparent"
-						Foreground="White"
-						FontWeight="Bold" 
-						Command="{Binding CloseCommand}"/>
+				<!-- Main Content -->
+				<Grid>
+					<!-- Close Button -->
+					<Button Content="X"
+                            Height="31"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,0,0,-10"
+                            Background="Transparent"
+                            Foreground="White"
+                            FontWeight="Bold"
+                            Command="{Binding CloseCommand}"/>
 
-				<!-- Content StackPanel -->
-				<StackPanel Orientation="Vertical" Margin="15">
-					<!-- Title -->
-					<TextBlock Text="User Settings"
-							   FontSize="16"
-							   FontWeight="Bold"
-							   HorizontalAlignment="Left"
-							   VerticalAlignment="Top"
-							   Margin="0,0,0,20"/>
+					<!-- Content StackPanel -->
+					<StackPanel Orientation="Vertical" Margin="15">
+						<!-- Title -->
+						<TextBlock Text="User Settings"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Top"
+                                   Margin="0,0,0,20"/>
 
-					<!-- Rename Section -->
-					<StackPanel Orientation="Vertical" Margin="0,0,0,20">
-						<Button Content="Logout"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}" 
-								Command="{Binding LogoutCommand}"/>
+						<!-- Rename Section -->
+						<StackPanel Orientation="Vertical" Margin="0,0,0,20" Spacing="10">
+							<StackPanel Spacing="10">
+								<TextBlock Text="Change Display Name"
+                                           FontSize="14"
+                                           FontWeight="Bold" />
+								<StackPanel Orientation="Horizontal" Spacing="15">
+									<TextBox Text="{Binding NewDisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                             Watermark="Enter new display name..."
+                                             HorizontalAlignment="Stretch"
+                                             MaxWidth="300"/>
+									<Button Content="Update"
+                                            Background="{DynamicResource AccentBrush}"
+                                            Foreground="{DynamicResource PrimaryTextBrush}"
+                                            Command="{Binding UpdateDisplayNameCommand}" />
+								</StackPanel>
+							</StackPanel>
 
-						<Button Content="Join Server"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								Command="{Binding JoinServerCommand}" />
+							<Separator />
 
-						<Button Content="Create Server"
-								Height="30"
-								Background="{DynamicResource AccentBrush}"
-								Foreground="{DynamicResource PrimaryTextBrush}"
-								Command="{Binding CreateServerCommand}" />
+							<!-- Join / Create Server Buttons -->
+							<Grid ColumnDefinitions="Auto,*,Auto">
+								<!-- Join Server -->
+								<Button Grid.Column="0"
+                                        Content="Join Server"
+                                        Height="30"
+                                        Margin="30,0,10,0"
+                                        Background="{DynamicResource AccentBrush}"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        Command="{Binding JoinServerCommand}" />
+
+								<!-- Create Server -->
+								<Button Grid.Column="2"
+                                        Content="Create Server"
+                                        Height="30"
+                                        Margin="10,0,30,0"
+                                        Background="{DynamicResource AccentBrush}"
+                                        Foreground="{DynamicResource PrimaryTextBrush}"
+                                        Command="{Binding CreateServerCommand}" />
+							</Grid>
+						</StackPanel>
 					</StackPanel>
-				</StackPanel>
-			</Grid>
+				</Grid>
+			</DockPanel>
 		</Border>
 	</Grid>
-
 </UserControl>
+

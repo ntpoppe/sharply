@@ -115,6 +115,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
                 var selectedChannel = ChannelList.SelectedChannel;
                 if (selectedChannel != null)
                 {
+					Console.WriteLine("ran");
                     ChatWindow.UpdateChannelDisplay();
                     await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
                 }
@@ -200,7 +201,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         var currentUser = _services.CurrentUserService.CurrentUser;
         if (currentUser == null) return false;
 
-        return currentUser != null && ServerList.SelectedServer?.OwnerId == DisplayedCurrentUser.Id;
+        return currentUser != null && ServerList.SelectedServer?.OwnerId == currentUser.Id;
     }
 
     private void OpenServerSettings()

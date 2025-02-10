@@ -25,10 +25,13 @@ public partial class UserListViewModel : ObservableObject
 	
 	private List<UserDto> _globalOnlineUsers = new(); // should change this to members in server
 
-	public async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos, ChannelViewModel selectedChannel)
+	public async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos, ChannelViewModel? selectedChannel)
     {
+		// selected channel could be null, but we still want to update the list of global users
         _globalOnlineUsers = userDtos;
-        await UpdateOnlineUsersForCurrentChannel(selectedChannel);
+
+		if (selectedChannel != null)
+			await UpdateOnlineUsersForCurrentChannel(selectedChannel);
     }
 
     public async Task UpdateOnlineUsersForCurrentChannel(ChannelViewModel selectedChannel)

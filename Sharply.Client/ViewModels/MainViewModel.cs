@@ -173,13 +173,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             await _services.SignalRService.ConnectUserHubAsync(token);
 
             _services.SignalRService.OnMessageReceived(ChannelList.OnMessageReceived);
-            _services.SignalRService.OnOnlineUsersUpdated(users =>
-            {
-                if (ChannelList.SelectedChannel != null)
-                {
-                    UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait();
-                }
-            });
+            _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
 
             if (currentUser == null)
                 throw new Exception("CurrentUser was null.");

@@ -35,7 +35,7 @@ public partial class UserSettingsViewModel : ViewModelBase, IOverlay
     public void OpenCreateServerOverlay()
         => _services.OverlayService.ShowOverlay<CreateServerViewModel>();
 
-    public async void UpdateDisplayName()
+    public void UpdateDisplayName()
     {
 
     }

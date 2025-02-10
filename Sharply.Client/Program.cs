@@ -3,10 +3,10 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sharply.Client.AutoMapper;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
-using Sharply.Client.AutoMapper;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -47,7 +47,8 @@ sealed class Program
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IOverlayService, OverlayService>();
-		services.AddSingleton<IServerService, ServerSerivce>();
+        services.AddSingleton<IServerService, ServerSerivce>();
+        services.AddSingleton<ICurrentUserService, CurrentUserService>();
         services.AddSingleton<HttpClient>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
@@ -65,17 +66,17 @@ sealed class Program
             var serverUri = config["ServerSettings:ServerUri"] ?? "http://localhost:8000";
             return new SignalRService(serverUri);
         });
-		services.AddSingleton<ApplicationServices>();
+        services.AddSingleton<ApplicationServices>();
         services.AddSingleton<MainViewModel>();
 
         services.AddTransient<LoginViewModel>();
         services.AddTransient<RegisterViewModel>();
         services.AddTransient<ServerSettingsViewModel>();
         services.AddTransient<UserSettingsViewModel>();
-		services.AddTransient<CreateServerViewModel>();
-		services.AddTransient<JoinServerViewModel>();
+        services.AddTransient<CreateServerViewModel>();
+        services.AddTransient<JoinServerViewModel>();
 
-		services.AddAutoMapper(typeof(MappingProfile));
+        services.AddAutoMapper(typeof(MappingProfile));
 
         return services.BuildServiceProvider();
     }

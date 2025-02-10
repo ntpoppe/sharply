@@ -24,6 +24,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         ServerList = new ServerListViewModel(services.ApiService, services.TokenStorageService);
         ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
         UserList = new UserListViewModel(services.ApiService, services.TokenStorageService);
+        ChatWindow = new ChatWindowViewModel(services, ChannelList);
 
         InitializeEvents();
         InitializeCommands();
@@ -41,10 +42,8 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     #region Commands
 
-    public IRelayCommand? SendMessageCommand { get; set; }
     public IRelayCommand? OpenServerSettingsCommand { get; set; }
     public IRelayCommand? OpenUserSettingsCommand { get; set; }
-
     public IRelayCommand? LeaveServerCommand { get; set; }
 
     #endregion
@@ -54,7 +53,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
     public string Title { get; } = "Sharply";
 
     [ObservableProperty]
-    private CurrentUser? _currentUser;
+    private CurrentUser? _displayedCurrentUser;
 
     [ObservableProperty]
     private string _newMessage = string.Empty;
@@ -65,9 +64,10 @@ public partial class MainViewModel : ViewModelBase, INavigable
     public ServerListViewModel ServerList { get; set; }
     public ChannelListViewModel ChannelList { get; set; }
     public UserListViewModel UserList { get; set; }
+    public ChatWindowViewModel ChatWindow { get; set; }
 
     public bool IsServerSelected => ServerList.IsServerSelected;
-    public bool IsCurrentUserServerOwner => CurrentUser != null && ServerList.SelectedServer?.OwnerId == CurrentUser.Id;
+    public bool IsCurrentUserServerOwner => CheckIfCurrentServerOwner();
     public object? CurrentView => _services.NavigationService.CurrentView;
     public object? CurrentOverlay => _services.OverlayService.CurrentOverlayView;
     public bool IsOverlayVisible => _services.OverlayService.IsOverlayVisible;
@@ -115,7 +115,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
                 var selectedChannel = ChannelList.SelectedChannel;
                 if (selectedChannel != null)
                 {
-                    SetChannelDisplay();
+                    ChatWindow.UpdateChannelDisplay();
                     await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
                 }
             }
@@ -139,7 +139,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     public void InitializeCommands()
     {
-        SendMessageCommand = new RelayCommand(SendMessage);
         OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
         OpenUserSettingsCommand = new RelayCommand(OpenUserSettings);
         LeaveServerCommand = new AsyncRelayCommand(LeaveServer);
@@ -152,12 +151,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             var token = _services.TokenStorageService.LoadToken();
             if (token == null) throw new Exception("token was null");
 
-            var userData = await _services.ApiService.GetCurrentUserData(token);
-            if (userData == null)
-                throw new Exception("User data missing.");
-
-            CurrentUser = CurrentUser.FromDto(userData);
-
+            DisplayedCurrentUser = await _services.CurrentUserService.InitializeUser(token);
             await ServerList.LoadServersAsync();
             await InitializeHubConnections(token);
         }
@@ -171,16 +165,25 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
+            var currentUser = _services.CurrentUserService.CurrentUser;
+
+
             await _services.SignalRService.ConnectMessageHubAsync(token);
             await _services.SignalRService.ConnectUserHubAsync(token);
 
             _services.SignalRService.OnMessageReceived(ChannelList.OnMessageReceived);
-            _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
+            _services.SignalRService.OnOnlineUsersUpdated(users =>
+            {
+                if (ChannelList.SelectedChannel != null)
+                {
+                    UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait();
+                }
+            });
 
-            if (CurrentUser == null)
+            if (currentUser == null)
                 throw new Exception("CurrentUser was null.");
 
-            await _services.SignalRService.GoOnline(CurrentUser.Id);
+            await _services.SignalRService.GoOnline(currentUser.Id);
 
         }
         catch (Exception ex)
@@ -192,48 +195,19 @@ public partial class MainViewModel : ViewModelBase, INavigable
     public async Task RefreshServerList()
         => await ServerList.LoadServersAsync();
 
-    private async void SendMessage()
+    private bool CheckIfCurrentServerOwner()
     {
-        try
-        {
-            if (CurrentUser == null || ChannelList.SelectedChannel == null || ChannelList.SelectedChannel.Id == null || string.IsNullOrWhiteSpace(NewMessage))
-                return;
+        var currentUser = _services.CurrentUserService.CurrentUser;
+        if (currentUser == null) return false;
 
-            await _services.SignalRService.SendMessageAsync(ChannelList.SelectedChannel.Id.Value, CurrentUser.Id, NewMessage);
-            NewMessage = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"Error sending message: {ex.Message}");
-        }
+        return currentUser != null && ServerList.SelectedServer?.OwnerId == DisplayedCurrentUser.Id;
     }
-
-    private void SetChannelDisplay()
-    {
-        if (ServerList.SelectedServer == null)
-        {
-            ChannelDisplayName = "unknown";
-            return;
-        }
-
-        if (ChannelList.SelectedChannel == null)
-        {
-            ChannelDisplayName = $"{ServerList.SelectedServer?.Name} - ~unknown";
-            return;
-        }
-
-        ChannelDisplayName = $"{ServerList.SelectedServer?.Name} / {ChannelList.SelectedChannel?.Name}";
-    }
-
 
     private void OpenServerSettings()
         => _services.OverlayService.ShowOverlay<ServerSettingsViewModel>();
 
     private void OpenUserSettings()
-    {
-        var view = CurrentView;
-        _services.OverlayService.ShowOverlay<UserSettingsViewModel>();
-    }
+        => _services.OverlayService.ShowOverlay<UserSettingsViewModel>();
 
     private async Task LeaveServer()
     {
@@ -257,13 +231,16 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            if (CurrentUser == null)
+            var currentUser = _services.CurrentUserService.CurrentUser;
+            if (currentUser == null)
                 return;
 
             await _services.SignalRService.DisconnectMessageHubAsync();
-            await _services.SignalRService.DisconnectUserHubAsync(CurrentUser.Id);
+            await _services.SignalRService.DisconnectUserHubAsync(currentUser.Id);
 
-            CurrentUser = null;
+            DisplayedCurrentUser = null;
+            _services.CurrentUserService.ClearUser();
+
             _services.TokenStorageService.ClearToken();
             _services.OverlayService.HideOverlay();
             _services.NavigationService.NavigateTo<LoginViewModel>();

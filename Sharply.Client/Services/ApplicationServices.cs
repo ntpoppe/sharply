@@ -9,7 +9,8 @@ public class ApplicationServices
     public INavigationService NavigationService { get; }
     public ISignalRService SignalRService { get; }
     public IOverlayService OverlayService { get; }
-	public IServerService ServerService { get; }
+    public IServerService ServerService { get; }
+    public ICurrentUserService CurrentUserService { get; }
 
     public ApplicationServices(
         IApiService apiService,
@@ -17,14 +18,16 @@ public class ApplicationServices
         INavigationService navigationService,
         ISignalRService signalRService,
         IOverlayService overlayService,
-		IServerService serverService)
+        IServerService serverService,
+        ICurrentUserService currentUserService)
     {
         ApiService = apiService;
         TokenStorageService = tokenStorageService;
         NavigationService = navigationService;
         SignalRService = signalRService;
         OverlayService = overlayService;
-		ServerService = serverService;
+        ServerService = serverService;
+        CurrentUserService = currentUserService;
     }
 }
 

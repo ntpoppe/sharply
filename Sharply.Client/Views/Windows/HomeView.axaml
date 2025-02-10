@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:viewModels="using:Sharply.Client.ViewModels"
+			 xmlns:converters="using:Sharply.Client.Converters"
+			 
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Sharply.Client.HomeView">
+	
+	<UserControl.Resources>
+		<converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+		<converters:InvertedBoolToVisibilityConverter x:Key="InvertedBoolToVisibilityConverter" />
+	</UserControl.Resources>
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<!-- Direct M-->
+			<ColumnDefinition Width="140" />
+			<!-- Chat Window -->
+			<ColumnDefinition Width="*" />
+			<!-- Online users -->
+			<ColumnDefinition Width="160" />
+		</Grid.ColumnDefinitions>
+	</Grid>
+	</UserControl>

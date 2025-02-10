@@ -115,7 +115,6 @@ public partial class MainViewModel : ViewModelBase, INavigable
                 var selectedChannel = ChannelList.SelectedChannel;
                 if (selectedChannel != null)
                 {
-					Console.WriteLine("ran");
                     ChatWindow.UpdateChannelDisplay();
                     await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
                 }

@@ -36,7 +36,7 @@ public partial class UserListViewModel : ObservableObject
 
     public async Task UpdateOnlineUsersForCurrentChannel(ChannelViewModel selectedChannel)
     {
-        if (selectedChannel == null || selectedChannel.Id == null) return;
+        if (selectedChannel.Id == null) return;
 
         var token = _tokenStorageService.LoadToken();
         if (token == null)

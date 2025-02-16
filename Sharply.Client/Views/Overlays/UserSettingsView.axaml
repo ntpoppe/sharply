@@ -2,10 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
+             xmlns:overlays="clr-namespace:Sharply.Client.ViewModels.Overlays"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Sharply.Client.Views.UserSettingsView"
-             x:DataType="vm:UserSettingsViewModel">
+             x:Class="Sharply.Client.Views.Overlays.UserSettingsView"
+             x:DataType="overlays:UserSettingsViewModel">
 
 	<UserControl.Styles>
 		<Style Selector="TextBox:focus-within /template/ Border">

@@ -1,19 +1,17 @@
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
-using Sharply.Client.ViewModels;
+using Sharply.Client.ViewModels.Overlays;
 using System;
 
-namespace Sharply.Client.Views;
+namespace Sharply.Client.Views.Overlays;
 
 public partial class UserSettingsView : UserControl
 {
-    private readonly IServiceProvider _serviceProvider;
     public UserSettingsView(IServiceProvider serviceProvider)
     {
         InitializeComponent();
-        _serviceProvider = serviceProvider;
 
-        DataContext = _serviceProvider.GetRequiredService<UserSettingsViewModel>();
+        DataContext = serviceProvider.GetRequiredService<UserSettingsViewModel>();
     }
 
 // Avalonia previewer

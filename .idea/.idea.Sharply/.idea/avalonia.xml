@@ -3,6 +3,9 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="Sharply.Client/App.axaml" value="Sharply.Client/Sharply.Client.csproj" />
+        <entry key="Sharply.Client/Views/Overlays/CreateServerView.axaml" value="Sharply.Client/Sharply.Client.csproj" />
+        <entry key="Sharply.Client/Views/Overlays/UserSettingsView.axaml" value="Sharply.Client/Sharply.Client.csproj" />
         <entry key="Sharply.Client/Views/ServerContentView.axaml" value="Sharply.Client/Sharply.Client.csproj" />
       </map>
     </option>

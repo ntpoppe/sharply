@@ -4,6 +4,7 @@ using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
 using Sharply.Client.Services;
 using Sharply.Shared.Requests;
+using Sharply.Client.ViewModels.Overlays;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;

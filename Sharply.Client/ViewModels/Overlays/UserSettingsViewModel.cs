@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 
-namespace Sharply.Client.ViewModels;
+namespace Sharply.Client.ViewModels.Overlays;
 
 public partial class UserSettingsViewModel : ViewModelBase, IOverlay
 {

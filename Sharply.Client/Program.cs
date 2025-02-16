@@ -1,12 +1,12 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.AutoMapper;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
 using Sharply.Client.ViewModels;
+using Sharply.Client.ViewModels.Overlays;
 using System;
 using System.IO;
 using System.Net.Http;

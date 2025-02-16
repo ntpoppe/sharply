@@ -1,7 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:vm="clr-namespace:Sharply.Client.ViewModels"
+             xmlns:vmOverlays="clr-namespace:Sharply.Client.ViewModels.Overlays"
 			 xmlns:views="clr-namespace:Sharply.Client.Views"
+             xmlns:vOverlays="clr-namespace:Sharply.Client.Views.Overlays"
              x:Class="Sharply.Client.App"
              xmlns:local="using:Sharply.Client"
              RequestedThemeVariant="Dark">
@@ -34,12 +36,12 @@
 			<views:ServerSettingsView />
 		</DataTemplate>
 
-		<DataTemplate DataType="{x:Type vm:UserSettingsViewModel}">
-			<views:UserSettingsView />
+		<DataTemplate DataType="{x:Type vmOverlays:UserSettingsViewModel}">
+			<vOverlays:UserSettingsView />
 		</DataTemplate>
 
-		<DataTemplate DataType="{x:Type vm:CreateServerViewModel}">
-			<views:CreateServerView />
+		<DataTemplate DataType="{x:Type vmOverlays:CreateServerViewModel}">
+			<vOverlays:CreateServerView />
 		</DataTemplate>
 
     </Application.DataTemplates>

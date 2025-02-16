@@ -2,32 +2,20 @@ using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.Services;
 
-public class ApplicationServices
+public class ApplicationServices(
+    IApiService apiService,
+    ITokenStorageService tokenStorageService,
+    INavigationService navigationService,
+    ISignalRService signalRService,
+    IOverlayService overlayService,
+    IServerService serverService,
+    ICurrentUserService currentUserService)
 {
-    public IApiService ApiService { get; }
-    public ITokenStorageService TokenStorageService { get; }
-    public INavigationService NavigationService { get; }
-    public ISignalRService SignalRService { get; }
-    public IOverlayService OverlayService { get; }
-    public IServerService ServerService { get; }
-    public ICurrentUserService CurrentUserService { get; }
-
-    public ApplicationServices(
-        IApiService apiService,
-        ITokenStorageService tokenStorageService,
-        INavigationService navigationService,
-        ISignalRService signalRService,
-        IOverlayService overlayService,
-        IServerService serverService,
-        ICurrentUserService currentUserService)
-    {
-        ApiService = apiService;
-        TokenStorageService = tokenStorageService;
-        NavigationService = navigationService;
-        SignalRService = signalRService;
-        OverlayService = overlayService;
-        ServerService = serverService;
-        CurrentUserService = currentUserService;
-    }
+    public IApiService ApiService { get; } = apiService;
+    public ITokenStorageService TokenStorageService { get; } = tokenStorageService;
+    public INavigationService NavigationService { get; } = navigationService;
+    public ISignalRService SignalRService { get; } = signalRService;
+    public IOverlayService OverlayService { get; } = overlayService;
+    public IServerService ServerService { get; } = serverService;
+    public ICurrentUserService CurrentUserService { get; } = currentUserService;
 }
-

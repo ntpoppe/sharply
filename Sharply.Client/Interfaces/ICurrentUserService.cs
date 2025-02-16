@@ -5,7 +5,7 @@ namespace Sharply.Client.Interfaces;
 
 public interface ICurrentUserService
 {
-    CurrentUser CurrentUser { get; }
+    CurrentUser? CurrentUser { get; }
     Task<CurrentUser> InitializeUser(string token);
     void ClearUser();
 }

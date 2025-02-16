@@ -42,9 +42,9 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     #region Commands
 
-    public IRelayCommand? OpenServerSettingsCommand { get; set; }
+    private IRelayCommand? OpenServerSettingsCommand { get; set; }
+    private IRelayCommand? LeaveServerCommand { get; set; }
     public IRelayCommand? OpenUserSettingsCommand { get; set; }
-    public IRelayCommand? LeaveServerCommand { get; set; }
 
     #endregion
 
@@ -92,42 +92,46 @@ public partial class MainViewModel : ViewModelBase, INavigable
         // Do nothing, may be useful in the future;
     }
 
-    public void InitializeEvents()
+    private void InitializeEvents()
     {
         ServerList.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(ServerList.SelectedServer))
-            {
-                var selectedServer = ServerList.SelectedServer;
-                if (selectedServer != null)
-                    ChannelList.LoadChannelsAsync(selectedServer);
+                return;
 
-                OnPropertyChanged(nameof(IsServerSelected));
-                OnPropertyChanged(nameof(IsCurrentUserServerOwner));
-                OnPropertyChanged(nameof(ServerMenuItems));
-            }
+            var selectedServer = ServerList.SelectedServer;
+            if (selectedServer != null)
+                ChannelList.LoadChannelsAsync(selectedServer);
+
+            OnPropertyChanged(nameof(IsServerSelected));
+            OnPropertyChanged(nameof(IsCurrentUserServerOwner));
+            OnPropertyChanged(nameof(ServerMenuItems));
         };
 
         ChannelList.PropertyChanged += async (s, e) =>
         {
             if (e.PropertyName == nameof(ChannelList.SelectedChannel))
-            {
-                var selectedChannel = ChannelList.SelectedChannel;
-                if (selectedChannel != null)
-                {
-                    ChatWindow.UpdateChannelDisplay();
-                    await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
-                }
-            }
+                return;
+            
+            var selectedChannel = ChannelList.SelectedChannel;
+            if (selectedChannel == null)
+                return;
+            
+            ChatWindow.UpdateChannelDisplay();
+            await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
         };
 
         _services.OverlayService.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(_services.OverlayService.IsOverlayVisible))
-                OnPropertyChanged(nameof(IsOverlayVisible));
-
-            if (e.PropertyName == nameof(_services.OverlayService.CurrentOverlayView))
-                OnPropertyChanged(nameof(CurrentOverlay));
+            switch (e.PropertyName)
+            {
+                case nameof(_services.OverlayService.IsOverlayVisible):
+                    OnPropertyChanged(nameof(IsOverlayVisible));
+                    break;
+                case nameof(_services.OverlayService.CurrentOverlayView):
+                    OnPropertyChanged(nameof(CurrentOverlay));
+                    break;
+            }
         };
 
         _services.NavigationService.PropertyChanged += (s, e) =>
@@ -137,7 +141,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         };
     }
 
-    public void InitializeCommands()
+    private void InitializeCommands()
     {
         OpenServerSettingsCommand = new RelayCommand(OpenServerSettings);
         OpenUserSettingsCommand = new RelayCommand(OpenUserSettings);
@@ -161,12 +165,11 @@ public partial class MainViewModel : ViewModelBase, INavigable
         }
     }
 
-    public async Task InitializeHubConnections(string token)
+    private async Task InitializeHubConnections(string token)
     {
         try
         {
             var currentUser = _services.CurrentUserService.CurrentUser;
-
 
             await _services.SignalRService.ConnectMessageHubAsync(token);
             await _services.SignalRService.ConnectUserHubAsync(token);
@@ -194,7 +197,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         var currentUser = _services.CurrentUserService.CurrentUser;
         if (currentUser == null) return false;
 
-        return currentUser != null && ServerList.SelectedServer?.OwnerId == currentUser.Id;
+        return ServerList.SelectedServer?.OwnerId == currentUser.Id;
     }
 
     private void OpenServerSettings()

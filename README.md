@@ -9,7 +9,7 @@ Sharply is a cross-platform chat application inspired by popular real-time commu
 ### Prerequisites
 Ensure the following are installed on your system:
 - [.NET SDK](https://dotnet.microsoft.com/) (9.0 or later)
-- [.NET 9 Runtime for ASP.NET Core]
+- [.NET 9 Runtime for ASP.NET Core](https://dotnet.microsoft.com/)
 - [SQLite](https://www.sqlite.org/) (Sharply uses SQLite for the database)
 
 ---

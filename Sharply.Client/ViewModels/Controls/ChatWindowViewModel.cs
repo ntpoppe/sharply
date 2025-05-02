@@ -10,12 +10,15 @@ namespace Sharply.Client.ViewModels;
 
 public partial class ChatWindowViewModel : ViewModelBase
 {
-    private readonly ChannelListViewModel _channelList;
     private readonly ApplicationServices _services;
-    public ChatWindowViewModel(ApplicationServices services, ChannelListViewModel channelList)
+    private readonly ChannelListViewModel _channelList;
+    private readonly ServerListViewModel _serverList;
+
+    public ChatWindowViewModel(ApplicationServices services, ChannelListViewModel channelList, ServerListViewModel serverList)
     {
         _services = services;
         _channelList = channelList;
+        _serverList = serverList;
         SendMessageCommand = new AsyncRelayCommand(SendMessage);
     }
 
@@ -52,9 +55,19 @@ public partial class ChatWindowViewModel : ViewModelBase
     }
 
     public void UpdateChannelDisplay()
-        => ChannelDisplayName = _channelList.SelectedChannel != null
-            ? $"GET PARENT SERVER / {_channelList.SelectedChannel.Name}"
-            : "No channel selected";
+    {
+        if (_channelList.SelectedChannel == null)
+        {
+            ChannelDisplayName = "No channel selected.";
+            return;
+        }
+
+        var serverId = _channelList.SelectedChannel.ServerId;
+        if (serverId == null) throw new InvalidOperationException("serverId was null in UpdateChannelDisplay");
+
+        var serverName = _serverList.GetLoadedServerName(serverId.Value);
+        ChannelDisplayName = $"{serverName} / {_channelList.SelectedChannel.Name}";
+    }
 
     #endregion
 }

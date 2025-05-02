@@ -1,4 +1,6 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Sharply.Client.Interfaces;
@@ -31,6 +33,14 @@ public partial class ServerListViewModel : ViewModelBase
     {
         var fetchedServers = await _serverService.GetServersAsync();
         Servers = new ObservableCollection<ServerViewModel>(fetchedServers);
+    }
+
+    public string GetLoadedServerName(int id)
+    {
+        var server = Servers.FirstOrDefault(s => s.Id == id);
+        if (server == null) throw new InvalidOperationException("server was null in GetLoadedServerName()");
+
+        return server.Name ?? "Unknown";
     }
 
     partial void OnSelectedServerChanged(ServerViewModel? value)

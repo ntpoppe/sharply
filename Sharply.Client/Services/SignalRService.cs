@@ -8,7 +8,7 @@ using Sharply.Shared.Models;
 namespace Sharply.Client.Services;
 
 public class SignalRService : ISignalRService
-{ 
+{
     private HubConnection? _messageHubConnection;
     private HubConnection? _userHubConnection;
     private string _serverUri;

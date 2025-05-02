@@ -8,6 +8,7 @@
 Sharply.Server/Migrations/
 .env
 .vscode/
+.idea/
 
 # User-specific files
 *.rsuser

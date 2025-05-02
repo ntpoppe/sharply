@@ -25,7 +25,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         ServerList = new ServerListViewModel(services.ServerService, services.TokenStorageService);
         ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
         UserList = new UserListViewModel(services.UserService, services.TokenStorageService);
-        ChatWindow = new ChatWindowViewModel(services, ChannelList);
+        ChatWindow = new ChatWindowViewModel(services, ChannelList, ServerList);
 
         InitializeEvents();
         InitializeCommands();
@@ -111,7 +111,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
         ChannelList.PropertyChanged += async (s, e) =>
         {
-            if (e.PropertyName == nameof(ChannelList.SelectedChannel))
+            if (e.PropertyName != nameof(ChannelList.SelectedChannel))
                 return;
 
             var selectedChannel = ChannelList.SelectedChannel;

@@ -6,12 +6,12 @@ using Sharply.Shared.Requests;
 
 namespace Sharply.Client.Services;
 
-public class ServerSerivce : IServerService
+public class ServerService : IServerService
 {
     private readonly IApiService _apiService;
     private readonly ITokenStorageService _tokenStorageService;
 
-    public ServerSerivce(IApiService apiService, ITokenStorageService tokenStorageService)
+    public ServerService(IApiService apiService, ITokenStorageService tokenStorageService)
     {
         _apiService = apiService;
         _tokenStorageService = tokenStorageService;

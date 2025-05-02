@@ -47,7 +47,7 @@ sealed class Program
         services.AddSingleton<ITokenStorageService, TokenStorageService>();
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IOverlayService, OverlayService>();
-        services.AddSingleton<IServerService, ServerSerivce>();
+        services.AddSingleton<IServerService, ServerService>();
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
         services.AddSingleton<HttpClient>(provider =>
         {

@@ -97,7 +97,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         ServerList.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(ServerList.SelectedServer))
+            if (e.PropertyName != nameof(ServerList.SelectedServer))
                 return;
 
             var selectedServer = ServerList.SelectedServer;

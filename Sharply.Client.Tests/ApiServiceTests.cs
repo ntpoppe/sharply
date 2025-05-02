@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Net;
+using System.Net.Http.Json;
+using AutoMapper;
 using Moq;
 using Moq.Protected;
 using NUnit.Framework;
@@ -7,8 +9,6 @@ using Sharply.Client.Services;
 using Sharply.Shared;
 using Sharply.Shared.Models;
 using Sharply.Shared.Requests;
-using System.Net;
-using System.Net.Http.Json;
 
 namespace Sharply.Client.Tests;
 

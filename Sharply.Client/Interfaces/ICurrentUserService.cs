@@ -1,5 +1,5 @@
-﻿using Sharply.Client.Models;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Sharply.Client.Models;
 
 namespace Sharply.Client.Interfaces;
 

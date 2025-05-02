@@ -1,9 +1,9 @@
-﻿using Sharply.Client.ViewModels;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Sharply.Client.ViewModels;
 using Sharply.Shared;
 using Sharply.Shared.Models;
 using Sharply.Shared.Requests;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Sharply.Client.Interfaces;
 

@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +9,6 @@ using Sharply.Server.Data;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Models;
 using Sharply.Shared.Requests;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 /// <summary>
 /// API controller for handling user authentication and registration
@@ -65,7 +65,7 @@ public class AuthController : ControllerBase
         // Create the new user
         var user = new User { Username = request.Username };
         var passwordHasher = new PasswordHasher<User>();
-		var passwordHash = passwordHasher.HashPassword(user, request.Password);
+        var passwordHash = passwordHasher.HashPassword(user, request.Password);
         user.PasswordHash = passwordHasher.HashPassword(user, request.Password);
 
         context.Users.Add(user);
@@ -118,8 +118,8 @@ public class AuthController : ControllerBase
             return Unauthorized("Invalid credentials.");
 
         // Verify password
-		if (user.PasswordHash == null)
-			return Unauthorized("PasswordHash does not exist. You should never see this.");
+        if (user.PasswordHash == null)
+            return Unauthorized("PasswordHash does not exist. You should never see this.");
 
         var passwordHasher = new PasswordHasher<User>();
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);

@@ -1,9 +1,9 @@
-﻿using Sharply.Client.Interfaces;
-using System;
+﻿using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Sharply.Client.Interfaces;
 
 public class TokenStorageService : ITokenStorageService
 {

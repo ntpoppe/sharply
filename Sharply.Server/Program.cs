@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -6,7 +7,6 @@ using Sharply.Server.Data;
 using Sharply.Server.Interfaces;
 using Sharply.Server.Services;
 using Sharply.Server.SignalR;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,9 +51,9 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Database
     services.AddDbContext<SharplyDbContext>(options =>
         options.UseSqlite(configuration.GetConnectionString("DefaultConnection"), options =>
-		{
-			options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
-		}));
+        {
+            options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        }));
 
     // OpenAPI (Swagger)
     services.AddEndpointsApiExplorer();
@@ -95,7 +95,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddSingleton<IServerService, ServerService>();
     services.AddSingleton<IChannelService, ChannelService>();
     services.AddSingleton<IUserTrackerService, UserTrackerService>();
-	services.AddSingleton<IMessageService, MessageService>();
+    services.AddSingleton<IMessageService, MessageService>();
 }
 
 void ConfigureMiddleware(WebApplication app)

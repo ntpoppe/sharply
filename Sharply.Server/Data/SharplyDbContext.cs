@@ -38,7 +38,7 @@ public class SharplyDbContext : DbContext
         ConfigureServersAndChannels(modelBuilder);
         ConfigureUserChannelRelationship(modelBuilder);
         ConfigureUserServerRelationship(modelBuilder);
-		SeedData(modelBuilder);
+        SeedData(modelBuilder);
 
         base.OnModelCreating(modelBuilder);
     }

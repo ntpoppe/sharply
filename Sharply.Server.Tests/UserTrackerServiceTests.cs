@@ -22,8 +22,8 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task AddUser_ShouldStoreUserInConnectionMap_AndTrackChannels()
         {
-			if (_userServiceMock == null || _service == null)
-				throw new Exception("_userServiceMock and _service were null");
+            if (_userServiceMock == null || _service == null)
+                throw new Exception("_userServiceMock and _service were null");
 
             // Arrange
             var connectionId = "conn-1";
@@ -55,8 +55,8 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task RemoveUser_ShouldRemoveFromConnectionMap_AndChannelAccess()
         {
-			if (_userServiceMock == null || _service == null)
-				throw new Exception("_userServiceMock and _service were null");
+            if (_userServiceMock == null || _service == null)
+                throw new Exception("_userServiceMock and _service were null");
 
             // Arrange
             var connectionId = "conn-1";
@@ -83,8 +83,8 @@ namespace Sharply.Server.Tests
         [Test]
         public void GetUserIdFromConnectionId_ReturnsNull_IfNotFound()
         {
-			if (_service == null)
-				throw new Exception("_service were null");
+            if (_service == null)
+                throw new Exception("_service were null");
 
             // Arrange
             var connectionId = "nonexistent-conn";
@@ -99,8 +99,8 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task GetTrackedUserChannels_ReturnsEmpty_IfUserNotTracked()
         {
-			if (_service == null)
-				throw new Exception("_service were null");
+            if (_service == null)
+                throw new Exception("_service were null");
 
             // Arrange
             var userId = 1;
@@ -119,8 +119,8 @@ namespace Sharply.Server.Tests
         [Test]
         public async Task GetAllTrackedUsers_ReturnsUserDtos_SortedByUsername()
         {
-			if (_userServiceMock == null || _service == null)
-				throw new Exception("_userServiceMock and _service were null");
+            if (_userServiceMock == null || _service == null)
+                throw new Exception("_userServiceMock and _service were null");
 
             // Arrange
             var connectionId1 = "conn-A";

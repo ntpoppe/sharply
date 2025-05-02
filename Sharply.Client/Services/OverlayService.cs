@@ -1,7 +1,7 @@
-﻿using Sharply.Client.Interfaces;
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.Services;
 
@@ -48,7 +48,7 @@ public class OverlayService : IOverlayService
             CurrentOverlayView = view;
             IsOverlayVisible = true;
         }
-		else
+        else
         {
             throw new InvalidOperationException($"Overlay ViewModel of type {typeof(TViewModel).Name} is not registered.");
         }

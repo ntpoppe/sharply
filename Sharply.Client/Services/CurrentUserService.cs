@@ -1,7 +1,7 @@
-﻿using Sharply.Client.Interfaces;
-using Sharply.Client.Models;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Sharply.Client.Interfaces;
+using Sharply.Client.Models;
 
 namespace Sharply.Client.Services;
 

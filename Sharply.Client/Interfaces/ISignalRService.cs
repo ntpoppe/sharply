@@ -1,7 +1,7 @@
-﻿using Sharply.Shared.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sharply.Shared.Models;
 
 namespace Sharply.Client.Interfaces;
 

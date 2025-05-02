@@ -1,8 +1,8 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using Sharply.Client.Interfaces;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.ViewModels;
 

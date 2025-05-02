@@ -5,5 +5,5 @@ namespace Sharply.Client.Interfaces;
 
 public interface IServerService
 {
-	Task<ServerViewModel> CreateServer(int userId, string name);
+    Task<ServerViewModel> CreateServer(int userId, string name);
 }

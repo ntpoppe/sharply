@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
@@ -7,8 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.Enums;
 using Sharply.Client.ViewModels;
 using Sharply.Client.Views;
-using System;
-using System.Linq;
 
 namespace Sharply.Client;
 

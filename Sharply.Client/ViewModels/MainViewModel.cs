@@ -1,14 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Models;
 using Sharply.Client.Services;
-using Sharply.Shared.Requests;
 using Sharply.Client.ViewModels.Overlays;
-using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
+using Sharply.Shared.Requests;
 
 namespace Sharply.Client.ViewModels;
 
@@ -113,11 +113,11 @@ public partial class MainViewModel : ViewModelBase, INavigable
         {
             if (e.PropertyName == nameof(ChannelList.SelectedChannel))
                 return;
-            
+
             var selectedChannel = ChannelList.SelectedChannel;
             if (selectedChannel == null)
                 return;
-            
+
             ChatWindow.UpdateChannelDisplay();
             await UserList.UpdateOnlineUsersForCurrentChannel(selectedChannel);
         };

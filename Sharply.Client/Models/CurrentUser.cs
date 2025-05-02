@@ -1,7 +1,7 @@
-﻿using Avalonia.Media;
-using Sharply.Shared.Models;
-using System;
+﻿using System;
 using System.Linq;
+using Avalonia.Media;
+using Sharply.Shared.Models;
 
 namespace Sharply.Client.Models;
 

@@ -1,8 +1,8 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Sharply.Server.Interfaces;
 using Sharply.Shared;
 using Sharply.Shared.Models;
-using System.Security.Claims;
 
 [ApiController]
 [Route("api/users")]

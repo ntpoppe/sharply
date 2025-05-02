@@ -1,6 +1,6 @@
 using AutoMapper;
-using Sharply.Shared.Models;
 using Sharply.Client.ViewModels;
+using Sharply.Shared.Models;
 
 namespace Sharply.Client.AutoMapper;
 

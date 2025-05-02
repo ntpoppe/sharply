@@ -1,10 +1,10 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Sharply.Client.Interfaces;
 using System;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.ViewModels;
 
@@ -84,10 +84,10 @@ public partial class RegisterViewModel : ViewModelBase, INavigable
         _navigationService.NavigateTo<LoginViewModel>();
     }
 
-	public void OnNavigatedTo(object? parameter)
-	{
-		// Do nothing, may be useful in the future
-	}
+    public void OnNavigatedTo(object? parameter)
+    {
+        // Do nothing, may be useful in the future
+    }
 
     private async Task OnRegisterSuccess(UserViewModel user)
     {

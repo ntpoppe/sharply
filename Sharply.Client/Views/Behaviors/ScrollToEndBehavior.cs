@@ -1,8 +1,8 @@
-﻿using Avalonia;
+﻿using System;
+using System.Collections.Specialized;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Xaml.Interactivity;
-using System;
-using System.Collections.Specialized;
 
 namespace Sharply.Client.Behaviors;
 

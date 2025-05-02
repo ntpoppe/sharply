@@ -1,9 +1,9 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Sharply.Client.Interfaces;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.ViewModels;
 
@@ -56,7 +56,7 @@ public partial class LoginViewModel : ViewModelBase, INavigable
         }
         catch (HttpRequestException ex)
         {
-			Console.WriteLine(ex);
+            Console.WriteLine(ex);
             OnLoginFailed($"Unable to connect to the server.");
         }
         catch (Exception ex)
@@ -69,10 +69,10 @@ public partial class LoginViewModel : ViewModelBase, INavigable
     private void GoToRegister()
         => _navigationService.NavigateTo<RegisterViewModel>();
 
-	public void OnNavigatedTo(object? parameter)
-	{
-		// Do nothing, may be useful in the future
-	}
+    public void OnNavigatedTo(object? parameter)
+    {
+        // Do nothing, may be useful in the future
+    }
 
     private async Task OnLoginSuccess(UserViewModel user)
     {

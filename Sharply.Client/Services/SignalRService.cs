@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Sharply.Client.Interfaces;
-using Sharply.Shared.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using Sharply.Client.Interfaces;
+using Sharply.Shared.Models;
 
 namespace Sharply.Client.Services;
 

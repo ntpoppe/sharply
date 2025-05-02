@@ -1,8 +1,8 @@
-﻿using Sharply.Client.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Sharply.Client.Interfaces;
 
 namespace Sharply.Client.Services;
 public class NavigationService : INavigationService
@@ -35,9 +35,11 @@ public class NavigationService : INavigationService
         {
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
-        } else {
-			throw new InvalidOperationException("ViewModel is either not navigable or null.");
-		}
+        }
+        else
+        {
+            throw new InvalidOperationException("ViewModel is either not navigable or null.");
+        }
 
         return viewModel;
     }
@@ -50,9 +52,11 @@ public class NavigationService : INavigationService
             navigable.OnNavigatedTo(parameter);
             _navigationStack.Push(viewModel);
             CurrentView = viewModel;
-        } else {
-			throw new InvalidOperationException("ViewModel is either not navigable or null.");
-		}
+        }
+        else
+        {
+            throw new InvalidOperationException("ViewModel is either not navigable or null.");
+        }
 
         return viewModel;
     }

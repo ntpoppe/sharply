@@ -48,7 +48,7 @@ public class ChannelService : IChannelService
         {
             UserId = userId,
             ChannelId = channelId,
-			IsActive = true
+            IsActive = true
         };
 
         context.UserChannels.Add(userChannel);

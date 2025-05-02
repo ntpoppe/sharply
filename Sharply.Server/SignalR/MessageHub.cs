@@ -12,13 +12,13 @@ public class MessageHub : Hub
 {
     private readonly ISharplyContextFactory<SharplyDbContext> _contextFactory;
     private readonly IUserService _userService;
-	private readonly IMessageService _messageService;
+    private readonly IMessageService _messageService;
 
     public MessageHub(ISharplyContextFactory<SharplyDbContext> contextFactory, IUserService userService, IMessageService messageService)
     {
         _contextFactory = contextFactory;
         _userService = userService;
-		_messageService = messageService;
+        _messageService = messageService;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ public class MessageHub : Hub
     {
         using var context = _contextFactory.CreateSharplyContext();
 
-		var newMessage = await _messageService.CreateMessage(channelId, userId, content);
+        var newMessage = await _messageService.CreateMessage(channelId, userId, content);
         var username = await _userService.GetUsernameFromId(userId);
 
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", username, content, newMessage.Timestamp);

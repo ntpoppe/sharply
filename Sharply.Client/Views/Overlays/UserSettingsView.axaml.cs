@@ -1,7 +1,7 @@
+using System;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using Sharply.Client.ViewModels.Overlays;
-using System;
 
 namespace Sharply.Client.Views.Overlays;
 
@@ -14,7 +14,7 @@ public partial class UserSettingsView : UserControl
         DataContext = serviceProvider.GetRequiredService<UserSettingsViewModel>();
     }
 
-// Avalonia previewer
+    // Avalonia previewer
 #pragma warning disable CS8618
     public UserSettingsView() => InitializeComponent();
 #pragma warning restore CS8618

@@ -1,16 +1,16 @@
-﻿using AutoMapper;
-using Sharply.Client.Interfaces;
-using Sharply.Client.ViewModels;
-using Sharply.Shared;
-using Sharply.Shared.Models;
-using Sharply.Shared.Requests;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using AutoMapper;
+using Sharply.Client.Interfaces;
+using Sharply.Client.ViewModels;
+using Sharply.Shared;
+using Sharply.Shared.Models;
+using Sharply.Shared.Requests;
 
 namespace Sharply.Client.Services;
 

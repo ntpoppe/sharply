@@ -29,7 +29,6 @@ public partial class ServerListViewModel : ViewModelBase
 
     public async Task LoadServersAsync()
     {
-
         var fetchedServers = await _serverService.GetServersAsync();
         Servers = new ObservableCollection<ServerViewModel>(fetchedServers);
     }

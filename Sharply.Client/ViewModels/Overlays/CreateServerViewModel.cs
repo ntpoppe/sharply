@@ -32,15 +32,11 @@ public partial class CreateServerViewModel : ViewModelBase, IOverlay
         if (string.IsNullOrWhiteSpace(NewServerName))
             return;
 
-        var token = _services.TokenStorageService.LoadToken();
-        if (token == null)
-            throw new InvalidOperationException("Token for user was null");
-
-        var user = await _services.ApiService.GetCurrentUserData(token);
+        var user = await _services.UserService.GetCurrentUserDataAsync();
         if (user == null)
-            throw new InvalidOperationException("User fetch returned null");
+            throw new InvalidOperationException("user was null");
 
-        var newServer = await _services.ServerService.CreateServer(user.Id, NewServerName);
+        var newServer = await _services.ServerService.CreateServerAsync(user.Id, NewServerName);
         await _mainViewModel.RefreshServerList();
         _mainViewModel.ServerList.SelectedServer = newServer;
         Close();

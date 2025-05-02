@@ -38,7 +38,7 @@ public partial class ChatWindowViewModel : ViewModelBase
     {
         try
         {
-            var currentUser = _services.CurrentUserService.CurrentUser;
+            var currentUser = _services.UserService.CurrentUser;
             if (currentUser == null || _channelList.SelectedChannel == null || _channelList.SelectedChannel.Id == null || string.IsNullOrWhiteSpace(NewMessage))
                 return;
 

@@ -7,8 +7,8 @@ namespace Sharply.Client.Interfaces;
 
 public interface ISignalRService
 {
-    Task ConnectMessageHubAsync(string? token);
-    Task ConnectUserHubAsync(string? token);
+    Task ConnectMessageHubAsync();
+    Task ConnectUserHubAsync();
     void OnMessageReceived(Action<string, string, DateTime> callback);
     void OnNotificationReceived(Action<int, string> callback);
     void OnServerNotificationReceived(Action<int, int, string> callback);

@@ -44,22 +44,18 @@ public partial class JoinServerViewModel : ViewModelBase, IOverlay
             return;
         }
 
-        var token = _services.TokenStorageService.LoadToken();
-        if (token == null)
-            throw new InvalidOperationException("Token was not found in JoinServer()");
-
         var request = new JoinServerRequest { InviteCode = InviteCodeInput };
 
-        var apiResponse = await _services.ApiService.JoinServerAsync(token, request);
+        (int? serverId, string? error) = await _services.ServerService.JoinServerAsync(request);
 
-        if (!apiResponse.Success)
+        if (serverId == null)
         {
-            Message = apiResponse.Error ?? "An unknown error occurred.";
+            Message = error ?? "An unknown error occurred";
             return;
         }
 
         await _mainViewModel.RefreshServerList();
-        _mainViewModel.ServerList.SelectedServer = _mainViewModel.ServerList.Servers.Where(s => s.Id == apiResponse.Data.Id).FirstOrDefault();
+        _mainViewModel.ServerList.SelectedServer = _mainViewModel.ServerList.Servers.Where(s => s.Id == serverId).FirstOrDefault();
         Close();
     }
 

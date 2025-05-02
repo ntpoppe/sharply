@@ -26,6 +26,10 @@ public class TokenStorageService : ITokenStorageService
     }
 
     public string? LoadToken() => _token ??= LoadTokenInternal();
+
+    // This will be used most of the time, but I would like the option to return null if needed.
+    public string TryLoadToken() => LoadToken() ?? throw new InvalidOperationException("token was null");
+
     public void ClearToken()
     {
         _token = null;

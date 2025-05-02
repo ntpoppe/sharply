@@ -14,6 +14,9 @@ using Sharply.Shared.Requests;
 
 namespace Sharply.Client.Services;
 
+// TODO: Split this up into respective groups in separate classes
+// TODO: Stop making these methods return ViewModels. Let the service layer do that.
+
 public class ApiService : IApiService
 {
     private readonly HttpClient _client;

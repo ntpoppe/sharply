@@ -1,4 +1,3 @@
-using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,12 +7,12 @@ namespace Sharply.Client.ViewModels;
 
 public partial class ServerListViewModel : ViewModelBase
 {
-    private IApiService _apiService;
+    private IServerService _serverService;
     private ITokenStorageService _tokenStorageService;
 
-    public ServerListViewModel(IApiService apiService, ITokenStorageService tokenStorageService)
+    public ServerListViewModel(IServerService serverService, ITokenStorageService tokenStorageService)
     {
-        _apiService = apiService;
+        _serverService = serverService;
         _tokenStorageService = tokenStorageService;
 
         IsServerSelected = false;
@@ -30,11 +29,8 @@ public partial class ServerListViewModel : ViewModelBase
 
     public async Task LoadServersAsync()
     {
-        var token = _tokenStorageService.LoadToken();
-        if (token == null)
-            throw new InvalidOperationException("Token was not found.");
 
-        var fetchedServers = await _apiService.GetServersAsync(token);
+        var fetchedServers = await _serverService.GetServersAsync();
         Servers = new ObservableCollection<ServerViewModel>(fetchedServers);
     }
 

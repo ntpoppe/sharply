@@ -27,7 +27,7 @@ public partial class UserListViewModel : ObservableObject
 
     public async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos, ChannelViewModel? selectedChannel)
     {
-		// selected channel could be null, but we still want to update the list of global users
+	// selected channel could be null, but we still want to update the list of global users
         _globalOnlineUsers = userDtos;
 
 	if (selectedChannel != null)

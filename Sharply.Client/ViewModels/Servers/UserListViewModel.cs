@@ -12,26 +12,26 @@ namespace Sharply.Client.ViewModels;
 public partial class UserListViewModel : ObservableObject
 {
     private readonly IApiService _apiService;
-	private readonly ITokenStorageService _tokenStorageService;
+    private readonly ITokenStorageService _tokenStorageService;
 
     public UserListViewModel(IApiService apiService, ITokenStorageService tokenStorageService)
     {
         _apiService = apiService;
-		_tokenStorageService = tokenStorageService;
+	_tokenStorageService = tokenStorageService;
     }
 
-	[ObservableProperty]
-	private ObservableCollection<UserViewModel> _onlineUsers = new();
+    [ObservableProperty]
+    private ObservableCollection<UserViewModel> _onlineUsers = new();
 	
-	private List<UserDto> _globalOnlineUsers = new(); // should change this to members in server
+    private List<UserDto> _globalOnlineUsers = new(); // should change this to members in server
 
-	public async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos, ChannelViewModel? selectedChannel)
+    public async Task OnOnlineUsersUpdatedAsync(List<UserDto> userDtos, ChannelViewModel? selectedChannel)
     {
 		// selected channel could be null, but we still want to update the list of global users
         _globalOnlineUsers = userDtos;
 
-		if (selectedChannel != null)
-			await UpdateOnlineUsersForCurrentChannel(selectedChannel);
+	if (selectedChannel != null)
+ 	    await UpdateOnlineUsersForCurrentChannel(selectedChannel);
     }
 
     public async Task UpdateOnlineUsersForCurrentChannel(ChannelViewModel selectedChannel)

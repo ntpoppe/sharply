@@ -67,7 +67,7 @@ Apply the migration to generate the database
 dotnet ef database update
 ```
 
--- 
+---
 
 ### Running the Application
 

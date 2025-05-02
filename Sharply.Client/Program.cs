@@ -48,7 +48,7 @@ sealed class Program
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IOverlayService, OverlayService>();
         services.AddSingleton<IServerService, ServerService>();
-        services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddSingleton<IUserService, UserService>();
         services.AddSingleton<HttpClient>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
@@ -63,8 +63,9 @@ sealed class Program
         services.AddSingleton<ISignalRService>(provider =>
         {
             var config = provider.GetRequiredService<IConfiguration>();
+            var tokenStorageService = provider.GetRequiredService<ITokenStorageService>();
             var serverUri = config["ServerSettings:ServerUri"] ?? "http://localhost:8000";
-            return new SignalRService(serverUri);
+            return new SignalRService(serverUri, tokenStorageService);
         });
         services.AddSingleton<ApplicationServices>();
         services.AddSingleton<MainViewModel>();

@@ -34,11 +34,7 @@ public class ServerSettingsViewModel : IOverlay
         if (selectedServer.Id == null)
             throw new InvalidOperationException("selectedServer's id was null in DeleteServer()");
 
-        var token = _services.TokenStorageService.LoadToken();
-        if (token == null)
-            throw new InvalidOperationException("Token for user was null");
-
-        await _services.ApiService.SoftDeleteServerAsync(token, selectedServer.Id.Value);
+        await _services.ServerService.DeleteServerAsync(selectedServer.Id.Value);
         await _mainViewModel.RefreshServerList();
         _mainViewModel.ServerList.SelectedServer = _mainViewModel.ServerList.Servers.FirstOrDefault();
         Close();

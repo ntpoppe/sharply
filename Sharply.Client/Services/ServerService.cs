@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sharply.Client.Interfaces;
 using Sharply.Client.ViewModels;
@@ -17,7 +17,13 @@ public class ServerService : IServerService
         _tokenStorageService = tokenStorageService;
     }
 
-    public async Task<ServerViewModel> CreateServer(int userId, string name)
+    public async Task<List<ServerViewModel>> GetServersAsync()
+    {
+        var token = _tokenStorageService.TryLoadToken();
+        return await _apiService.GetServersAsync(token);
+    }
+
+    public async Task<ServerViewModel> CreateServerAsync(int userId, string name)
     {
         var request = new CreateServerRequest()
         {
@@ -25,11 +31,26 @@ public class ServerService : IServerService
             Name = name
         };
 
-        var token = _tokenStorageService.LoadToken();
-        if (token == null)
-            throw new InvalidOperationException("token was null");
+        var token = _tokenStorageService.TryLoadToken();
 
         var newServer = await _apiService.CreateServerAsync(token, request);
         return newServer;
+    }
+
+    public async Task DeleteServerAsync(int serverId)
+    {
+        var token = _tokenStorageService.TryLoadToken();
+        await _apiService.SoftDeleteServerAsync(token, serverId);
+    }
+
+    public async Task<(int? ServerId, string? Error)> JoinServerAsync(JoinServerRequest request)
+    {
+        var token = _tokenStorageService.TryLoadToken();
+        var response = await _apiService.JoinServerAsync(token, request);
+
+        if (!response.Success || response.Data == null)
+            return (null, response.Error ?? "An unknown error occurred.");
+
+        return (response.Data.Id, null);
     }
 }

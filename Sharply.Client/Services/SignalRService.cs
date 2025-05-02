@@ -8,27 +8,33 @@ using Sharply.Shared.Models;
 namespace Sharply.Client.Services;
 
 public class SignalRService : ISignalRService
-{
+{ 
     private HubConnection? _messageHubConnection;
     private HubConnection? _userHubConnection;
     private string _serverUri;
+    private readonly ITokenStorageService _tokenStorageService;
 
-    public SignalRService(string serverUri)
-        => _serverUri = serverUri;
+    public SignalRService(string serverUri, ITokenStorageService tokenStorageService)
+    {
+        _serverUri = serverUri;
+        _tokenStorageService = tokenStorageService;
+    }
 
     /// <summary>
     /// Connects to the "messages" SignalR hub using the provided token for authentication.
     /// </summary>
     /// <param name="token">The JWT token for authentication.</param>
-    public async Task ConnectMessageHubAsync(string? token)
+    public async Task ConnectMessageHubAsync()
     {
         if (_messageHubConnection != null && _messageHubConnection.State == HubConnectionState.Connected)
             return;
 
+        var token = _tokenStorageService.TryLoadToken();
+
         _messageHubConnection = new HubConnectionBuilder()
             .WithUrl($"{_serverUri}/hubs/messages", options =>
             {
-                options.AccessTokenProvider = () => Task.FromResult(token);
+                options.AccessTokenProvider = () => Task.FromResult<string?>(token!);
             })
             .WithAutomaticReconnect()
             .Build();
@@ -40,12 +46,13 @@ public class SignalRService : ISignalRService
     /// Connects to the "users" SignalR hub using the provided token for authentication.
     /// </summary>
     /// <param name="token">The JWT token for authentication.</param>
-    public async Task ConnectUserHubAsync(string? token)
+    public async Task ConnectUserHubAsync()
     {
+        var token = _tokenStorageService.TryLoadToken();
         _userHubConnection = new HubConnectionBuilder()
             .WithUrl($"{_serverUri}/hubs/users", options =>
             {
-                options.AccessTokenProvider = () => Task.FromResult(token);
+                options.AccessTokenProvider = () => Task.FromResult<string?>(token!);
             })
             .WithAutomaticReconnect()
             .Build();

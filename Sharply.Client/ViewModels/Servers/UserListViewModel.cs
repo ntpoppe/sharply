@@ -11,12 +11,12 @@ namespace Sharply.Client.ViewModels;
 
 public partial class UserListViewModel : ObservableObject
 {
-    private readonly IApiService _apiService;
+    private readonly IUserService _userService;
     private readonly ITokenStorageService _tokenStorageService;
 
-    public UserListViewModel(IApiService apiService, ITokenStorageService tokenStorageService)
+    public UserListViewModel(IUserService userService, ITokenStorageService tokenStorageService)
     {
-        _apiService = apiService;
+        _userService = userService;
         _tokenStorageService = tokenStorageService;
     }
 
@@ -38,16 +38,12 @@ public partial class UserListViewModel : ObservableObject
     {
         if (selectedChannel.Id == null) return;
 
-        var token = _tokenStorageService.LoadToken();
-        if (token == null)
-            throw new Exception("Token was null");
-
         var channelId = selectedChannel.Id.Value;
         var usersForChannel = new List<UserDto>();
 
         foreach (var user in _globalOnlineUsers)
         {
-            bool hasAccess = await _apiService.CheckUserChannelAccess(token, user.Id, channelId);
+            bool hasAccess = await _userService.CheckUserChannelAccessAsync(user.Id, channelId);
             if (hasAccess)
             {
                 usersForChannel.Add(user);

@@ -22,9 +22,9 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         _services = services;
 
-        ServerList = new ServerListViewModel(services.ApiService, services.TokenStorageService);
+        ServerList = new ServerListViewModel(services.ServerService, services.TokenStorageService);
         ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
-        UserList = new UserListViewModel(services.ApiService, services.TokenStorageService);
+        UserList = new UserListViewModel(services.UserService, services.TokenStorageService);
         ChatWindow = new ChatWindowViewModel(services, ChannelList);
 
         InitializeEvents();
@@ -153,12 +153,9 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            var token = _services.TokenStorageService.LoadToken();
-            if (token == null) throw new Exception("token was null");
-
-            DisplayedCurrentUser = await _services.CurrentUserService.InitializeUser(token);
+            DisplayedCurrentUser = await _services.UserService.InitializeCurrentUserAsync();
             await ServerList.LoadServersAsync();
-            await InitializeHubConnections(token);
+            await InitializeHubConnections();
         }
         catch (Exception ex)
         {
@@ -166,14 +163,14 @@ public partial class MainViewModel : ViewModelBase, INavigable
         }
     }
 
-    private async Task InitializeHubConnections(string token)
+    private async Task InitializeHubConnections()
     {
         try
         {
-            var currentUser = _services.CurrentUserService.CurrentUser;
+            var currentUser = _services.UserService.CurrentUser;
 
-            await _services.SignalRService.ConnectMessageHubAsync(token);
-            await _services.SignalRService.ConnectUserHubAsync(token);
+            await _services.SignalRService.ConnectMessageHubAsync();
+            await _services.SignalRService.ConnectUserHubAsync();
 
             _services.SignalRService.OnMessageReceived(ChannelList.OnMessageReceived);
             _services.SignalRService.OnOnlineUsersUpdated(users => UserList.OnOnlineUsersUpdatedAsync(users, ChannelList.SelectedChannel).Wait());
@@ -195,7 +192,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     private bool CheckIfCurrentServerOwner()
     {
-        var currentUser = _services.CurrentUserService.CurrentUser;
+        var currentUser = _services.UserService.CurrentUser;
         if (currentUser == null) return false;
 
         return ServerList.SelectedServer?.OwnerId == currentUser.Id;
@@ -209,8 +206,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     private async Task LeaveServer()
     {
-        var token = _services.TokenStorageService.LoadToken();
-        if (token == null) throw new Exception("token was null");
+        var token = _services.TokenStorageService.TryLoadToken();
 
         var serverId = ServerList.SelectedServer.Id;
         if (serverId == null) return;
@@ -229,7 +225,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
     {
         try
         {
-            var currentUser = _services.CurrentUserService.CurrentUser;
+            var currentUser = _services.UserService.CurrentUser;
             if (currentUser == null)
                 return;
 
@@ -237,7 +233,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
             await _services.SignalRService.DisconnectUserHubAsync(currentUser.Id);
 
             DisplayedCurrentUser = null;
-            _services.CurrentUserService.ClearUser();
+            _services.UserService.ClearCurrentUser();
 
             _services.TokenStorageService.ClearToken();
             _services.OverlayService.HideOverlay();

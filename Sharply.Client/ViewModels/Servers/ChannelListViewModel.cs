@@ -55,6 +55,7 @@ public partial class ChannelListViewModel : ViewModelBase
 
                 Messages.Clear();
 
+                // TODO: Channel service?
                 var token = _tokenStorageService.LoadToken();
                 if (token == null) throw new Exception("Token was null");
 

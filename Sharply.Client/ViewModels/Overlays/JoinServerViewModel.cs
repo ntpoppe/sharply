@@ -5,7 +5,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Sharply.Client.Interfaces;
 using Sharply.Client.Services;
-using Sharply.Shared.Requests;
 
 namespace Sharply.Client.ViewModels;
 
@@ -37,17 +36,13 @@ public partial class JoinServerViewModel : ViewModelBase, IOverlay
 
     public async Task JoinServer()
     {
-        Console.WriteLine(InviteCodeInput);
         if (string.IsNullOrWhiteSpace(InviteCodeInput))
         {
             Message = "Invalid invite code.";
             return;
         }
 
-        var request = new JoinServerRequest { InviteCode = InviteCodeInput };
-
-        (int? serverId, string? error) = await _services.ServerService.JoinServerAsync(request);
-
+        (int? serverId, string? error) = await _services.ServerService.JoinServerAsync(InviteCodeInput);
         if (serverId == null)
         {
             Message = error ?? "An unknown error occurred";

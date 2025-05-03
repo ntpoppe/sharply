@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using AutoMapper;
 using Sharply.Client.Interfaces;
 using Sharply.Client.ViewModels;
 using Sharply.Shared.Requests;
@@ -10,17 +12,20 @@ public class ServerService : IServerService
 {
     private readonly IApiService _apiService;
     private readonly ITokenStorageService _tokenStorageService;
+    private readonly IMapper _mapper;
 
-    public ServerService(IApiService apiService, ITokenStorageService tokenStorageService)
+    public ServerService(IApiService apiService, ITokenStorageService tokenStorageService, IMapper mapper)
     {
         _apiService = apiService;
         _tokenStorageService = tokenStorageService;
+        _mapper = mapper;
     }
 
     public async Task<List<ServerViewModel>> GetServersAsync()
     {
         var token = _tokenStorageService.TryLoadToken();
-        return await _apiService.GetServersAsync(token);
+        var serverDtos = await _apiService.GetServersAsync(token);
+        return _mapper.Map<List<ServerViewModel>>(serverDtos);
     }
 
     public async Task<ServerViewModel> CreateServerAsync(int userId, string name)
@@ -32,9 +37,8 @@ public class ServerService : IServerService
         };
 
         var token = _tokenStorageService.TryLoadToken();
-
-        var newServer = await _apiService.CreateServerAsync(token, request);
-        return newServer;
+        var newServerDto = await _apiService.CreateServerAsync(token, request);
+        return _mapper.Map<ServerViewModel>(newServerDto);
     }
 
     public async Task DeleteServerAsync(int serverId)
@@ -43,14 +47,26 @@ public class ServerService : IServerService
         await _apiService.SoftDeleteServerAsync(token, serverId);
     }
 
-    public async Task<(int? ServerId, string? Error)> JoinServerAsync(JoinServerRequest request)
+    public async Task<(int? ServerId, string? Error)> JoinServerAsync(string inviteCode)
     {
         var token = _tokenStorageService.TryLoadToken();
-        var response = await _apiService.JoinServerAsync(token, request);
+        var request = new JoinServerRequest { InviteCode = inviteCode };
 
-        if (!response.Success || response.Data == null)
-            return (null, response.Error ?? "An unknown error occurred.");
+        try
+        {
+            var serverDto = await _apiService.JoinServerAsync(token, request);
+            return (serverDto.Id, null);
+        }
+        catch (Exception ex)
+        {
+            return (null, ex.Message);
+        }
+    }
 
-        return (response.Data.Id, null);
+    public async Task<bool> LeaveServerAsync(int serverId)
+    {
+        var token = _tokenStorageService.TryLoadToken();
+        var request = new LeaveServerRequest { ServerId = serverId };
+        return await _apiService.LeaveServerAsync(token, request);
     }
 }

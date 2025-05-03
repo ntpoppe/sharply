@@ -10,5 +10,6 @@ public interface IServerService
     Task<ServerViewModel> CreateServerAsync(int userId, string name);
     Task<List<ServerViewModel>> GetServersAsync();
     Task DeleteServerAsync(int serverId);
-    Task<(int? ServerId, string? Error)> JoinServerAsync(JoinServerRequest request);
+    Task<(int? ServerId, string? Error)> JoinServerAsync(string inviteCode);
+    Task<bool> LeaveServerAsync(int serverId);
 }

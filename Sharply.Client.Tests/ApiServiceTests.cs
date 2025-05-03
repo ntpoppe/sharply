@@ -560,10 +560,8 @@ public class ApiServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.Not.Null);
-        Assert.That(result.Data.Id, Is.EqualTo(999));
-        Assert.That(result.Data.Name, Is.EqualTo("Joined Server"));
+        Assert.That(result.Id, Is.EqualTo(999));
+        Assert.That(result.Name, Is.EqualTo("Joined Server"));
     }
 
     [Test]
@@ -642,8 +640,7 @@ public class ApiServiceTests
 
         // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Success, Is.True);
-        Assert.That(result.Data, Is.True);
+        Assert.That(result, Is.True);
     }
 
     [Test]

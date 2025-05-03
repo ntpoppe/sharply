@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -15,7 +14,7 @@ using Sharply.Shared.Requests;
 namespace Sharply.Client.Services;
 
 // TODO: Split this up into respective groups in separate classes
-// TODO: Stop making these methods return ViewModels. Let the service layer do that.
+// TODO: Get auth calls to return DTOs, not ViewModels;
 
 public class ApiService : IApiService
 {
@@ -88,7 +87,7 @@ public class ApiService : IApiService
         throw new Exception("Check your credentials.");
     }
 
-    public async Task<ServerViewModel> CreateServerAsync(string tokenString, CreateServerRequest request)
+    public async Task<ServerDto> CreateServerAsync(string tokenString, CreateServerRequest request)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
         var response = await _client.PostAsJsonAsync("api/servers/create-server", request);
@@ -97,15 +96,10 @@ public class ApiService : IApiService
         {
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
 
-            if (result != null && result.Success)
-            {
-                var newServer = _mapper.Map<ServerViewModel>(result.Data);
-                return newServer;
-            }
+            if (result != null && result.Data != null && result.Success)
+                return result.Data;
             else
-            {
                 throw new Exception(result?.Error ?? "Unknown error occurred.");
-            }
         }
 
         throw new Exception($"Server returned {response.StatusCode} in CreateServerAsync()");
@@ -121,19 +115,15 @@ public class ApiService : IApiService
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
 
             if (result != null && result.Success)
-            {
                 return;
-            }
             else
-            {
                 throw new Exception(result?.Error ?? "Unknown error occurred");
-            }
         }
 
         throw new Exception($"Server returned {response.StatusCode} in SoftDeleteServerAsync()");
     }
 
-    public async Task<ApiResponse<ServerDto>> JoinServerAsync(string tokenString, JoinServerRequest request)
+    public async Task<ServerDto> JoinServerAsync(string tokenString, JoinServerRequest request)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
         var response = await _client.PostAsJsonAsync("api/servers/join-server", request);
@@ -143,29 +133,28 @@ public class ApiService : IApiService
 
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<ServerDto>>();
 
-        if (result == null)
-            throw new Exception("Response could not be deserialized.");
+        if (result == null || !result.Success || result.Data == null)
+            throw new Exception(result?.Error ?? "Failed to join server.");
 
-        return result;
+        return result.Data;
     }
 
-    public async Task<ApiResponse<bool>> LeaveServerAsync(string tokenString, LeaveServerRequest request)
+    public async Task<bool> LeaveServerAsync(string tokenString, LeaveServerRequest request)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
-        var response = await _client.PostAsJsonAsync("api/servers/leave-server", request);
 
+        var response = await _client.PostAsJsonAsync("api/servers/leave-server", request);
         if (!response.IsSuccessStatusCode)
             throw new Exception($"Server returned {response.StatusCode} in LeaveServerAsync()");
 
         var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
-
         if (result == null)
             throw new Exception("Response could not be deserialized.");
 
-        return result;
+        return result.Success;
     }
 
-    public async Task<List<ServerViewModel>> GetServersAsync(string tokenString)
+    public async Task<List<ServerDto>> GetServersAsync(string tokenString)
     {
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
         var response = await _client.GetAsync("api/servers/get-user-servers");
@@ -175,19 +164,15 @@ public class ApiService : IApiService
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ServerDto>>>();
 
             if (result != null && result.Success)
-            {
-                return _mapper.Map<List<ServerViewModel>>(result.Data ?? new List<ServerDto>());
-            }
+                return result.Data ?? new List<ServerDto>();
             else
-            {
                 throw new Exception(result?.Error ?? "Unknown error occurred.");
-            }
         }
 
         throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
     }
 
-    public async Task<List<MessageViewModel>> GetMessagesForChannel(string tokenString, int channelId)
+    public async Task<List<MessageDto>> GetMessagesForChannel(string tokenString, int channelId)
     {
         try
         {
@@ -198,16 +183,7 @@ public class ApiService : IApiService
                 var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<MessageDto>>>();
 
                 if (result != null && result.Success)
-                {
-                    var viewModels = result.Data?.Select(messageDto => new MessageViewModel
-                    {
-                        Username = messageDto.Username,
-                        Content = messageDto.Content,
-                        Timestamp = messageDto.Timestamp
-                    }).ToList();
-
-                    return viewModels ?? new List<MessageViewModel>();
-                }
+                    return result.Data ?? new List<MessageDto>(); 
             }
 
             throw new Exception($"Server returned {response.StatusCode} in GetServersAsync()");
@@ -215,7 +191,7 @@ public class ApiService : IApiService
         catch (Exception ex)
         {
             Console.WriteLine("An error occured in GetMessagesForChannel(): " + ex);
-            return new List<MessageViewModel>();
+            return new List<MessageDto>();
         }
     }
 
@@ -229,9 +205,7 @@ public class ApiService : IApiService
             {
                 var result = await response.Content.ReadFromJsonAsync<ApiResponse<bool>>();
                 if (result != null && result.Success)
-                {
                     return result.Data;
-                }
             }
 
             return false;

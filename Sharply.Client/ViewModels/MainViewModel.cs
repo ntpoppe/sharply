@@ -206,15 +206,14 @@ public partial class MainViewModel : ViewModelBase, INavigable
 
     private async Task LeaveServer()
     {
-        var token = _services.TokenStorageService.TryLoadToken();
+        var server = ServerList.SelectedServer;
+        if (server == null) return;
 
-        var serverId = ServerList.SelectedServer.Id;
+        var serverId = server.Id;
         if (serverId == null) return;
 
-        var request = new LeaveServerRequest() { ServerId = serverId.Value };
-
-        var result = await _services.ApiService.LeaveServerAsync(token, request);
-        if (result.Success)
+        var success = await _services.ServerService.LeaveServerAsync(serverId.Value);
+        if (success)
         {
             await RefreshServerList();
             ServerList.SelectedServer = null;

@@ -48,6 +48,7 @@ sealed class Program
         services.AddSingleton<IApiService, ApiService>();
         services.AddSingleton<IOverlayService, OverlayService>();
         services.AddSingleton<IServerService, ServerService>();
+        services.AddSingleton<IChannelService, ChannelService>();
         services.AddSingleton<IUserService, UserService>();
         services.AddSingleton<HttpClient>(provider =>
         {

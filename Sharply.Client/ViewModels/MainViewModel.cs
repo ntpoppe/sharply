@@ -23,7 +23,7 @@ public partial class MainViewModel : ViewModelBase, INavigable
         _services = services;
 
         ServerList = new ServerListViewModel(services.ServerService, services.TokenStorageService);
-        ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService);
+        ChannelList = new ChannelListViewModel(services.ApiService, services.SignalRService, services.TokenStorageService, services.ChannelService);
         UserList = new UserListViewModel(services.UserService, services.TokenStorageService);
         ChatWindow = new ChatWindowViewModel(services, ChannelList, ServerList);
 

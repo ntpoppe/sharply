@@ -9,7 +9,8 @@ public class ApplicationServices(
     ISignalRService signalRService,
     IOverlayService overlayService,
     IServerService serverService,
-    IUserService userService)
+    IUserService userService,
+    IChannelService channelService)
 {
     public IApiService ApiService { get; } = apiService;
     public ITokenStorageService TokenStorageService { get; } = tokenStorageService;
@@ -18,4 +19,5 @@ public class ApplicationServices(
     public IOverlayService OverlayService { get; } = overlayService;
     public IServerService ServerService { get; } = serverService;
     public IUserService UserService { get; } = userService;
+    public IChannelService ChannelService { get; } = channelService;
 }

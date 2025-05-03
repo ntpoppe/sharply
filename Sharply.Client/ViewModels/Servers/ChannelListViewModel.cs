@@ -11,15 +11,17 @@ namespace Sharply.Client.ViewModels;
 
 public partial class ChannelListViewModel : ViewModelBase
 {
-    private IApiService _apiService;
-    private ISignalRService _signalRService;
-    private ITokenStorageService _tokenStorageService;
+    private readonly IApiService _apiService;
+    private readonly ISignalRService _signalRService;
+    private readonly ITokenStorageService _tokenStorageService;
+    private readonly IChannelService _channelService;
 
-    public ChannelListViewModel(IApiService apiService, ISignalRService signalRService, ITokenStorageService tokenStorageService)
+    public ChannelListViewModel(IApiService apiService, ISignalRService signalRService, ITokenStorageService tokenStorageService, IChannelService channelService)
     {
         _apiService = apiService;
         _signalRService = signalRService;
         _tokenStorageService = tokenStorageService;
+        _channelService = channelService;
     }
 
     [ObservableProperty]
@@ -52,15 +54,9 @@ public partial class ChannelListViewModel : ViewModelBase
             if (newValue?.Id != null)
             {
                 await _signalRService.JoinChannelAsync(newValue.Id.Value);
-
                 Messages.Clear();
 
-                // TODO: Channel service?
-                var token = _tokenStorageService.LoadToken();
-                if (token == null) throw new Exception("Token was null");
-
-                var fetchedMessages = await _apiService.GetMessagesForChannel(token, newValue.Id.Value);
-
+                var fetchedMessages = await _channelService.GetMessagesForChannel(newValue.Id.Value);
                 if (fetchedMessages != null)
                 {
                     var combinedMessages = new HashSet<MessageViewModel>(newValue.Messages);

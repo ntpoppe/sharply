@@ -14,20 +14,12 @@ Ensure the following are installed on your system:
 
 ---
 
-### Cloning the Repository
-```bash
-git clone https://github.com/poppent/sharply.git
-cd sharply
-```
-
----
-
 ### Setting Up the Environment
 #### Install dependencies:
 ```bash
 dotnet tool install --global dotnet-ef
 
-cd Sharply.Server
+cd sharply/Sharply.Server
 dotnet restore
 
 cd ../Sharply.Client

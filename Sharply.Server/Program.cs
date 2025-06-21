@@ -109,6 +109,7 @@ void ConfigureMiddleware(WebApplication app)
     }
 
     // Middleware pipeline
+    app.UsePathBase("/sharply");
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();

@@ -1,0 +1,22 @@
+services:
+  sharply:
+    image: sharply-server:latest
+    build:
+      context: . 
+      dockerfile: Dockerfile
+      network: host
+    container_name: sharply
+    restart: always
+    ports:
+      - "6000:80"
+    environment:
+      ASPNETCORE_URLS: "http://0.0.0.0:80"
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ServerSettings__ServerUri: "https://natetp.duckdns.org"
+      ConnectionStrings__DefaultConnection: "Data Source=/data/sharply.db"
+    volumes:
+      - sharply-db:/data
+
+volumes:
+  sharply-db:
+

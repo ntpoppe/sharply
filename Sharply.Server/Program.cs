@@ -20,6 +20,13 @@ ConfigureServices(builder.Services, builder.Configuration);
 // Build the application
 var app = builder.Build();
 
+// Ensure database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SharplyDbContext>();
+    db.Database.EnsureCreated();
+}
+
 // Middleware
 ConfigureMiddleware(app);
 
@@ -38,12 +45,23 @@ void ConfigureAppSettings(WebApplicationBuilder builder)
 
 void ConfigureUrls(WebApplicationBuilder builder)
 {
-    // Define application URLs
-    var serverUri = builder.Configuration["ServerSettings:ServerUri"];
-    if (string.IsNullOrEmpty(serverUri))
-        serverUri = "http://localhost:9000";
+    var env = builder.Environment;
+    string url;
 
-    builder.WebHost.UseUrls(serverUri);
+    if (env.IsDevelopment())
+    {
+        // in dev, read from your .env / appsettings.Development.json
+        var serverUri = builder.Configuration["ServerSettings:ServerUri"]
+                        ?? "http://localhost:9000";
+        url = serverUri;
+    }
+    else
+    {
+        // in production (Docker/Nginx), bind to 0.0.0.0:80
+        url = "http://0.0.0.0:80";
+    }
+
+    builder.WebHost.UseUrls(url);
 }
 
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
@@ -54,6 +72,8 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         {
             options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
         }));
+
+
 
     // OpenAPI (Swagger)
     services.AddEndpointsApiExplorer();
@@ -109,7 +129,6 @@ void ConfigureMiddleware(WebApplication app)
     }
 
     // Middleware pipeline
-    app.UsePathBase("/sharply");
     app.UseRouting();
     app.UseAuthentication();
     app.UseAuthorization();
